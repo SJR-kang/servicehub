@@ -5,6 +5,7 @@ const { getBearerToken, verifyToken } = require("./_lib/auth");
 
 const bodySchema = z.object({
   providerId: z.string().min(1),
+  serviceId: z.string().min(1).optional(),
   serviceName: z.string().min(1),
   preferredDate: z.string().optional(),
   preferredTime: z.string().optional(),

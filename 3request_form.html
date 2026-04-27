@@ -557,6 +557,8 @@
 
                 <div class="right-column">
                     <form id="requestForm">
+                        <input type="hidden" id="serviceId">
+                        <input type="hidden" id="providerId">
                         <div class="form-row">
                             <div class="form-group">
                                 <label><i class="fas fa-user"></i> Your Full Name</label>
@@ -598,6 +600,16 @@
                             <label><i class="fas fa-tag"></i> Estimated Budget</label>
                             <input type="text" id="budget" placeholder="e.g., $100-200 or $150/session" required>
                         </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label><i class="fas fa-briefcase"></i> Selected Service</label>
+                                <input type="text" id="serviceNameRef" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-money-bill-wave"></i> Reference Price</label>
+                                <input type="text" id="servicePriceRef">
+                            </div>
+                        </div>
 
                         <button type="submit" class="submit-btn">
                             <i class="fas fa-paper-plane"></i> Send Request
@@ -634,6 +646,7 @@
 <script>
     let currentUser = null;
     let selectedProvider = null;
+    let selectedService = null;
 
     function showToast(msg) {
         let toast = document.createElement('div');
@@ -682,6 +695,7 @@
 
     function loadProviderData() {
         const urlParams = new URLSearchParams(window.location.search);
+        const serviceId = urlParams.get('serviceId');
         const providerName = urlParams.get('provider');
         const providerService = urlParams.get('service');
         const providerId = urlParams.get('providerId');
@@ -689,7 +703,18 @@
         
         const storedProvider = localStorage.getItem('selectedProvider');
         
-        if (providerName && providerService) {
+        if (serviceId && window.ServiceHubDB) {
+            const service = ServiceHubDB.getServiceById(serviceId);
+            if (service) {
+                selectedService = service;
+                selectedProvider = {
+                    name: service.providerName,
+                    service: service.name,
+                    id: service.providerId,
+                    price: service.price
+                };
+            }
+        } else if (providerName && providerService) {
             selectedProvider = {
                 name: decodeURIComponent(providerName),
                 service: decodeURIComponent(providerService),
@@ -708,6 +733,16 @@
                 price: "Contact for quote"
             };
         }
+
+        if (!selectedService && window.ServiceHubDB && selectedProvider?.id) {
+            const providerServices = ServiceHubDB.getServicesByProvider(selectedProvider.id);
+            selectedService = providerServices.find(service => service.name === selectedProvider.service) || providerServices[0] || null;
+        }
+        if (selectedService) {
+            selectedProvider.service = selectedService.name;
+            selectedProvider.price = selectedService.price;
+            selectedProvider.id = selectedService.providerId;
+        }
         
         const nameEl = document.getElementById('providerName');
         const serviceEl = document.getElementById('providerService');
@@ -716,6 +751,15 @@
         if (nameEl) nameEl.innerText = selectedProvider.name || 'Provider';
         if (serviceEl) serviceEl.innerText = selectedProvider.service || 'Service';
         if (priceEl) priceEl.innerText = selectedProvider.price || 'Contact for quote';
+
+        const serviceIdEl = document.getElementById('serviceId');
+        const providerIdEl = document.getElementById('providerId');
+        const serviceNameRef = document.getElementById('serviceNameRef');
+        const servicePriceRef = document.getElementById('servicePriceRef');
+        if (serviceIdEl) serviceIdEl.value = selectedService?.id || '';
+        if (providerIdEl) providerIdEl.value = selectedProvider?.id || '';
+        if (serviceNameRef) serviceNameRef.value = selectedProvider?.service || '';
+        if (servicePriceRef) servicePriceRef.value = selectedProvider?.price || '';
     }
     
     function autoFillUserData() {
@@ -748,6 +792,10 @@
             await ServiceHubDB.init();
             
             const requestData = {
+                serviceId: document.getElementById('serviceId')?.value || '',
+                providerId: document.getElementById('providerId')?.value || selectedProvider.id || '',
+                serviceName: document.getElementById('serviceNameRef')?.value || selectedProvider.service,
+                price: document.getElementById('servicePriceRef')?.value || selectedProvider.price,
                 customerName: document.getElementById('requesterName')?.value || '',
                 customerEmail: document.getElementById('requesterEmail')?.value || '',
                 customerPhone: document.getElementById('requesterPhone')?.value || '',
@@ -757,7 +805,6 @@
                     price: selectedProvider.price,
                     id: selectedProvider.id
                 },
-                serviceName: selectedProvider.service,
                 preferredDate: document.getElementById('preferredDate')?.value || '',
                 preferredTime: document.getElementById('preferredTime')?.value || '',
                 serviceDetails: document.getElementById('serviceDetails')?.value || '',
@@ -771,11 +818,16 @@
                 showToast('Please fill in all required fields');
                 return;
             }
+            if (!requestData.serviceId) {
+                showToast('Please select a specific service first');
+                return;
+            }
             
             try {
                 if (window.ServiceHubAPI && ServiceHubAPI.getToken()) {
                     await ServiceHubAPI.createRequest({
-                        providerId: String(selectedProvider.id || ''),
+                        providerId: String(requestData.providerId || ''),
+                        serviceId: requestData.serviceId,
                         serviceName: requestData.serviceName,
                         preferredDate: requestData.preferredDate,
                         preferredTime: requestData.preferredTime,

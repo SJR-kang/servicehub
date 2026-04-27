@@ -494,7 +494,11 @@
         
         const html = sorted.map((req) => {
             const providerName = req.provider?.name || req.customerName || 'Service Provider';
-            const serviceName = req.provider?.service || req.serviceName || 'General Service';
+            let serviceName = req.serviceName || req.provider?.service || 'General Service';
+            if (window.ServiceHubDB && req.serviceId) {
+                const resolved = ServiceHubDB.getServiceById(req.serviceId);
+                if (resolved?.name) serviceName = resolved.name;
+            }
             const budgetDisplay = req.budget || 'Not specified';
             const preferredDate = req.preferredDate || 'Not set';
             const preferredTime = req.preferredTime || 'Any';

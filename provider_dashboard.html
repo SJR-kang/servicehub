@@ -757,6 +757,7 @@
     let soldProducts = [];
     let serviceRequests = [];
     let currentTab = 'products';
+    let currentProvider = null;
     const toUiStatus = (status) => {
         const value = String(status || '').toUpperCase();
         if (value === 'PENDING') return 'pending';
@@ -785,21 +786,19 @@
         rejectionReason: r.rejectionReason || null
     });
 
+    function loadCurrentProvider() {
+        const user = JSON.parse(localStorage.getItem('servicehub_user') || '{}');
+        currentProvider = ServiceHubDB.getProviderByEmail(user.email || '') || null;
+        if (!currentProvider) {
+            currentProvider = ServiceHubDB.getAllProviders()[0] || null;
+        }
+        return currentProvider;
+    }
+
     async function loadAllData() {
         await ServiceHubDB.init();
-        
-        const stored = localStorage.getItem('provider_products');
-        if (stored) {
-            try { providerProducts = JSON.parse(stored); } catch(e) {}
-        }
-        if (providerProducts.length === 0) {
-            providerProducts = [
-                { id: 1, name: "Academic Proofreading", category: "Academics", price: "$25/page", description: "Expert proofreading." },
-                { id: 2, name: "Deep Cleaning", category: "Cleaning", price: "$150/session", description: "Professional cleaning." },
-                { id: 3, name: "Math Tutoring", category: "Tutoring", price: "$75/hour", description: "Expert tutoring." }
-            ];
-            saveProducts();
-        }
+        loadCurrentProvider();
+        providerProducts = currentProvider ? ServiceHubDB.getServicesByProvider(currentProvider.id) : [];
         
         loadSoldProducts();
         
@@ -825,7 +824,11 @@
                 { requestId: "REQ-005", customerName: "David Wilson", customerEmail: "david@example.com", serviceName: "Deep Cleaning", preferredDate: "2025-06-05", preferredTime: "9:00 AM", location: "Seattle, WA", budget: "$200", status: "inprogress", paymentConfirmed: true, paymentMethod: "full", amountPaid: 200 }
             ];
         } else if (!loadedFromApi) {
-            serviceRequests = allRequests;
+            const providerId = currentProvider?.id;
+            serviceRequests = allRequests.filter(req => {
+                const requestProviderId = req.providerId || req.provider?.id || null;
+                return providerId ? String(requestProviderId) === String(providerId) : true;
+            });
         }
         
         updateProductsCount();
@@ -835,7 +838,6 @@
     }
 
     function saveProducts() {
-        localStorage.setItem('provider_products', JSON.stringify(providerProducts));
         updateProductsCount();
     }
 
@@ -860,8 +862,8 @@
                     <div class="product-price">${escapeHtml(p.price)}</div>
                     <p class="product-description">${escapeHtml(p.description.substring(0, 100))}</p>
                     <div class="product-actions">
-                        <button class="btn-edit" onclick="editProduct(${p.id})">Edit</button>
-                        <button class="btn-delete" onclick="confirmDeleteProduct(${p.id})">Delete</button>
+                        <button class="btn-edit" onclick="editProduct('${p.id}')">Edit</button>
+                        <button class="btn-delete" onclick="confirmDeleteProduct('${p.id}')">Delete</button>
                     </div>
                 </div>
             </div>
@@ -874,7 +876,7 @@
     }
 
     function openAddProductModal() {
-        document.getElementById('modalTitle').innerText = 'Add Product';
+        document.getElementById('modalTitle').innerText = 'Add Service';
         document.getElementById('editProductId').value = '';
         document.getElementById('productName').value = '';
         document.getElementById('productCategory').value = 'Academics';
@@ -903,22 +905,28 @@
         const price = document.getElementById('productPrice').value.trim();
         const desc = document.getElementById('productDescription').value.trim();
         if (!name || !price || !desc) { showToast('Please fill all fields'); return; }
-        const product = { id: id ? parseInt(id) : Date.now(), name, category, price, description: desc };
-        if (id) {
-            const idx = providerProducts.findIndex(p => p.id === parseInt(id));
-            if (idx !== -1) providerProducts[idx] = product;
-            showToast('Updated');
-        } else {
-            providerProducts.push(product);
-            showToast('Added');
-        }
+        if (!currentProvider) { showToast('Provider account not found'); return; }
+        const product = ServiceHubDB.upsertProviderService(currentProvider.id, { id, name, category, price, description: desc });
+        if (!product) { showToast('Unable to save service'); return; }
+        providerProducts = ServiceHubDB.getServicesByProvider(currentProvider.id);
+        showToast(id ? 'Updated' : 'Added');
         saveProducts();
         renderProducts();
         closeModal();
     }
 
     function confirmDeleteProduct(id) { pendingDeleteId = id; document.getElementById('deleteModal').style.display = 'flex'; }
-    function deleteProduct() { if(pendingDeleteId){ providerProducts = providerProducts.filter(p=>p.id!==pendingDeleteId); saveProducts(); renderProducts(); showToast('Deleted'); pendingDeleteId=null; } closeDeleteModal(); }
+    function deleteProduct() {
+        if (pendingDeleteId && currentProvider) {
+            ServiceHubDB.deleteProviderService(currentProvider.id, pendingDeleteId);
+            providerProducts = ServiceHubDB.getServicesByProvider(currentProvider.id);
+            saveProducts();
+            renderProducts();
+            showToast('Deleted');
+            pendingDeleteId = null;
+        }
+        closeDeleteModal();
+    }
     function closeModal() { document.getElementById('productModal').style.display = 'none'; }
     function closeDeleteModal() { document.getElementById('deleteModal').style.display = 'none'; pendingDeleteId=null; }
 

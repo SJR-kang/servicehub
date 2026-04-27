@@ -264,6 +264,9 @@
                         <span class="service-price">${service.price}</span>
                     </div>
                     <div class="service-description">${service.description}</div>
+                    <button class="connect-btn request-service-btn" data-service-id="${service.id}" style="margin-top:12px; width:auto; padding:10px 20px;">
+                        <i class="fas fa-paper-plane"></i> Request This Service
+                    </button>
                 </div>
             `).join('') 
             : '<p style="color: #5f7f90;">No services listed</p>';
@@ -392,21 +395,38 @@
         
         document.getElementById('connectWithProviderBtn')?.addEventListener('click', () => {
             if (currentUser) {
+                const defaultService = provider.servicesOffered && provider.servicesOffered.length > 0 ? provider.servicesOffered[0] : null;
                 const providerInfo = { 
                     id: provider.id, 
                     name: provider.name, 
-                    service: provider.service, 
-                    price: provider.price, 
+                    service: defaultService?.name || provider.service, 
+                    price: defaultService?.price || provider.price, 
                     email: provider.contactEmail || 'contact@servicehub.com', 
                     phone: provider.contactPhone || 'N/A', 
                     category: provider.category 
                 };
                 localStorage.setItem('selectedProvider', JSON.stringify(providerInfo));
-                window.location.href = `3request_form.html?provider=${encodeURIComponent(provider.name)}&service=${encodeURIComponent(provider.service)}&providerId=${provider.id}`;
+                if (defaultService?.id) {
+                    window.location.href = `3request_form.html?serviceId=${encodeURIComponent(defaultService.id)}`;
+                } else {
+                    window.location.href = `3request_form.html?provider=${encodeURIComponent(provider.name)}&service=${encodeURIComponent(provider.service)}&providerId=${provider.id}`;
+                }
             } else {
                 showToast("Please login to connect with providers");
                 setTimeout(() => { window.location.href = "signin.html"; }, 1500);
             }
+        });
+
+        document.querySelectorAll('.request-service-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                if (!currentUser) {
+                    showToast("Please login to request services");
+                    setTimeout(() => { window.location.href = "signin.html"; }, 1500);
+                    return;
+                }
+                const serviceId = button.dataset.serviceId;
+                window.location.href = `3request_form.html?serviceId=${encodeURIComponent(serviceId)}`;
+            });
         });
         
         document.querySelectorAll('.similar-provider-card').forEach(card => {

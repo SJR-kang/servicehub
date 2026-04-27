@@ -783,22 +783,26 @@
         }
     }
 
-    function getFilteredProviders() {
-        let providers = window.ServiceHubDB ? ServiceHubDB.getAllProviders() : [];
-        
-        return providers.filter(p => {
-            if (listingFilters.search && !p.name.toLowerCase().includes(listingFilters.search.toLowerCase()) && !p.service.toLowerCase().includes(listingFilters.search.toLowerCase())) return false;
-            if (listingFilters.categoryNav !== "all" && p.category !== listingFilters.categoryNav) return false;
-            if (listingFilters.categories.length > 0 && !listingFilters.categories.includes(p.category)) return false;
-            let priceNum = parseInt(p.price) || 0;
+    function getFilteredServices() {
+        const services = window.ServiceHubDB ? ServiceHubDB.getAllServices() : [];
+
+        return services.filter(service => {
+            const providerName = service.providerName || '';
+            const serviceName = service.name || '';
+            const category = service.category || service.providerCategory || 'General';
+            const searchTerm = listingFilters.search.toLowerCase();
+            if (listingFilters.search && !providerName.toLowerCase().includes(searchTerm) && !serviceName.toLowerCase().includes(searchTerm)) return false;
+            if (listingFilters.categoryNav !== "all" && category !== listingFilters.categoryNav) return false;
+            if (listingFilters.categories.length > 0 && !listingFilters.categories.includes(category)) return false;
+            let priceNum = parseInt(service.price) || 0;
             if (priceNum < listingFilters.minPrice || priceNum > listingFilters.maxPrice) return false;
-            if (listingFilters.rating > 0 && p.rating < listingFilters.rating) return false;
+            if (listingFilters.rating > 0 && (service.providerRating || 0) < listingFilters.rating) return false;
             return true;
         });
     }
 
     function renderListing() {
-        const filtered = getFilteredProviders();
+        const filtered = getFilteredServices();
         const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
         const start = (currentPage - 1) * ITEMS_PER_PAGE;
         const paginated = filtered.slice(start, start + ITEMS_PER_PAGE);
@@ -812,32 +816,33 @@
             </aside>
             <section class="providers-section">
                 <div class="providers-header">
-                    <h2>Available Service Providers</h2>
+                    <h2>Available Services</h2>
                     <p id="resultsCount">Showing ${paginated.length} of ${filtered.length}</p>
                 </div>
                 <div class="providers-grid" id="providersGrid">
-                    ${paginated.map(provider => {
-                        const avatarImg = provider.avatarImg || 'https://randomuser.me/api/portraits/lego/1.jpg';
-                        const description = (provider.fullDetail || provider.description || '').substring(0, 100);
-                        let cleanPrice = provider.price;
+                    ${paginated.map(service => {
+                        const avatarImg = service.providerAvatar || 'https://randomuser.me/api/portraits/lego/1.jpg';
+                        const description = (service.description || '').substring(0, 100);
+                        let cleanPrice = service.price;
                         if (cleanPrice && cleanPrice.startsWith('$')) {
                             cleanPrice = cleanPrice.substring(1);
                         }
                         return `
-                        <div class="provider-card" data-provider-id="${provider.id}">
+                        <div class="provider-card" data-provider-id="${service.providerId}" data-service-id="${service.id}">
                             <div class="card-header">
                                 <div class="provider-avatar">
-                                    <img src="${avatarImg}" alt="${provider.name}">
+                                    <img src="${avatarImg}" alt="${service.providerName}">
                                 </div>
                                 <div class="provider-info">
-                                    <h3>${provider.name}</h3>
-                                    <div class="rating">${'★'.repeat(Math.floor(provider.rating))} <span style="color:#5f7f90;">(${provider.rating})</span></div>
+                                    <h3>${service.providerName}</h3>
+                                    <div class="rating">${'★'.repeat(Math.floor(service.providerRating || 0))} <span style="color:#5f7f90;">(${service.providerRating || 'N/A'})</span></div>
                                 </div>
                             </div>
                             <div class="card-body">
-                                <div class="service-title">${provider.service}</div>
+                                <div class="service-title">${service.name}</div>
                                 <div class="description">${description}...</div>
                                 <div class="price">₱${cleanPrice}</div>
+                                <button class="filter-btn request-service-btn" data-service-id="${service.id}" style="margin-top:12px;">Request This Service</button>
                             </div>
                         </div>
                     `}).join('')}
@@ -849,8 +854,18 @@
         
         document.querySelectorAll('.provider-card').forEach(card => {
             card.addEventListener('click', (e) => {
+                if (e.target.closest('.request-service-btn')) return;
                 const providerId = parseInt(card.dataset.providerId);
                 window.location.href = `2provider_info.html?id=${providerId}`;
+            });
+        });
+
+        document.querySelectorAll('.request-service-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const serviceId = button.dataset.serviceId;
+                window.location.href = `3request_form.html?serviceId=${encodeURIComponent(serviceId)}`;
             });
         });
         

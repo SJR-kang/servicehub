@@ -21,6 +21,8 @@
                 this._providers = saved.providers;
                 this._requests = saved.requests || [];
                 this._users = saved.users || [];
+                this.migrateDataModel();
+                this.saveToStorage();
                 console.log('✅ Loaded from localStorage:', this._providers.length, 'providers');
             } else {
                 this.loadBuiltInData();
@@ -302,9 +304,82 @@
                     serviceDetails: "Wedding photography for 50 guests. Need 4 hours coverage." 
                 }
             ];
+            this.migrateDataModel();
             
             this.saveToStorage();
             console.log('📝 Built-in data loaded with', this._providers.length, 'providers,', this._users.length, 'users');
+        },
+        
+        makeServiceId: function(providerId, serviceName, index = 0) {
+            const safeName = String(serviceName || 'service')
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '_')
+                .replace(/^_+|_+$/g, '')
+                .slice(0, 24) || 'service';
+            return `svc_${providerId}_${safeName}_${index + 1}`;
+        },
+
+        migrateDataModel: function() {
+            this._providers = (this._providers || []).map((provider) => {
+                const offered = Array.isArray(provider.servicesOffered) ? provider.servicesOffered : [];
+                const normalized = offered.map((service, index) => ({
+                    id: service.id || this.makeServiceId(provider.id, service.name || provider.service, index),
+                    name: service.name || provider.service || 'General Service',
+                    price: service.price || provider.price || 'Contact for quote',
+                    description: service.description || provider.description || 'Service details available upon request.',
+                    providerId: provider.id,
+                    category: service.category || provider.category || 'General',
+                    duration: service.duration || 'Flexible'
+                }));
+
+                if (normalized.length === 0) {
+                    normalized.push({
+                        id: this.makeServiceId(provider.id, provider.service || 'General Service', 0),
+                        name: provider.service || 'General Service',
+                        price: provider.price || 'Contact for quote',
+                        description: provider.description || 'Service details available upon request.',
+                        providerId: provider.id,
+                        category: provider.category || 'General',
+                        duration: 'Flexible'
+                    });
+                }
+
+                return { ...provider, servicesOffered: normalized };
+            });
+
+            this._requests = (this._requests || []).map((request) => {
+                const providerId = request.providerId || request.provider?.id || null;
+                let matchedService = null;
+                if (request.serviceId) {
+                    matchedService = this.getServiceById(request.serviceId);
+                }
+                if (!matchedService && providerId) {
+                    matchedService = this.getServicesByProvider(providerId).find((s) => {
+                        const existingName = String(request.serviceName || request.provider?.service || '').toLowerCase();
+                        return s.name.toLowerCase() === existingName || existingName.includes(s.name.toLowerCase());
+                    });
+                }
+                if (!matchedService && request.serviceName) {
+                    const target = String(request.serviceName).toLowerCase();
+                    matchedService = this.getAllServices().find((s) => s.name.toLowerCase() === target || target.includes(s.name.toLowerCase()));
+                }
+
+                const resolvedProvider = matchedService ? this.getProviderById(matchedService.providerId) : (providerId ? this.getProviderById(providerId) : null);
+                return {
+                    ...request,
+                    providerId: matchedService?.providerId || providerId || null,
+                    serviceId: matchedService?.id || request.serviceId || null,
+                    serviceName: matchedService?.name || request.serviceName || request.provider?.service || 'General Service',
+                    price: request.price || matchedService?.price || request.provider?.price || null,
+                    provider: {
+                        ...(request.provider || {}),
+                        id: matchedService?.providerId || providerId || request.provider?.id || null,
+                        name: request.provider?.name || resolvedProvider?.name || 'Service Provider',
+                        service: matchedService?.name || request.provider?.service || request.serviceName || 'General Service',
+                        price: request.provider?.price || matchedService?.price || request.price || null
+                    }
+                };
+            });
         },
 
         // ============================================
@@ -582,6 +657,70 @@
             if (!email) return null;
             const emailLower = email.toLowerCase();
             return this._providers.find(p => p.email && p.email.toLowerCase() === emailLower);
+        },
+
+        getAllServices: function() {
+            return (this._providers || []).flatMap(provider => {
+                const services = Array.isArray(provider.servicesOffered) ? provider.servicesOffered : [];
+                return services.map(service => ({
+                    ...service,
+                    providerId: service.providerId || provider.id,
+                    providerName: provider.name,
+                    providerRating: provider.rating,
+                    providerAvatar: provider.avatarImg,
+                    providerCategory: provider.category
+                }));
+            });
+        },
+
+        getServicesByProvider: function(providerId) {
+            const provider = this.getProviderById(providerId);
+            if (!provider || !Array.isArray(provider.servicesOffered)) return [];
+            return provider.servicesOffered.map(service => ({
+                ...service,
+                providerId: service.providerId || provider.id
+            }));
+        },
+
+        getServiceById: function(serviceId) {
+            if (!serviceId) return null;
+            return this.getAllServices().find(service => String(service.id) === String(serviceId)) || null;
+        },
+
+        upsertProviderService: function(providerId, serviceData) {
+            const provider = this.getProviderById(providerId);
+            if (!provider) return null;
+            const services = Array.isArray(provider.servicesOffered) ? provider.servicesOffered : [];
+            const serviceId = serviceData.id || this.makeServiceId(provider.id, serviceData.name, services.length);
+            const normalizedService = {
+                id: serviceId,
+                name: serviceData.name,
+                price: serviceData.price,
+                description: serviceData.description || '',
+                providerId: provider.id,
+                category: serviceData.category || provider.category || 'General',
+                duration: serviceData.duration || 'Flexible'
+            };
+
+            const existingIndex = services.findIndex(service => String(service.id) === String(serviceId));
+            if (existingIndex >= 0) {
+                services[existingIndex] = normalizedService;
+            } else {
+                services.push(normalizedService);
+            }
+            provider.servicesOffered = services;
+            this.saveToStorage();
+            return normalizedService;
+        },
+
+        deleteProviderService: function(providerId, serviceId) {
+            const provider = this.getProviderById(providerId);
+            if (!provider || !Array.isArray(provider.servicesOffered)) return false;
+            const beforeCount = provider.servicesOffered.length;
+            provider.servicesOffered = provider.servicesOffered.filter(service => String(service.id) !== String(serviceId));
+            if (provider.servicesOffered.length === beforeCount) return false;
+            this.saveToStorage();
+            return true;
         },
         
     // Add this entire block right before the showDatabase method in your database.js
@@ -906,18 +1045,30 @@
     },
 
     addRequest: function(requestData) {
+            const service = this.getServiceById(requestData.serviceId);
             const normalizedData = {
                 ...requestData,
                 requestId: 'REQ-' + Date.now() + '-' + Math.floor(Math.random() * 10000),
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
                 status: 'pending',  // Step 1: Status becomes "pending"
+                serviceId: requestData.serviceId || service?.id || null,
+                providerId: requestData.providerId || service?.providerId || requestData.provider?.id || null,
+                serviceName: requestData.serviceName || service?.name || 'General Service',
+                price: requestData.price || service?.price || null,
                 customerEmail: requestData.customerEmail || 
                             (requestData.requester && requestData.requester.email),
                 customerName: requestData.customerName || 
                             (requestData.requester && requestData.requester.name),
                 customerPhone: requestData.customerPhone || 
-                            (requestData.requester && requestData.requester.phone)
+                            (requestData.requester && requestData.requester.phone),
+                provider: {
+                    ...(requestData.provider || {}),
+                    id: requestData.providerId || service?.providerId || requestData.provider?.id || null,
+                    name: requestData.provider?.name || (service ? this.getProviderById(service.providerId)?.name : '') || 'Service Provider',
+                    service: requestData.serviceName || service?.name || requestData.provider?.service || 'General Service',
+                    price: requestData.price || service?.price || requestData.provider?.price || null
+                }
             };
             
             this._requests.push(normalizedData);
