@@ -10,6 +10,7 @@
         _soldProducts: [],
         _storageKey: 'servicehub_db_data',
         _soldKey: 'sold_products',
+        _usdToPhpRate: 55,
         
         // Initialize database
         init: async function() {
@@ -47,7 +48,8 @@
                     password: "password123",
                     service: "Academic Proofreading & Editing", 
                     category: "Academic", 
-                    price: "$25/page", 
+                    priceAmount: 1375,
+                    price: "₱1,375", 
                     rating: 4.9,
                     availability: "Mon–Fri, 9AM–8PM",
                     description: "PhD in English Literature with 8+ years experience. Specializes in thesis, dissertations, and ESL academic writing.",
@@ -71,8 +73,8 @@
                         "Published Author - 3 Academic Papers"
                     ],
                     servicesOffered: [
-                        { name: "Proofreading", price: "$20/page", description: "Grammar, spelling, punctuation check" },
-                        { name: "Editing", price: "$35/page", description: "Structural and content editing" }
+                        { id: "svc_1_proofreading_1", name: "Academic Proofreading", priceAmount: 1100, price: "₱1,100", description: "Grammar, spelling, punctuation check", providerId: 1, category: "Academic", duration: "Per page" },
+                        { id: "svc_1_editing_2", name: "Editing", priceAmount: 1925, price: "₱1,925", description: "Structural and content editing", providerId: 1, category: "Academic", duration: "Per page" }
                     ],
                     reviews: [
                         { reviewer: "John D.", rating: 5, text: "Dr. Mitchell saved my thesis! Incredible attention to detail." },
@@ -86,7 +88,8 @@
                     password: "password123",
                     service: "Professional Deep Cleaning", 
                     category: "Cleaning", 
-                    price: "$120-250/session", 
+                    priceAmount: 10200,
+                    price: "₱10,200", 
                     rating: 4.8,
                     availability: "Daily 7AM–9PM",
                     description: "Certified residential and commercial cleaning with 7 years experience.",
@@ -110,8 +113,8 @@
                         "EPA Green Cleaning Certified"
                     ],
                     servicesOffered: [
-                        { name: "Deep Cleaning", price: "$150-250", description: "Full home deep clean" },
-                        { name: "Move-in/Out Clean", price: "$200-350", description: "Complete property cleaning" }
+                        { id: "svc_2_deep_cleaning_1", name: "Deep Cleaning", priceAmount: 11000, price: "₱11,000", description: "Full home deep clean", providerId: 2, category: "Cleaning", duration: "Per session" },
+                        { id: "svc_2_move_in_out_clean_2", name: "Move-in/Out Clean", priceAmount: 15125, price: "₱15,125", description: "Complete property cleaning", providerId: 2, category: "Cleaning", duration: "Per session" }
                     ],
                     reviews: [
                         { reviewer: "Lisa T.", rating: 5, text: "My apartment has never been so clean!" },
@@ -125,7 +128,8 @@
                     password: "password123",
                     service: "Math & Science Tutoring", 
                     category: "Tutoring", 
-                    price: "$75/hour", 
+                    priceAmount: 4125,
+                    price: "₱4,125", 
                     rating: 4.9,
                     availability: "Weekends & Evenings",
                     description: "PhD in Physics, 12+ years tutoring SAT/ACT, AP Calculus.",
@@ -149,8 +153,8 @@
                         "SAT/ACT Prep Specialist"
                     ],
                     servicesOffered: [
-                        { name: "SAT/ACT Prep", price: "$85/hour", description: "Comprehensive test preparation" },
-                        { name: "AP Physics/Math", price: "$75/hour", description: "Advanced placement tutoring" }
+                        { id: "svc_3_sat_act_prep_1", name: "SAT/ACT Prep", priceAmount: 4675, price: "₱4,675", description: "Comprehensive test preparation", providerId: 3, category: "Tutoring", duration: "Per hour" },
+                        { id: "svc_3_ap_physics_math_2", name: "AP Physics/Math", priceAmount: 4125, price: "₱4,125", description: "Advanced placement tutoring", providerId: 3, category: "Tutoring", duration: "Per hour" }
                     ],
                     reviews: [
                         { reviewer: "Parent", rating: 5, text: "SAT score improved by 200 points!" },
@@ -164,7 +168,8 @@
                     password: "demo123",
                     service: "Demo Service - Try Me!", 
                     category: "Design", 
-                    price: "Free", 
+                    priceAmount: 0,
+                    price: "₱0", 
                     rating: 5.0,
                     availability: "24/7",
                     description: "This is a demo provider account. Click to see how ServiceHub works!",
@@ -187,8 +192,8 @@
                         "ServiceHub Ambassador"
                     ],
                     servicesOffered: [
-                        { name: "Demo Service", price: "Free", description: "Try out the platform with this demo service" },
-                        { name: "Platform Tutorial", price: "Free", description: "Learn how ServiceHub works" }
+                        { id: "svc_4_demo_service_1", name: "Demo Service", priceAmount: 0, price: "₱0", description: "Try out the platform with this demo service", providerId: 4, category: "Design", duration: "Flexible" },
+                        { id: "svc_4_platform_tutorial_2", name: "Platform Tutorial", priceAmount: 0, price: "₱0", description: "Learn how ServiceHub works", providerId: 4, category: "Design", duration: "Flexible" }
                     ],
                     reviews: [
                         { reviewer: "Test User", rating: 5, text: "Great way to test the platform!" }
@@ -247,7 +252,7 @@
                     preferredDate: "2025-05-15", 
                     preferredTime: "2:00 PM", 
                     location: "Boston, MA", 
-                    budget: "$150", 
+                    budget: "₱8,250",
                     status: "pending", 
                     serviceDetails: "Need proofreading for my 50-page thesis. Deadline is May 20th. Need thorough grammar and style check." 
                 },
@@ -260,7 +265,7 @@
                     preferredDate: "2025-05-10", 
                     preferredTime: "10:00 AM", 
                     location: "Los Angeles, CA", 
-                    budget: "$200", 
+                    budget: "₱11,000",
                     status: "completed", 
                     serviceDetails: "Deep cleaning for a 2-bedroom apartment. Move-out cleaning. Need special attention to kitchen and bathrooms." 
                 },
@@ -273,7 +278,7 @@
                     preferredDate: "2025-05-20", 
                     preferredTime: "4:00 PM", 
                     location: "Chicago, IL", 
-                    budget: "$225", 
+                    budget: "₱12,375",
                     status: "accepted", 
                     serviceDetails: "Weekly tutoring for calculus. Need 2 sessions per week. Preparing for final exam." 
                 },
@@ -286,7 +291,7 @@
                     preferredDate: "2025-06-01", 
                     preferredTime: "1:00 PM", 
                     location: "San Francisco, CA", 
-                    budget: "$350", 
+                    budget: "₱19,250",
                     status: "completed", 
                     serviceDetails: "Need logo and brand guidelines for new startup. Have existing color preferences." 
                 },
@@ -299,7 +304,7 @@
                     preferredDate: "2025-05-25", 
                     preferredTime: "3:00 PM", 
                     location: "Seattle, WA", 
-                    budget: "$800", 
+                    budget: "₱44,000",
                     status: "pending", 
                     serviceDetails: "Wedding photography for 50 guests. Need 4 hours coverage." 
                 }
@@ -319,13 +324,41 @@
             return `svc_${providerId}_${safeName}_${index + 1}`;
         },
 
+        parsePriceToPHPAmount: function(value, fallbackAmount = 0) {
+            if (typeof value === 'number' && Number.isFinite(value)) return Math.round(value);
+            if (!value) return fallbackAmount;
+            const text = String(value).trim();
+            if (!text) return fallbackAmount;
+            if (/free/i.test(text)) return 0;
+
+            const numbers = text.match(/[\d,.]+/g);
+            if (!numbers || numbers.length === 0) return fallbackAmount;
+            const parsed = numbers
+                .map(n => parseFloat(n.replace(/,/g, '')))
+                .filter(n => Number.isFinite(n));
+            if (parsed.length === 0) return fallbackAmount;
+
+            const base = parsed.length > 1
+                ? parsed.reduce((sum, n) => sum + n, 0) / parsed.length
+                : parsed[0];
+            const isUSD = text.includes('$');
+            const amount = isUSD ? base * this._usdToPhpRate : base;
+            return Math.round(amount);
+        },
+
+        formatPHP: function(amount) {
+            const normalized = Number.isFinite(Number(amount)) ? Number(amount) : 0;
+            return `₱${Math.round(normalized).toLocaleString('en-PH')}`;
+        },
+
         migrateDataModel: function() {
             this._providers = (this._providers || []).map((provider) => {
                 const offered = Array.isArray(provider.servicesOffered) ? provider.servicesOffered : [];
                 const normalized = offered.map((service, index) => ({
+                    priceAmount: this.parsePriceToPHPAmount(service.priceAmount ?? service.price, this.parsePriceToPHPAmount(provider.priceAmount ?? provider.price, 0)),
                     id: service.id || this.makeServiceId(provider.id, service.name || provider.service, index),
                     name: service.name || provider.service || 'General Service',
-                    price: service.price || provider.price || 'Contact for quote',
+                    price: this.formatPHP(this.parsePriceToPHPAmount(service.priceAmount ?? service.price, this.parsePriceToPHPAmount(provider.priceAmount ?? provider.price, 0))),
                     description: service.description || provider.description || 'Service details available upon request.',
                     providerId: provider.id,
                     category: service.category || provider.category || 'General',
@@ -334,17 +367,23 @@
 
                 if (normalized.length === 0) {
                     normalized.push({
+                        priceAmount: this.parsePriceToPHPAmount(provider.priceAmount ?? provider.price, 0),
                         id: this.makeServiceId(provider.id, provider.service || 'General Service', 0),
                         name: provider.service || 'General Service',
-                        price: provider.price || 'Contact for quote',
+                        price: this.formatPHP(this.parsePriceToPHPAmount(provider.priceAmount ?? provider.price, 0)),
                         description: provider.description || 'Service details available upon request.',
                         providerId: provider.id,
                         category: provider.category || 'General',
                         duration: 'Flexible'
                     });
                 }
-
-                return { ...provider, servicesOffered: normalized };
+                const basePriceAmount = normalized[0]?.priceAmount ?? this.parsePriceToPHPAmount(provider.priceAmount ?? provider.price, 0);
+                return {
+                    ...provider,
+                    priceAmount: basePriceAmount,
+                    price: this.formatPHP(basePriceAmount),
+                    servicesOffered: normalized
+                };
             });
 
             this._requests = (this._requests || []).map((request) => {
@@ -365,18 +404,23 @@
                 }
 
                 const resolvedProvider = matchedService ? this.getProviderById(matchedService.providerId) : (providerId ? this.getProviderById(providerId) : null);
+                const lockedPriceAmount = request.priceAmount
+                    ?? matchedService?.priceAmount
+                    ?? this.parsePriceToPHPAmount(request.price || request.provider?.price || request.budget, 0);
                 return {
                     ...request,
                     providerId: matchedService?.providerId || providerId || null,
                     serviceId: matchedService?.id || request.serviceId || null,
                     serviceName: matchedService?.name || request.serviceName || request.provider?.service || 'General Service',
-                    price: request.price || matchedService?.price || request.provider?.price || null,
+                    priceAmount: lockedPriceAmount,
+                    price: this.formatPHP(lockedPriceAmount),
                     provider: {
                         ...(request.provider || {}),
                         id: matchedService?.providerId || providerId || request.provider?.id || null,
                         name: request.provider?.name || resolvedProvider?.name || 'Service Provider',
                         service: matchedService?.name || request.provider?.service || request.serviceName || 'General Service',
-                        price: request.provider?.price || matchedService?.price || request.price || null
+                        priceAmount: lockedPriceAmount,
+                        price: this.formatPHP(lockedPriceAmount)
                     }
                 };
             });
@@ -664,6 +708,8 @@
                 const services = Array.isArray(provider.servicesOffered) ? provider.servicesOffered : [];
                 return services.map(service => ({
                     ...service,
+                    priceAmount: service.priceAmount ?? this.parsePriceToPHPAmount(service.price, 0),
+                    price: this.formatPHP(service.priceAmount ?? this.parsePriceToPHPAmount(service.price, 0)),
                     providerId: service.providerId || provider.id,
                     providerName: provider.name,
                     providerRating: provider.rating,
@@ -695,7 +741,8 @@
             const normalizedService = {
                 id: serviceId,
                 name: serviceData.name,
-                price: serviceData.price,
+                priceAmount: this.parsePriceToPHPAmount(serviceData.priceAmount ?? serviceData.price, 0),
+                price: this.formatPHP(this.parsePriceToPHPAmount(serviceData.priceAmount ?? serviceData.price, 0)),
                 description: serviceData.description || '',
                 providerId: provider.id,
                 category: serviceData.category || provider.category || 'General',
@@ -968,6 +1015,8 @@
                 customerEmail: request.customerEmail || (request.requester?.email) || 'Unknown',
                 customerPhone: request.customerPhone || (request.requester?.phone) || 'Not provided',
                 serviceName: request.serviceName || request.provider?.service || 'Unknown Service',
+                priceAmount: request.priceAmount ?? this.parsePriceToPHPAmount(request.price || request.provider?.price || request.budget, 0),
+                price: request.price || this.formatPHP(request.priceAmount ?? this.parsePriceToPHPAmount(request.price || request.provider?.price || request.budget, 0)),
                 preferredDate: request.preferredDate || 'Not set',
                 preferredTime: request.preferredTime || 'Any time',
                 location: request.location || 'Not provided',
@@ -1055,7 +1104,8 @@
                 serviceId: requestData.serviceId || service?.id || null,
                 providerId: requestData.providerId || service?.providerId || requestData.provider?.id || null,
                 serviceName: requestData.serviceName || service?.name || 'General Service',
-                price: requestData.price || service?.price || null,
+                priceAmount: requestData.priceAmount ?? service?.priceAmount ?? this.parsePriceToPHPAmount(requestData.price || requestData.budget, 0),
+                price: this.formatPHP(requestData.priceAmount ?? service?.priceAmount ?? this.parsePriceToPHPAmount(requestData.price || requestData.budget, 0)),
                 customerEmail: requestData.customerEmail || 
                             (requestData.requester && requestData.requester.email),
                 customerName: requestData.customerName || 
@@ -1067,7 +1117,8 @@
                     id: requestData.providerId || service?.providerId || requestData.provider?.id || null,
                     name: requestData.provider?.name || (service ? this.getProviderById(service.providerId)?.name : '') || 'Service Provider',
                     service: requestData.serviceName || service?.name || requestData.provider?.service || 'General Service',
-                    price: requestData.price || service?.price || requestData.provider?.price || null
+                    priceAmount: requestData.priceAmount ?? service?.priceAmount ?? this.parsePriceToPHPAmount(requestData.price || requestData.budget, 0),
+                    price: this.formatPHP(requestData.priceAmount ?? service?.priceAmount ?? this.parsePriceToPHPAmount(requestData.price || requestData.budget, 0))
                 }
             };
             

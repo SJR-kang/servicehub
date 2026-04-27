@@ -794,7 +794,7 @@
             if (listingFilters.search && !providerName.toLowerCase().includes(searchTerm) && !serviceName.toLowerCase().includes(searchTerm)) return false;
             if (listingFilters.categoryNav !== "all" && category !== listingFilters.categoryNav) return false;
             if (listingFilters.categories.length > 0 && !listingFilters.categories.includes(category)) return false;
-            let priceNum = parseInt(service.price) || 0;
+            let priceNum = service.priceAmount ?? (window.ServiceHubDB ? ServiceHubDB.parsePriceToPHPAmount(service.price, 0) : 0);
             if (priceNum < listingFilters.minPrice || priceNum > listingFilters.maxPrice) return false;
             if (listingFilters.rating > 0 && (service.providerRating || 0) < listingFilters.rating) return false;
             return true;
@@ -810,7 +810,7 @@
         const html = `
             <aside class="filter-sidebar">
                 <div class="filter-box"><h3><i class="fas fa-filter"></i> Categories</h3><ul class="filter-categories" id="filterCategories">${categoriesList.map(cat => `<li><label><input type="checkbox" value="${cat}" ${listingFilters.categories.includes(cat) ? 'checked' : ''}> ${cat}</label></li>`).join('')}</ul></div>
-                <div class="filter-box"><h3><i class="fas fa-dollar-sign"></i> Price</h3><div class="price-range"><label>Min: $<input type="number" id="minPrice" value="${listingFilters.minPrice}"></label><label>Max: $<input type="number" id="maxPrice" value="${listingFilters.maxPrice}"></label><button id="applyPriceFilter" class="filter-btn">Apply</button></div></div>
+                <div class="filter-box"><h3><i class="fas fa-money-bill-wave"></i> Price (PHP)</h3><div class="price-range"><label>Min: ₱<input type="number" id="minPrice" value="${listingFilters.minPrice}"></label><label>Max: ₱<input type="number" id="maxPrice" value="${listingFilters.maxPrice}"></label><button id="applyPriceFilter" class="filter-btn">Apply</button></div></div>
                 <div class="filter-box"><h3><i class="fas fa-star"></i> Rating</h3><select id="ratingFilter"><option value="0" ${listingFilters.rating===0?'selected':''}>All ratings</option><option value="4" ${listingFilters.rating===4?'selected':''}>4+ stars</option><option value="3" ${listingFilters.rating===3?'selected':''}>3+ stars</option></select></div>
                 <button id="resetFilters" class="reset-btn"><i class="fas fa-undo-alt"></i> Reset Filters</button>
             </aside>
@@ -823,10 +823,9 @@
                     ${paginated.map(service => {
                         const avatarImg = service.providerAvatar || 'https://randomuser.me/api/portraits/lego/1.jpg';
                         const description = (service.description || '').substring(0, 100);
-                        let cleanPrice = service.price;
-                        if (cleanPrice && cleanPrice.startsWith('$')) {
-                            cleanPrice = cleanPrice.substring(1);
-                        }
+                        const displayPrice = window.ServiceHubDB
+                            ? ServiceHubDB.formatPHP(service.priceAmount ?? 0)
+                            : (service.price || '₱0');
                         return `
                         <div class="provider-card" data-provider-id="${service.providerId}" data-service-id="${service.id}">
                             <div class="card-header">
@@ -841,7 +840,7 @@
                             <div class="card-body">
                                 <div class="service-title">${service.name}</div>
                                 <div class="description">${description}...</div>
-                                <div class="price">₱${cleanPrice}</div>
+                                <div class="price">${displayPrice}</div>
                                 <button class="filter-btn request-service-btn" data-service-id="${service.id}" style="margin-top:12px;">Request This Service</button>
                             </div>
                         </div>

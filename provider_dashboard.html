@@ -778,6 +778,7 @@
         preferredTime: r.preferredTime || "",
         location: r.location || "",
         budget: r.budget || "",
+        priceAmount: r.priceAmount || null,
         status: toUiStatus(r.status),
         paymentConfirmed: ["PAID", "COMPLETED"].includes(String(r.status || "").toUpperCase()),
         paymentMethod: r.paymentType || null,
@@ -815,13 +816,13 @@
         const allRequests = loadedFromApi ? [] : ServiceHubDB.getAllRequests();
         if (!loadedFromApi && allRequests.length === 0) {
             serviceRequests = [
-                { requestId: "REQ-001", customerName: "John Doe", customerEmail: "john@example.com", serviceName: "Proofreading", preferredDate: "2025-05-15", preferredTime: "2:00 PM", location: "Boston, MA", budget: "$150", status: "pending", paymentConfirmed: false, paymentMethod: null, amountPaid: null },
-                { requestId: "REQ-002", customerName: "Sarah Johnson", customerEmail: "sarah@example.com", serviceName: "Deep Cleaning", preferredDate: "2025-05-10", preferredTime: "10:00 AM", location: "Los Angeles, CA", budget: "$200", status: "inprogress", paymentConfirmed: false, paymentMethod: null, amountPaid: null },
-                { requestId: "REQ-003", customerName: "Michael Brown", customerEmail: "michael@example.com", serviceName: "Math Tutoring", preferredDate: "2025-05-20", preferredTime: "4:00 PM", location: "Chicago, IL", budget: "$225", status: "awaiting_payment", paymentConfirmed: false, requestedAmount: 45, paymentMethod: null, amountPaid: null },
+                { requestId: "REQ-001", customerName: "John Doe", customerEmail: "john@example.com", serviceName: "Proofreading", preferredDate: "2025-05-15", preferredTime: "2:00 PM", location: "Boston, MA", budget: "₱8,250", priceAmount: 8250, status: "pending", paymentConfirmed: false, paymentMethod: null, amountPaid: null },
+                { requestId: "REQ-002", customerName: "Sarah Johnson", customerEmail: "sarah@example.com", serviceName: "Deep Cleaning", preferredDate: "2025-05-10", preferredTime: "10:00 AM", location: "Los Angeles, CA", budget: "₱11,000", priceAmount: 11000, status: "inprogress", paymentConfirmed: false, paymentMethod: null, amountPaid: null },
+                { requestId: "REQ-003", customerName: "Michael Brown", customerEmail: "michael@example.com", serviceName: "Math Tutoring", preferredDate: "2025-05-20", preferredTime: "4:00 PM", location: "Chicago, IL", budget: "₱12,375", priceAmount: 12375, status: "awaiting_payment", paymentConfirmed: false, requestedAmount: 2475, paymentMethod: null, amountPaid: null },
                 // Downpayment paid example - shows in In Progress tab
-                { requestId: "REQ-004", customerName: "Emily Davis", customerEmail: "emily@example.com", serviceName: "Proofreading", preferredDate: "2025-06-01", preferredTime: "1:00 PM", location: "San Francisco, CA", budget: "$350", status: "inprogress", paymentConfirmed: true, paymentMethod: "downpayment", amountPaid: 70 },
+                { requestId: "REQ-004", customerName: "Emily Davis", customerEmail: "emily@example.com", serviceName: "Proofreading", preferredDate: "2025-06-01", preferredTime: "1:00 PM", location: "San Francisco, CA", budget: "₱19,250", priceAmount: 19250, status: "inprogress", paymentConfirmed: true, paymentMethod: "downpayment", amountPaid: 3850 },
                 // Full payment paid example - shows in In Progress tab
-                { requestId: "REQ-005", customerName: "David Wilson", customerEmail: "david@example.com", serviceName: "Deep Cleaning", preferredDate: "2025-06-05", preferredTime: "9:00 AM", location: "Seattle, WA", budget: "$200", status: "inprogress", paymentConfirmed: true, paymentMethod: "full", amountPaid: 200 }
+                { requestId: "REQ-005", customerName: "David Wilson", customerEmail: "david@example.com", serviceName: "Deep Cleaning", preferredDate: "2025-06-05", preferredTime: "9:00 AM", location: "Seattle, WA", budget: "₱11,000", priceAmount: 11000, status: "inprogress", paymentConfirmed: true, paymentMethod: "full", amountPaid: 11000 }
             ];
         } else if (!loadedFromApi) {
             const providerId = currentProvider?.id;
@@ -859,7 +860,7 @@
                 <div class="product-info">
                     <span class="product-category">${escapeHtml(p.category)}</span>
                     <h3 class="product-title">${escapeHtml(p.name)}</h3>
-                    <div class="product-price">${escapeHtml(p.price)}</div>
+                    <div class="product-price">${ServiceHubDB.formatPHP(p.priceAmount ?? ServiceHubDB.parsePriceToPHPAmount(p.price, 0))}</div>
                     <p class="product-description">${escapeHtml(p.description.substring(0, 100))}</p>
                     <div class="product-actions">
                         <button class="btn-edit" onclick="editProduct('${p.id}')">Edit</button>
@@ -906,7 +907,8 @@
         const desc = document.getElementById('productDescription').value.trim();
         if (!name || !price || !desc) { showToast('Please fill all fields'); return; }
         if (!currentProvider) { showToast('Provider account not found'); return; }
-        const product = ServiceHubDB.upsertProviderService(currentProvider.id, { id, name, category, price, description: desc });
+        const parsedAmount = ServiceHubDB.parsePriceToPHPAmount(price, 0);
+        const product = ServiceHubDB.upsertProviderService(currentProvider.id, { id, name, category, priceAmount: parsedAmount, description: desc });
         if (!product) { showToast('Unable to save service'); return; }
         providerProducts = ServiceHubDB.getServicesByProvider(currentProvider.id);
         showToast(id ? 'Updated' : 'Added');
@@ -986,9 +988,9 @@
                 // Different display for downpayment vs full payment
                 if (req.paymentMethod === 'downpayment') {
                     statusClass = 'status-paid-downpayment';
-                    const budgetNum = parseFloat(req.budget?.replace(/[^0-9.-]+/g, '')) || 0;
+                    const budgetNum = req.priceAmount ?? ServiceHubDB.parsePriceToPHPAmount(req.budget, 0);
                     const remaining = budgetNum - (req.amountPaid || 0);
-                    statusText = `PAID ($${req.amountPaid} Downpayment) | Remaining: $${remaining}`;
+                    statusText = `PAID (${ServiceHubDB.formatPHP(req.amountPaid || 0)} Downpayment) | Remaining: ${ServiceHubDB.formatPHP(remaining)}`;
                 } else {
                     statusClass = 'status-paid-full';
                     statusText = 'FULLY PAID';
@@ -1009,7 +1011,7 @@
                 <td><strong>${escapeHtml(req.serviceName)}</strong></td>
                 <td>${escapeHtml(req.preferredDate)}<br><small>${escapeHtml(req.preferredTime)}</small></td>
                 <td>${escapeHtml(req.location)}</td>
-                <td>${escapeHtml(req.budget)}</td>
+                <td>${ServiceHubDB.formatPHP(req.priceAmount ?? ServiceHubDB.parsePriceToPHPAmount(req.budget, 0))}</td>
                 <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                 <td><button class="view-btn" onclick="event.stopPropagation(); viewRequestDetails('${req.requestId}')">View</button></td>
             </tr>`;

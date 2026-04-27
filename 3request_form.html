@@ -598,7 +598,7 @@
 
                         <div class="form-group">
                             <label><i class="fas fa-tag"></i> Estimated Budget</label>
-                            <input type="text" id="budget" placeholder="e.g., $100-200 or $150/session" required>
+                            <input type="text" id="budget" placeholder="e.g., ₱1,500 - ₱3,000" required>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
@@ -607,7 +607,7 @@
                             </div>
                             <div class="form-group">
                                 <label><i class="fas fa-money-bill-wave"></i> Reference Price</label>
-                                <input type="text" id="servicePriceRef">
+                                <input type="text" id="servicePriceRef" readonly>
                             </div>
                         </div>
 
@@ -759,7 +759,10 @@
         if (serviceIdEl) serviceIdEl.value = selectedService?.id || '';
         if (providerIdEl) providerIdEl.value = selectedProvider?.id || '';
         if (serviceNameRef) serviceNameRef.value = selectedProvider?.service || '';
-        if (servicePriceRef) servicePriceRef.value = selectedProvider?.price || '';
+        if (servicePriceRef) {
+            const amount = selectedService?.priceAmount ?? ServiceHubDB.parsePriceToPHPAmount(selectedProvider?.price, 0);
+            servicePriceRef.value = ServiceHubDB.formatPHP(amount);
+        }
     }
     
     function autoFillUserData() {
@@ -794,8 +797,9 @@
             const requestData = {
                 serviceId: document.getElementById('serviceId')?.value || '',
                 providerId: document.getElementById('providerId')?.value || selectedProvider.id || '',
-                serviceName: document.getElementById('serviceNameRef')?.value || selectedProvider.service,
-                price: document.getElementById('servicePriceRef')?.value || selectedProvider.price,
+                serviceName: selectedService?.name || selectedProvider.service,
+                priceAmount: selectedService?.priceAmount ?? ServiceHubDB.parsePriceToPHPAmount(selectedProvider.price, 0),
+                price: ServiceHubDB.formatPHP(selectedService?.priceAmount ?? ServiceHubDB.parsePriceToPHPAmount(selectedProvider.price, 0)),
                 customerName: document.getElementById('requesterName')?.value || '',
                 customerEmail: document.getElementById('requesterEmail')?.value || '',
                 customerPhone: document.getElementById('requesterPhone')?.value || '',
@@ -829,6 +833,7 @@
                         providerId: String(requestData.providerId || ''),
                         serviceId: requestData.serviceId,
                         serviceName: requestData.serviceName,
+                        priceAmount: requestData.priceAmount,
                         preferredDate: requestData.preferredDate,
                         preferredTime: requestData.preferredTime,
                         location: requestData.location,

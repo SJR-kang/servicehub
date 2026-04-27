@@ -567,6 +567,7 @@
         preferredTime: r.preferredTime || '',
         location: r.location || '',
         budget: r.budget || '',
+        priceAmount: r.priceAmount || null,
         serviceDetails: r.serviceDetails || '',
         status: toUiStatus(r.status),
         paymentConfirmed: ['PAID', 'COMPLETED'].includes(String(r.status || '').toUpperCase()),
@@ -743,7 +744,7 @@
         else if (newStatus === 'request_payment') {
             const paymentType = confirm("Request Downpayment? Click OK for Downpayment, Cancel for Full Payment");
             if (paymentType) {
-                const amount = prompt("Enter downpayment amount (20-50% of budget):", currentRequest.budget);
+                const amount = prompt("Enter downpayment amount in PHP (20-50% of service price):", String(Math.round((currentRequest.priceAmount || ServiceHubDB.parsePriceToPHPAmount(currentRequest.budget, 0)) * 0.3)));
                 if (amount) {
                     if (window.ServiceHubAPI && ServiceHubAPI.getToken()) {
                         await ServiceHubAPI.updateRequestStatus({
@@ -755,7 +756,7 @@
                         currentRequest.status = "awaiting_payment";
                         currentRequest.requestedAmount = Number(amount);
                         currentRequest.paymentType = "downpayment";
-                        showToast(`💵 Downpayment request of ${amount} sent to customer.`);
+                        showToast(`💵 Downpayment request of ${ServiceHubDB.formatPHP(amount)} sent to customer.`);
                         renderRequestDetails();
                         return;
                     }
@@ -763,10 +764,10 @@
                         requestedAmount: amount,
                         paymentType: 'downpayment'
                     });
-                    showToast(`💵 Downpayment request of ${amount} sent to customer.`);
+                    showToast(`💵 Downpayment request of ${ServiceHubDB.formatPHP(amount)} sent to customer.`);
                 }
             } else {
-                const amount = prompt("Enter full payment amount:", currentRequest.budget);
+                const amount = prompt("Enter full payment amount in PHP:", String(currentRequest.priceAmount || ServiceHubDB.parsePriceToPHPAmount(currentRequest.budget, 0)));
                 if (amount) {
                     if (window.ServiceHubAPI && ServiceHubAPI.getToken()) {
                         await ServiceHubAPI.updateRequestStatus({
@@ -778,7 +779,7 @@
                         currentRequest.status = "awaiting_payment";
                         currentRequest.requestedAmount = Number(amount);
                         currentRequest.paymentType = "full";
-                        showToast(`💰 Full payment request of ${amount} sent to customer.`);
+                        showToast(`💰 Full payment request of ${ServiceHubDB.formatPHP(amount)} sent to customer.`);
                         renderRequestDetails();
                         return;
                     }
@@ -786,7 +787,7 @@
                         requestedAmount: amount,
                         paymentType: 'full'
                     });
-                    showToast(`💰 Full payment request of ${amount} sent to customer.`);
+                    showToast(`💰 Full payment request of ${ServiceHubDB.formatPHP(amount)} sent to customer.`);
                 }
             }
             currentRequest = ServiceHubDB.formatRequestForDisplay(
@@ -807,7 +808,7 @@
                     currentRequest.status = "awaiting_payment";
                     currentRequest.requestedAmount = Number(remainingAmount);
                     currentRequest.paymentType = "remaining";
-                    showToast(`💰 Remaining payment request of ${remainingAmount} sent to customer.`);
+                    showToast(`💰 Remaining payment request of ${ServiceHubDB.formatPHP(remainingAmount)} sent to customer.`);
                     renderRequestDetails();
                     return;
                 }
@@ -815,7 +816,7 @@
                     requestedAmount: remainingAmount,
                     paymentType: 'remaining'
                 });
-                showToast(`💰 Remaining payment request of ${remainingAmount} sent to customer.`);
+                showToast(`💰 Remaining payment request of ${ServiceHubDB.formatPHP(remainingAmount)} sent to customer.`);
                 currentRequest = ServiceHubDB.formatRequestForDisplay(
                     ServiceHubDB.getRequestById(currentRequest.requestId)
                 );
@@ -854,7 +855,7 @@
     let paymentType = currentRequest.paymentType;
     let amountPaid = currentRequest.amountPaid || currentRequest.paymentAmount;
     const requestedAmount = currentRequest.requestedAmount;
-    const budget = parseFloat(currentRequest.budget?.replace(/[^0-9.-]+/g, '')) || 0;
+    const budget = currentRequest.priceAmount ?? ServiceHubDB.parsePriceToPHPAmount(currentRequest.price || currentRequest.budget, 0);
     
     // FALLBACK: If payment is confirmed but paymentType is not set, try to determine it
     if (paymentConfirmed === true && !paymentType) {
@@ -934,7 +935,7 @@
         paymentOptionsHtml = `
             <div class="payment-options" style="background: #fff8e5;">
                 <h4><i class="fas fa-hourglass-half"></i> Awaiting Customer Payment</h4>
-                <p>Requested Amount: <strong>$${requestedAmount || '--'}</strong></p>
+                <p>Requested Amount: <strong>${ServiceHubDB.formatPHP(requestedAmount || 0)}</strong></p>
                 <p>The customer has been notified. Once they complete the payment, status will update.</p>
                 <div class="payment-buttons">
                     <button class="btn-downpayment" onclick="updateRequestStatus('request_payment')" style="background: #f59e0b;">
@@ -952,7 +953,7 @@
         // Check if it was downpayment or full payment
         if (paymentType === 'downpayment') {
             statusClass = 'status-paid-downpayment';
-            statusText = `PAID ($${amountPaid || 0} Downpayment) | Remaining: $${remainingAmount > 0 ? remainingAmount : 0}`;
+            statusText = `PAID (${ServiceHubDB.formatPHP(amountPaid || 0)} Downpayment) | Remaining: ${ServiceHubDB.formatPHP(remainingAmount > 0 ? remainingAmount : 0)}`;
             statusIcon = 'fa-check-circle';
             
             // Payment summary card
@@ -961,15 +962,15 @@
                     <h4><i class="fas fa-receipt"></i> Payment Summary</h4>
                     <div class="payment-row">
                         <span>Downpayment Paid:</span>
-                        <strong>$${amountPaid || 0}</strong>
+                        <strong>${ServiceHubDB.formatPHP(amountPaid || 0)}</strong>
                     </div>
                     <div class="payment-row">
                         <span>Remaining Balance:</span>
-                        <strong>$${remainingAmount > 0 ? remainingAmount : 0}</strong>
+                        <strong>${ServiceHubDB.formatPHP(remainingAmount > 0 ? remainingAmount : 0)}</strong>
                     </div>
                     <div class="payment-row">
                         <span>Total Budget:</span>
-                        <span>$${budget}</span>
+                        <span>${ServiceHubDB.formatPHP(budget)}</span>
                     </div>
                 </div>
             `;
@@ -981,7 +982,7 @@
                         <h4><i class="fas fa-credit-card"></i> Request Remaining Payment</h4>
                         <div class="payment-buttons">
                             <button class="btn-request-remaining" onclick="updateRequestStatus('request_remaining', { remainingAmount: ${remainingAmount} })">
-                                <i class="fas fa-dollar-sign"></i> Request Remaining Payment ($${remainingAmount})
+                                <i class="fas fa-money-bill-wave"></i> Request Remaining Payment (${ServiceHubDB.formatPHP(remainingAmount)})
                             </button>
                             <a href="provider_messages.html" class="btn-message" style="background: #1a2c3e;">
                                 <i class="fas fa-comments"></i> Message Customer
@@ -1012,7 +1013,7 @@
         else {
             // Default to full payment display if paymentType is not 'downpayment'
             statusClass = 'status-paid-full';
-            statusText = amountPaid && amountPaid < budget ? `PAID ($${amountPaid}) | Remaining: $${remainingAmount}` : 'FULLY PAID';
+            statusText = amountPaid && amountPaid < budget ? `PAID (${ServiceHubDB.formatPHP(amountPaid)}) | Remaining: ${ServiceHubDB.formatPHP(remainingAmount)}` : 'FULLY PAID';
             statusIcon = 'fa-check-circle';
             
             paymentSummaryHtml = `
@@ -1020,15 +1021,15 @@
                     <h4><i class="fas fa-receipt"></i> Payment Summary</h4>
                     <div class="payment-row">
                         <span>Amount Paid:</span>
-                        <strong>$${amountPaid || 0}</strong>
+                        <strong>${ServiceHubDB.formatPHP(amountPaid || 0)}</strong>
                     </div>
                     ${remainingAmount > 0 ? `<div class="payment-row">
                         <span>Remaining Balance:</span>
-                        <strong>$${remainingAmount}</strong>
+                        <strong>${ServiceHubDB.formatPHP(remainingAmount)}</strong>
                     </div>` : ''}
                     <div class="payment-row">
                         <span>Total Budget:</span>
-                        <span>$${budget}</span>
+                        <span>${ServiceHubDB.formatPHP(budget)}</span>
                     </div>
                 </div>
             `;
@@ -1039,7 +1040,7 @@
                         <h4><i class="fas fa-credit-card"></i> Request Remaining Payment</h4>
                         <div class="payment-buttons">
                             <button class="btn-request-remaining" onclick="updateRequestStatus('request_remaining', { remainingAmount: ${remainingAmount} })">
-                                <i class="fas fa-dollar-sign"></i> Request Remaining Payment ($${remainingAmount})
+                                <i class="fas fa-money-bill-wave"></i> Request Remaining Payment (${ServiceHubDB.formatPHP(remainingAmount)})
                             </button>
                             <a href="provider_messages.html" class="btn-message" style="background: #1a2c3e;">
                                 <i class="fas fa-comments"></i> Message Customer
@@ -1080,11 +1081,11 @@
                     <h4><i class="fas fa-receipt"></i> Payment Summary</h4>
                     <div class="payment-row">
                         <span>Total Paid:</span>
-                        <strong>$${amountPaid}</strong>
+                        <strong>${ServiceHubDB.formatPHP(amountPaid)}</strong>
                     </div>
                     <div class="payment-row">
                         <span>Total Budget:</span>
-                        <span>$${budget}</span>
+                        <span>${ServiceHubDB.formatPHP(budget)}</span>
                     </div>
                 </div>
             `;
@@ -1156,6 +1157,10 @@
                 <div class="info-item">
                     <div class="info-label">Budget</div>
                     <div class="info-value">${escapeHtml(currentRequest.budget)}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Locked Service Price</div>
+                    <div class="info-value">${ServiceHubDB.formatPHP(currentRequest.priceAmount ?? ServiceHubDB.parsePriceToPHPAmount(currentRequest.price || currentRequest.budget, 0))}</div>
                 </div>
                 <div class="info-item full-width">
                     <div class="info-label">Service Details</div>
