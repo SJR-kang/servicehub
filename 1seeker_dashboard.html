@@ -706,7 +706,7 @@
         search: "",
         categories: [],
         minPrice: 0,
-        maxPrice: 1000,
+        maxPrice: 50000,
         rating: 0,
         categoryNav: "all"
     };
@@ -874,7 +874,7 @@
         }));
         document.getElementById('applyPriceFilter')?.addEventListener('click', () => {
             listingFilters.minPrice = parseInt(document.getElementById('minPrice').value)||0;
-            listingFilters.maxPrice = parseInt(document.getElementById('maxPrice').value)||1000;
+            listingFilters.maxPrice = parseInt(document.getElementById('maxPrice').value)||50000;
             currentPage=1; renderListing();
         });
         document.getElementById('ratingFilter')?.addEventListener('change', (e) => {
@@ -882,7 +882,7 @@
             currentPage=1; renderListing();
         });
         document.getElementById('resetFilters')?.addEventListener('click', () => {
-            listingFilters = { search: listingFilters.search, categories: [], minPrice: 0, maxPrice: 1000, rating: 0, categoryNav: listingFilters.categoryNav };
+            listingFilters = { search: listingFilters.search, categories: [], minPrice: 0, maxPrice: 50000, rating: 0, categoryNav: listingFilters.categoryNav };
             currentPage=1; renderListing();
         });
         document.querySelectorAll('#pagination button').forEach(btn => btn.addEventListener('click', () => {
