@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="ServiceHub - Connect seekers and providers. signin or register to access our service marketplace.">
+  <title>ServiceHub | Home</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Additional styles for providers section */
+ 
+
+    
+  
+    
+    .view-all-link {
+      text-align: center;
+      margin-top: 20px;
+    }
+    
+    
+    
+    .badge-new {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: #10b981;
+      color: white;
+      font-size: 0.7rem;
+      padding: 4px 10px;
+      border-radius: 30px;
+      font-weight: 600;
+    }
+    
+    .badge-top {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: #f59e0b;
+      color: white;
+      font-size: 0.7rem;
+      padding: 4px 10px;
+      border-radius: 30px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container nav-flex">
+    <div class="logo">
+      <i class="fas fa-handshake"></i>
+      ServiceHub
+    </div>
+    <div class="nav-links" id="navLinks">
+      <a href="index.html" class="active">Home</a>
+      <a href="#about">About Us</a>
+      <a href="#categories">Categories</a>
+      <a href="#providers-section">Top Providers</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="#testimonials">Sucess Stories</a>
+     
+    <div class="mobile-menu" id="mobileMenu">
+      <i class="fas fa-bars"></i>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <section class="hero" id="home">
+    <div class="container">
+      <h1>Connect with Service <span class="gradient-text">Seekers & Providers</span></h1>
+      <p>Find the right service provider or offer your expertise. Join thousands of successful connections daily.</p>
+
+        <div class="hero-buttons">
+        <div class="auth-buttons" id="authButtonsNav">
+        <button class="btn-login-nav" onclick="window.location.href='signin.html'"><i class="fas fa-sign-in-alt"></i> sign in</button>
+        <button class="btn-register-nav" onclick="window.location.href='signup.html'"><i class="fas fa-user-plus"></i> sign up</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="stats-wrapper">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-number">10K+</div><div class="stat-label">Active Users</div></div>
+      <div class="stat-card"><div class="stat-number">5K+</div><div class="stat-label">Services Completed</div></div>
+      <div class="stat-card"><div class="stat-number">98%</div><div class="stat-label">Satisfaction Rate</div></div>
+      <div class="stat-card"><div class="stat-number">50+</div><div class="stat-label">Categories</div></div>
+    </div>
+  </div>
+
+  <section class="about-section" id="about">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-content">
+          <h2><i class="fas fa-flag-checkered"></i> About ServiceHub</h2>
+          <p>Founded in 2024, ServiceHub was born from a simple idea: connect people who need help with talented professionals who can provide it. We believe that everyone deserves access to reliable, high-quality services without the headache of endless searching.</p>
+          <p>Our platform bridges the gap between seekers and providers through transparency, trust, and technology. Whether you need a plumber at 2 AM or a web developer for your startup, ServiceHub makes the connection seamless.</p>
+          <div class="about-stats">
+            <div class="about-stat"><div class="number">150+</div><div class="label">Cities Covered</div></div>
+            <div class="about-stat"><div class="number">2,500+</div><div class="label">Verified Pros</div></div>
+            <div class="about-stat"><div class="number">4.9★</div><div class="label">Avg Rating</div></div>
+          </div>
+        </div>
+        <div class="about-image">
+          <i class="fas fa-handshake"></i>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="categories-section" id="categories">
+    <div class="container">
+      <h2 class="section-title"> Explore Categories</h2>
+      <p class="section-subtitle">Browse through our wide range of professional services.</p>
+      <div class="categories-grid" id="categoriesGrid"></div>
+    </div>
+  </section>
+
+  <!-- NEW: List of Providers Section -->
+  <section class="providers-showcase" id="providers-section">
+    <div class="container">
+      <h2 class="section-title"> Featured Service Providers</h2>
+      <p class="section-subtitle">Meet our top-rated professionals ready to help with your needs</p>
+      <div class="providers-grid-showcase" id="providersGridShowcase">
+        <!-- Providers will be dynamically loaded here -->
+      </div>
+     
+    </div>
+  </section>
+
+  <section class="how-it-works" id="how-it-works">
+    <div class="container">
+      <h2 class="section-title1">How ServiceHub Works</h2>
+      <div class="steps-grid">
+        <div class="step">
+          <div class="step-number">1</div>
+          <i class="fas fa-user-plus step-icon"></i>
+          <h3>Create Account</h3>
+          <p>Sign up as a seeker or provider and tell us what you need or offer</p>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <i class="fas fa-search step-icon"></i>
+          <h3>Browse & Match</h3>
+          <p>Search through profiles or get matched with ideal candidates</p>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <i class="fas fa-comments step-icon"></i>
+          <h3>Connect & Chat</h3>
+          <p>Message directly, discuss details, and agree on terms</p>
+        </div>
+        <div class="step">
+          <div class="step-number">4</div>
+          <i class="fas fa-star step-icon"></i>
+          <h3>Rate & Review</h3>
+          <p>Complete the service and leave feedback for the community</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="testimonials">
+    <div class="container">
+      <h2 class="section-title">Success Stories</h2>
+      <div class="testimonials-grid Featured Service Providers">
+        <div class="testimonial-card"><i class="fas fa-quote-left"></i><p>Found an amazing web developer within hours! The platform made it so easy.</p><strong>Sarah Johnson</strong></div>
+        <div class="testimonial-card"><i class="fas fa-quote-left"></i><p>As a freelancer, I've gotten 15+ clients through ServiceHub. Brilliant!</p><strong>Michael Chen</strong></div>
+        <div class="testimonial-card"><i class="fas fa-quote-left"></i><p>Found a plumber who fixed my issue in under 2 hours. Highly recommend!</p><strong>Emily Rodriguez</strong></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div id="toastMsg" class="toast-message"></div>
+
+<script src="auth.js"></script>
+<script>
+  // ==================== PROVIDERS DATABASE ====================
+  const PROVIDERS_LIST = [
+    { 
+      id: 1, 
+      name: "Dr. Sarah Mitchell", 
+      service: "Academic Proofreading & Editing", 
+      category: "Academics", 
+      description: "PhD in English Literature with 8+ years experience. Specializes in thesis, dissertations, and ESL academic writing. Fast turnaround with detailed feedback.",
+      price: "$25/page", 
+      rating: 4.9, 
+      contact: "sarah.m@servicehub.com", 
+      availability: "Mon-Fri, 9AM-8PM",
+      isTopRated: true,
+      isNew: false,
+      image: "https://randomuser.me/api/portraits/women/68.jpg"
+    },
+    { 
+      id: 2, 
+      name: "Elite Clean Team", 
+      service: "Deep Cleaning & Sanitization", 
+      category: "Cleaning", 
+      description: "Certified residential and commercial cleaners. Use hospital-grade disinfectants. Move-in/move-out specials available. Satisfaction guaranteed.",
+      price: "$120-250/session", 
+      rating: 4.8, 
+      contact: "eliteclean@servicehub.com", 
+      availability: "Daily, 7AM-9PM",
+      isTopRated: true,
+      isNew: false,
+      image: "https://randomuser.me/api/portraits/men/32.jpg"
+    },
+    { 
+      id: 3, 
+      name: "Dr. James Wilson", 
+      service: "Math & Science Tutoring", 
+      category: "Tutoring", 
+      description: "PhD in Physics, 12+ years tutoring SAT/ACT, AP Calculus, and college-level physics. Customized lesson plans and practice materials provided.",
+      price: "$75/hour", 
+      rating: 4.9, 
+      contact: "james.w@servicehub.com", 
+      availability: "Weekends & Evenings",
+      isTopRated: true,
+      isNew: false,
+      image: "https://randomuser.me/api/portraits/men/45.jpg"
+    },
+    { 
+      id: 4, 
+      name: "CreativeMinds Design", 
+      service: "Brand Identity & UI/UX Design", 
+      category: "Design", 
+      description: "Award-winning design studio. Specializing in logos, brand guidelines, website design, and mobile app UI. 100+ satisfied clients.",
+      price: "$350/project", 
+      rating: 4.9, 
+      contact: "creativeminds@servicehub.com", 
+      availability: "Mon-Fri, 10AM-6PM",
+      isTopRated: true,
+      isNew: false,
+      image: "https://randomuser.me/api/portraits/women/44.jpg"
+    },
+    { 
+      id: 5, 
+      name: "Lens & Light Photography", 
+      service: "Event & Portrait Photography", 
+      category: "Photography", 
+      description: "Professional photographer with 10 years experience. Weddings, corporate events, family portraits, and headshots. Fully edited gallery included.",
+      price: "$400/event", 
+      rating: 4.8, 
+      contact: "lenslight@servicehub.com", 
+      availability: "Flexible scheduling",
+      isTopRated: false,
+      isNew: true,
+      image: "https://randomuser.me/api/portraits/men/52.jpg"
+    },
+    { 
+      id: 6, 
+      name: "Rhythm Dance Crew", 
+      service: "Wedding & Event Choreography", 
+      category: "Choreography", 
+      description: "Professional choreographers for first dances, flash mobs, and group performances. Custom routines taught in 3-5 sessions. Video recording included.",
+      price: "$200/session", 
+      rating: 4.7, 
+      contact: "rhythmdance@servicehub.com", 
+      availability: "Evenings & Weekends",
+      isTopRated: false,
+      isNew: false,
+      image: "https://randomuser.me/api/portraits/women/28.jpg"
+    },
+    { 
+      id: 7, 
+      name: "SwiftExpress Delivery", 
+      service: "Same-Day & Scheduled Delivery", 
+      category: "Delivery", 
+      description: "Reliable courier service for documents, packages, and food. GPS tracked with real-time updates. Insurance coverage up to $1000.",
+      price: "$10-25/delivery", 
+      rating: 4.7, 
+      contact: "swiftexpress@servicehub.com", 
+      availability: "24/7",
+      isTopRated: false,
+      isNew: true,
+      image: "https://randomuser.me/api/portraits/men/23.jpg"
+    },
+    { 
+      id: 8, 
+      name: "HomeFix Pros", 
+      service: "Handyman & Home Repairs", 
+      category: "Handyman", 
+      description: "Licensed and insured handyman services. Plumbing, electrical, furniture assembly, painting, and general repairs. Same-day service available.",
+      price: "$65/hour", 
+      rating: 4.8, 
+      contact: "homefix@servicehub.com", 
+      availability: "Daily, 8AM-8PM",
+      isTopRated: false,
+      isNew: false,
+      image: "https://randomuser.me/api/portraits/men/67.jpg"
+    },
+    { 
+      id: 9, 
+      name: "Wellness Yoga Studio", 
+      service: "Private Yoga & Meditation", 
+      category: "Wellness", 
+      description: "Certified yoga instructor offering one-on-one sessions. Hatha, Vinyasa, and Yin styles. Meditation guidance and breathwork included.",
+      price: "$50/session", 
+      rating: 4.9, 
+      contact: "wellnessyoga@servicehub.com", 
+      availability: "Morning & Evening",
+      isTopRated: true,
+      isNew: true,
+      image: "https://randomuser.me/api/portraits/women/56.jpg"
+    }
+  ];
+
+  // Categories for display
+  const categories = [
+    { name: "Academics", icon: "fas fa-book", desc: "Proofreading, note taking, editing" },
+    { name: "Cleaning", icon: "fas fa-broom", desc: "Deep cleaning, sanitization, organizing" },
+    { name: "Tutoring", icon: "fas fa-chalkboard-user", desc: "Math, science, test prep, languages" },
+    { name: "Design", icon: "fas fa-palette", desc: "Logo, branding, UI/UX, graphics" },
+    { name: "Photography", icon: "fas fa-camera", desc: "Events, portraits, product shoots" },
+    { name: "Choreography", icon: "fas fa-person", desc: "Wedding dances, flash mobs" },
+    { name: "Delivery", icon: "fas fa-truck-moving", desc: "Fast delivery, packing, courier" },
+    { name: "Handyman", icon: "fas fa-tools", desc: "Repairs, assembly, maintenance" },
+    { name: "Wellness", icon: "fas fa-spa", desc: "Yoga, meditation, fitness" }
+  ];
+
+  // Render categories grid
+  function renderCategories() {
+    const grid = document.getElementById('categoriesGrid');
+    if (!grid) return;
+    grid.innerHTML = categories.map(cat => `
+      <div class="category-card" onclick="handleCategoryClick('${cat.name}')">
+        <i class="${cat.icon} category-icon"></i>
+        <h3>${cat.name}</h3>
+        <p>${cat.desc}</p>
+      </div>
+    `).join('');
+  }
+
+  // Render providers showcase (first 6 providers)
+  function renderProvidersShowcase() {
+    const grid = document.getElementById('providersGridShowcase');
+    if (!grid) return;
+    
+    // Show top 6 providers (prioritize top-rated and new)
+    const featuredProviders = [...PROVIDERS_LIST]
+      .sort((a, b) => {
+        if (a.isTopRated && !b.isTopRated) return -1;
+        if (!a.isTopRated && b.isTopRated) return 1;
+        return b.rating - a.rating;
+      })
+      .slice(0, 6);
+    
+    grid.innerHTML = featuredProviders.map(provider => `
+      <div class="provider-showcase-card" data-provider-id="${provider.id}" onclick="viewProviderDetails(${provider.id})">
+        <div class="provider-card-header">
+          <h3>${provider.name}</h3>
+          <div class="provider-rating">
+            ${'★'.repeat(Math.floor(provider.rating))}${provider.rating % 1 >= 0.5 ? '½' : ''}
+            <span>(${provider.rating})</span>
+          </div>
+          ${provider.isTopRated ? '<span class="badge-top"><i class="fas fa-trophy"></i> Top Rated</span>' : ''}
+          ${provider.isNew ? '<span class="badge-new"><i class="fas fa-sparkle"></i> New</span>' : ''}
+        </div>
+        <div class="provider-card-body">
+          <div class="provider-service-title">${provider.service}</div>
+          <div class="provider-description">${provider.description.substring(0, 100)}${provider.description.length > 100 ? '...' : ''}</div>
+          <div class="provider-price">${provider.price}</div>
+      
+        </div>
+      
+      </div>
+    `).join('');
+  }
+
+  // View provider details (redirect to details page or show modal)
+  function viewProviderDetails(providerId) {
+    const user = JSON.parse(localStorage.getItem('servicehub_user'));
+    if (user) {
+      // Store selected provider in session for details page
+      sessionStorage.setItem('selectedProviderId', providerId);
+      window.location.href = `signup.html?id=${providerId}`;
+    } else {
+      showToast("Please Sign Up to view provider details", "info");
+      window.location.href = "signup.html";
+    }
+  }
+
+  // Hire provider action
+  function hireProvider(providerId) {
+    const user = JSON.parse(localStorage.getItem('servicehub_user'));
+    if (user) {
+      const provider = PROVIDERS_LIST.find(p => p.id === providerId);
+      if (provider) {
+        // Get existing cart from localStorage
+        let cart = JSON.parse(localStorage.getItem('servicehub_cart') || '[]');
+        cart.push({
+          id: provider.id,
+          name: provider.name,
+          service: provider.service,
+          price: provider.price,
+          contact: provider.contact
+        });
+        localStorage.setItem('servicehub_cart', JSON.stringify(cart));
+        showToast(`✓ ${provider.service} added to your cart!`, "success");
+      }
+    } else {
+      showToast("Please login to hire a provider", "info");
+      window.location.href = "signup.html";
+    }
+  }
+
+ 
+
+  // Handle category click
+  window.handleCategoryClick = function(catName) {
+    const user = JSON.parse(localStorage.getItem('servicehub_user'));
+    if (user) {
+      showToast("Please Sign Up to explore services", "info");
+      window.location.href = "signup.html";
+    }
+  };
+
+  // Show toast message
+  function showToast(msg, type) {
+    const toast = document.getElementById('toastMsg');
+    if(toast) {
+      toast.innerText = msg;
+      toast.style.backgroundColor = type === 'success' ? '#10b981' : (type === 'info' ? '#3b82f6' : '#1a2c3e');
+      toast.style.display = "block";
+      setTimeout(() => { toast.style.display = "none"; toast.style.backgroundColor = '#1a2c3e'; }, 2800);
+    }
+  }
+
+
+  // Initialize everything on page load
+  document.addEventListener('DOMContentLoaded', () => {
+    renderCategories();
+    renderProvidersShowcase();
+    updateLandingUI();
+    
+    
+    // CTA buttons
+    const ctaLogin = document.getElementById('ctaLoginBtn');
+    const ctaRegister = document.getElementById('ctaRegisterBtn');
+    
+    if(ctaLogin) ctaLogin.onclick = () => window.location.href = 'signin.html';
+    if(ctaRegister) ctaRegister.onclick = () => window.location.href = 'signup.html';
+    if(viewAllBtn) viewAllBtn.onclick = () => viewAllProviders();
+    
+    if(heroFind) {
+      heroFind.onclick = () => {
+        const user = JSON.parse(localStorage.getItem('servicehub_user'));
+        if(user) {
+          window.location.href = 'seekerpage.html';
+        } else window.location.href = 'signin.html';
+      };
+    }
+    if(heroOffer) {
+      heroOffer.onclick = () => {
+        const user = JSON.parse(localStorage.getItem('servicehub_user'));
+        if(user) showToast(`Ready to offer services, ${user.name}? Complete your provider profile.`, "info");
+        else window.location.href = 'signin.html';
+      };
+    }
+    
+    // Smooth scroll for anchor links
+    document.querySelectorAll('.nav-links a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        const hash = this.getAttribute('href');
+        if(hash && hash !== "#" && hash.startsWith('#')) {
+          e.preventDefault();
+          const targetId = hash.substring(1);
+          const targetElem = document.getElementById(targetId);
+          if(targetElem) targetElem.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    });
+  });
+</script>
+</body>
+</html>

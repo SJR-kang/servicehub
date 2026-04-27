@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>ServiceHub · Analytics Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f4f8;
+            color: #1a2c3e;
+            line-height: 1.5;
+        }
+
+        .main-header {
+            background: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 32px;
+        }
+
+        .header-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .logo a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #1a2c3e;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .logo i {
+            color: #1a2c3e;
+        }
+
+        .logo-bold {
+            font-weight: 800;
+        }
+
+        .logo-light {
+            font-weight: 400;
+            opacity: 0.7;
+        }
+
+        /* Header Actions Container - All icons side by side */
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        /* Common icon styles - all icons have consistent design */
+        .home-icon, 
+        .message-icon{
+            position: relative;
+            color: #1a2c3e;
+            font-size: 1.3rem;
+            text-decoration: none;
+            background: #f1f5f9;
+            padding: 8px 14px;
+            border-radius: 40px;
+            transition: 0.2s;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Hover effect for all icons */
+        .home-icon:hover, 
+        .message-icon:hover, 
+        .analytics-icon:hover {
+            background: #e2edf2;
+            transform: translateY(-1px);
+        }
+
+        .analytics-icon.active { position: relative; color: #f1f5f9; font-size: 1.3rem; text-decoration: none; background: #1a2c3e; padding: 8px 14px; border-radius: 40px; transition: 0.2s; }
+               .analytics-icon:hover { background: #e2edf2; }
+
+
+
+        /* Badge styles for message and analytics */
+        .message-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        /* User Menu Container */
+        .user-menu-container {
+            position: relative;
+        }
+
+        .user-menu-trigger {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f1f5f9;
+            padding: 8px 16px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.2s;
+            border: none;
+            font-family: inherit;
+        }
+
+        .user-menu-trigger:hover {
+            background: #e2edf2;
+        }
+
+        .user-menu-trigger i {
+            font-size: 1.2rem;
+            color: #1a2c3e;
+        }
+
+        .user-menu-trigger span {
+            font-weight: 500;
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            min-width: 200px;
+            display: none;
+            z-index: 1000;
+            overflow: hidden;
+            border: 1px solid #e9eef2;
+        }
+
+        .user-dropdown.show {
+            display: block;
+            animation: fadeInDown 0.2s ease;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dropdown-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: #1a2c3e;
+            transition: 0.2s;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f4f8;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover {
+            background: #f8fafc;
+        }
+
+        .dropdown-item.logout-item {
+            color: #e74c3c;
+        }
+
+        .dropdown-item.logout-item i {
+            color: #e74c3c;
+        }
+
+        /* Rest of your styles remain the same */
+        .analytics-container {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 0 32px;
+        }
+
+        .analytics-header {
+            margin-bottom: 32px;
+        }
+
+        .analytics-header h1 {
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #1a2c3e;
+        }
+
+        .analytics-header p {
+            color: #5f7f90;
+            margin-top: 8px;
+        }
+
+        .revenue-section {
+            background: linear-gradient(135deg, #1a2c3e, #2c4a6e);
+            border-radius: 24px;
+            padding: 32px;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .revenue-section h3 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .revenue-amount {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .revenue-details {
+            display: flex;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .revenue-item {
+            background: rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 12px 20px;
+        }
+
+        .revenue-item small {
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+
+        .revenue-item strong {
+            font-size: 1.2rem;
+            display: block;
+            margin-top: 4px;
+        }
+
+        .charts-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .chart-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e2edf2;
+        }
+
+        .bar-chart-container {
+            margin-bottom: 16px;
+        }
+
+        .bar-chart-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
+
+        .bar-chart-bar {
+            background: #e2edf2;
+            border-radius: 20px;
+            height: 32px;
+            overflow: hidden;
+        }
+
+        .bar-chart-fill {
+            background: linear-gradient(90deg, #1a2c3e, #2c4a6e);
+            height: 100%;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 12px;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: width 0.5s ease;
+        }
+
+        .data-table {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 40px;
+        }
+
+        .data-table h3 {
+            padding: 20px 24px;
+            font-size: 1.2rem;
+            border-bottom: 1px solid #e2edf2;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f8fafc;
+        }
+
+        .data-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 16px 20px;
+            background: #fafcfd;
+            font-weight: 600;
+            color: #4a6272;
+            border-bottom: 1px solid #e2edf2;
+        }
+
+        .data-table td {
+            padding: 14px 20px;
+            border-bottom: 1px solid #eef2f6;
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .data-table tr:hover {
+            background: #fafcfd;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-completed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #5f7f90;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 16px;
+            color: #cbdde6;
+        }
+
+        footer {
+            background: #0f212e;
+            color: #cbdde6;
+            padding: 60px 0 30px;
+            margin-top: 60px;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-col h4 {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-col h4::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 2px;
+            background: #2c6e9e;
+        }
+
+        .footer-col ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-col ul li {
+            margin-bottom: 12px;
+        }
+
+        .footer-col ul li a {
+            color: #cbdde6;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-col ul li a:hover {
+            color: #2c6e9e;
+        }
+
+        .footer-col ul li i {
+            width: 25px;
+            margin-right: 8px;
+            color: #2c6e9e;
+        }
+
+        .footer-logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .footer-logo i {
+            color: #2c6e9e;
+            font-size: 1.8rem;
+        }
+
+        .footer-col p {
+            line-height: 1.6;
+            opacity: 0.8;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer-bottom p {
+            opacity: 0.7;
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 900px) {
+            .analytics-container {
+                padding: 0 20px;
+            }
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+            .data-table {
+                overflow-x: auto;
+            }
+            .header-wrapper {
+                flex-direction: column;
+            }
+            .header-actions {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header class="main-header">
+    <div class="container">
+        <div class="header-wrapper">
+            <div class="logo">
+                <a href="provider_dashboard.html">
+                    <i class="fas fa-handshake"></i>
+                    <span class="logo-bold">ServiceHub</span>
+                    <span class="logo-light"> | Analytics Dashboard</span>
+                </a>
+            </div>
+            
+            <!-- All icons side by side in header-actions -->
+            <div class="header-actions">
+                <!-- Home Icon -->
+                <a href="provider_dashboard.html" class="home-icon" id="homeIcon">
+                    <i class="fas fa-home"></i>
+                </a>
+                
+                <!-- Message Icon -->
+                <a href="provider_messages.html" class="message-icon" id="messageIcon">
+                    <i class="fas fa-envelope"></i>
+                    <span class="message-badge" id="messageCount">0</span>
+                </a>
+                
+                <!-- Analytics Icon (active - current page) -->
+                <a href="analytics.html" class="analytics-icon active" id="analyticsIcon">
+                    <i class="fas fa-chart-line"></i>
+                </a>
+                
+                <!-- User Dropdown (Account) -->
+                <div class="user-menu-container" id="userMenuContainer">
+                    <div class="user-menu-trigger" id="userMenuTrigger">
+                        <i class="fas fa-user-circle"></i>
+                        <span id="greetingName">Provider</span>
+                        <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i>
+                    </div>
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="dropdown-item profile-item" id="profileBtnHeader">
+                            <i class="fas fa-user-circle"></i> Profile
+                        </div>
+                        <div class="dropdown-item analytic-item" id="analyticBtnHeader">
+                            <i class="fas fa-chart-line"></i> Analytics
+                        </div>
+                        <div class="dropdown-item logout-item" id="logoutBtnHeader">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main>
+    <div class="analytics-container">
+        <!-- Revenue Section -->
+        <div class="revenue-section" id="revenueSection">
+            <div class="empty-state">Loading analytics data...</div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-section">
+            <div class="chart-card">
+                <h3><i class="fas fa-chart-line"></i> Monthly Sales Trend</h3>
+                <canvas id="monthlySalesChart" style="height: 250px; width: 100%;"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3><i class="fas fa-chart-pie"></i> Service Status Distribution</h3>
+                <div id="statusDistribution"></div>
+            </div>
+        </div>
+
+        <!-- Completed Services Table -->
+        <div class="data-table">
+            <h3><i class="fas fa-check-circle"></i> Completed Services</h3>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Request ID</th>
+                            <th>Customer</th>
+                            <th>Service</th>
+                            <th>Budget</th>
+                            <th>Completion Date</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="completedServicesTable">
+                        <tr><td colspan="7" class="empty-state">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Sold Products Table -->
+        <div class="data-table">
+            <h3><i class="fas fa-shopping-cart"></i> Sold Products</h3>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Product Name</th>
+                            <th>Buyer</th>
+                            <th>Quantity</th>
+                            <th>Total Price</th>
+                            <th>Purchase Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="soldProductsTable">
+                        <tr><td colspan="6" class="empty-state">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <div class="footer-logo"><i class="fas fa-handshake"></i> ServiceHub</div>
+                <p>Connecting seekers with trusted pros since 2026.</p>
+            </div>
+            <div class="footer-col"><h4>Contact</h4><ul><li><i class="fas fa-phone"></i> 0993-123-4567</li><li> <i class="fas fa-envelope"></i>support@servicehub.com</li></ul></div>
+            <div class="footer-col"><h4>Company</h4><ul><li><a href="#">About</a></li><li><a href="#">Become a Provider</a></li></ul></div>
+            <div class="footer-col"><h4>Legal</h4><ul><li><a href="#">Terms</a></li><li><a href="#">Privacy</a></li></ul></div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2026 ServiceHub — Trusted marketplace.</p></div>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="database.js"></script>
+<script>
+    // ============================================
+    // ANALYTICS DASHBOARD
+    // ============================================
+    
+    let monthlySalesChart = null;
+    let currentUser = null;
+
+    async function loadAnalyticsData() {
+        await ServiceHubDB.init();
+        currentUser = JSON.parse(localStorage.getItem('servicehub_user') || '{}');
+        renderAll();
+    }
+
+    function renderRevenueSection() {
+        const stats = ServiceHubDB.calculateRevenueStats();
+        
+        const section = document.getElementById('revenueSection');
+        section.innerHTML = `
+            <h3><i class="fas fa-dollar-sign"></i> Revenue Overview</h3>
+            <div class="revenue-amount">$${stats.totalRevenue.toLocaleString()}</div>
+            <p>Total revenue from sold products</p>
+            <div class="revenue-details">
+                <div class="revenue-item">
+                    <small>Total Requests Value</small>
+                    <strong>$${stats.totalRequestsValue.toLocaleString()}</strong>
+                </div>
+                <div class="revenue-item">
+                    <small>Average Order Value</small>
+                    <strong>$${stats.averageOrderValue}</strong>
+                </div>
+                <div class="revenue-item">
+                    <small>Completed Services</small>
+                    <strong>${stats.completed}</strong>
+                </div>
+                <div class="revenue-item">
+                    <small>Completion Rate</small>
+                    <strong>${stats.completionRate}%</strong>
+                </div>
+                <div class="revenue-item">
+                    <small>Total Products Sold</small>
+                    <strong>${stats.totalSold}</strong>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderMonthlySalesChart() {
+        const { months, monthlyRevenue, monthlyOrders } = ServiceHubDB.getMonthlySalesData();
+        const ctx = document.getElementById('monthlySalesChart');
+        if (!ctx) return;
+        
+        if (monthlySalesChart) {
+            monthlySalesChart.destroy();
+        }
+        
+        monthlySalesChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: [
+                    {
+                        label: 'Revenue ($)',
+                        data: monthlyRevenue,
+                        borderColor: '#2c6e9e',
+                        backgroundColor: 'rgba(44, 110, 158, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#1a2c3e',
+                        pointBorderColor: 'white',
+                        pointBorderWidth: 2,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Orders',
+                        data: monthlyOrders,
+                        borderColor: '#f57c00',
+                        backgroundColor: 'rgba(245, 124, 0, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#f57c00',
+                        pointBorderColor: 'white',
+                        pointBorderWidth: 2,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                let value = context.raw;
+                                if (context.dataset.label === 'Revenue ($)') {
+                                    return `${label}: $${value.toLocaleString()}`;
+                                }
+                                return `${label}: ${value}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Revenue ($)',
+                            color: '#2c6e9e'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toLocaleString();
+                            }
+                        }
+                    },
+                    y1: {
+                        beginAtZero: true,
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: 'Number of Orders',
+                            color: '#f57c00'
+                        },
+                        grid: {
+                            drawOnChartArea: false,
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function renderStatusDistribution() {
+        const distribution = ServiceHubDB.getStatusDistribution();
+        const total = distribution.pending + distribution.accepted + distribution.completed + distribution.rejected;
+        const chartContainer = document.getElementById('statusDistribution');
+        
+        if (total === 0) {
+            chartContainer.innerHTML = '<div class="empty-state" style="padding: 40px;"><i class="fas fa-chart-pie"></i><p>No service data available</p></div>';
+            return;
+        }
+        
+        const statusStyles = {
+            pending: { color: '#f57c00', icon: 'fa-clock', label: 'Pending' },
+            accepted: { color: '#388e3c', icon: 'fa-check-circle', label: 'Accepted' },
+            completed: { color: '#00796b', icon: 'fa-check-double', label: 'Completed' },
+            rejected: { color: '#d32f2f', icon: 'fa-times-circle', label: 'Rejected' }
+        };
+        
+        chartContainer.innerHTML = Object.entries(distribution).map(([status, count]) => {
+            if (count === 0) return '';
+            const percentage = (count / total) * 100;
+            const style = statusStyles[status];
+            return `
+                <div class="bar-chart-container">
+                    <div class="bar-chart-label">
+                        <span><i class="fas ${style.icon}"></i> ${style.label}</span>
+                        <span>${count} requests (${percentage.toFixed(1)}%)</span>
+                    </div>
+                    <div class="bar-chart-bar">
+                        <div class="bar-chart-fill" style="width: ${percentage}%; background: ${style.color};">
+                            ${count}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function renderCompletedServicesTable() {
+        const tbody = document.getElementById('completedServicesTable');
+        const completed = ServiceHubDB.getCompletedServices();
+        
+        if (completed.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="empty-state"><i class="fas fa-inbox"></i><p>No completed services yet</p></td></tr>`;
+            return;
+        }
+        
+        tbody.innerHTML = completed.map(req => `
+            <tr>
+                <td><strong>${escapeHtml(req.requestId)}</strong></td>
+                <td>
+                    <strong>${escapeHtml(req.customerName)}</strong><br>
+                    <small style="color:#5f7f90;">${escapeHtml(req.customerEmail)}</small>
+                </td>
+                <td>${escapeHtml(req.serviceName)}</td>
+                <td><strong style="color:#1e7b48;">${escapeHtml(req.budget)}</strong></td>
+                <td>${escapeHtml(req.preferredDate)}</td>
+                <td>${escapeHtml(req.location || 'N/A')}</td>
+                <td><span class="status-badge status-completed"><i class="fas fa-check-double"></i> Completed</span></td>
+            </tr>
+        `).join('');
+    }
+
+    function renderSoldProductsTable() {
+        const tbody = document.getElementById('soldProductsTable');
+        const soldProducts = ServiceHubDB.getAllSoldProducts();
+        
+        if (!soldProducts || soldProducts.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="empty-state"><i class="fas fa-box-open"></i><p>No sold products yet</p></td></tr>`;
+            return;
+        }
+        
+        tbody.innerHTML = soldProducts.map(p => `
+            <tr>
+                <td>${escapeHtml(p.orderId || 'N/A')}</td>
+                <td><strong>${escapeHtml(p.productName || 'Unknown')}</strong></td>
+                <td>
+                    ${escapeHtml(p.buyerName || 'Unknown')}<br>
+                    <small style="color:#5f7f90;">${escapeHtml(p.buyerEmail || '')}</small>
+                </td>
+                <td>${p.quantity || 1}</td>
+                <td><strong style="color:#1e7b48;">${escapeHtml(p.totalPrice || '$0')}</strong></td>
+                <td>${escapeHtml(p.purchaseDate || 'Unknown')}</td>
+            </tr>
+        `).join('');
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        str = String(str);
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    function renderAll() {
+        renderRevenueSection();
+        renderMonthlySalesChart();
+        renderStatusDistribution();
+        renderCompletedServicesTable();
+        renderSoldProductsTable();
+    }
+
+    function setupUserMenu() {
+        const trigger = document.getElementById('userMenuTrigger');
+        const dropdown = document.getElementById('userDropdown');
+        if (trigger && dropdown) {
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdown.classList.toggle('show');
+            });
+            document.addEventListener('click', () => dropdown.classList.remove('show'));
+        }
+        
+        const profileBtnHeader = document.getElementById('profileBtnHeader');
+        if (profileBtnHeader) {
+            profileBtnHeader.addEventListener('click', () => {
+                window.location.href = 'provider_profile.html';
+            });
+        }
+        
+        const analyticBtnHeader = document.getElementById('analyticBtnHeader');
+        if (analyticBtnHeader) {
+            analyticBtnHeader.addEventListener('click', () => {
+                window.location.href = 'analytics.html';
+            });
+        }
+        
+        const logoutBtnHeader = document.getElementById('logoutBtnHeader');
+        if (logoutBtnHeader) {
+            logoutBtnHeader.addEventListener('click', () => {
+                localStorage.removeItem('servicehub_user');
+                window.location.href = 'signin.html';
+            });
+        }
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadAnalyticsData();
+        setupUserMenu();
+        
+        const greetingSpan = document.getElementById('greetingName');
+        if (greetingSpan && currentUser) {
+            greetingSpan.innerText = currentUser.name || 'Provider';
+        }
+        
+        // Listen for storage changes
+        window.addEventListener('storage', async () => {
+            await ServiceHubDB.init();
+            renderAll();
+        });
+    });
+</script>
+</body>
+</html>

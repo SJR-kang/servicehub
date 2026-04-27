@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>ServiceHub · Provider Messages</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f4f8;
+            color: #1a2c3e;
+            line-height: 1.5;
+        }
+
+        .main-header {
+            background: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 32px;
+        }
+
+        .header-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .logo a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #1a2c3e;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .logo i {
+            color: #1a2c3e;
+        }
+
+    
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        /* Common icon styles - all icons have consistent design */
+        .home-icon, 
+         .analytics-icon, 
+        .message-icon{
+            position: relative;
+            color: #1a2c3e;
+            font-size: 1.3rem;
+            text-decoration: none;
+            background: #f1f5f9;
+            padding: 8px 14px;
+            border-radius: 40px;
+            transition: 0.2s;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Hover effect for all icons */
+        .home-icon:hover, 
+        .message-icon:hover, 
+        .analytics-icon:hover {
+            background: #e2edf2;
+            transform: translateY(-1px);
+        }
+
+
+
+
+
+        .analytic-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .message-icon.active { position: relative; color: #f1f5f9; font-size: 1.3rem; text-decoration: none; background: #1a2c3e; padding: 13px 14px; border-radius: 40px; transition: 0.2s; }
+
+     
+
+        .message-icon:hover {
+            background: #e2edf2;
+        }
+
+        .message-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .user-menu-container {
+            position: relative;
+        }
+
+        .user-menu-trigger {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f1f5f9;
+            padding: 8px 16px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .user-menu-trigger:hover {
+            background: #e2edf2;
+        }
+
+        .user-menu-trigger i {
+            font-size: 1.2rem;
+            color: #1a2c3e;
+        }
+
+        .user-menu-trigger span {
+            font-weight: 500;
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            min-width: 200px;
+            display: none;
+            z-index: 1000;
+            overflow: hidden;
+            border: 1px solid #e9eef2;
+        }
+
+        .user-dropdown.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: #1a2c3e;
+            transition: 0.2s;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f4f8;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover {
+            background: #f8fafc;
+        }
+
+        .dropdown-item.logout-item {
+            color: #e74c3c;
+        }
+
+        /* Messages Container */
+        .messages-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            background: white;
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.08);
+            display: flex;
+            height: calc(100vh - 180px);
+            min-height: 500px;
+        }
+
+        .conversations-sidebar {
+            width: 350px;
+            background: white;
+            border-right: 1px solid #e9eef2;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #e9eef2;
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .conversations-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .conversation-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: 0.2s;
+            border-bottom: 1px solid #f0f4f8;
+        }
+
+        .conversation-item:hover {
+            background: #f8fafc;
+        }
+
+        .conversation-item.active {
+            background: #eef2f6;
+            border-left: 3px solid #1a2c3e;
+        }
+
+        .conversation-avatar {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #1a2c3e, #2c4a6e);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .conversation-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .conversation-name {
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .conversation-last-msg {
+            font-size: 0.8rem;
+            color: #5f7f90;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .conversation-time {
+            font-size: 0.7rem;
+            color: #5f7f90;
+            text-align: right;
+        }
+
+        .conversation-unread {
+            background: #e74c3c;
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 20px;
+            margin-top: 4px;
+            display: inline-block;
+        }
+
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #fefefe;
+        }
+
+        .chat-header {
+            padding: 20px;
+            border-bottom: 1px solid #e9eef2;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .chat-avatar {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #1a2c3e, #2c4a6e);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .chat-contact-info h3 {
+            font-size: 1.1rem;
+            margin-bottom: 2px;
+        }
+
+        .chat-contact-info p {
+            font-size: 0.8rem;
+            color: #5f7f90;
+        }
+
+        .chat-status {
+            font-size: 0.7rem;
+            color: #1e7b48;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            background: #f8fafc;
+        }
+
+        .message {
+            display: flex;
+            max-width: 70%;
+        }
+
+        .message.sent {
+            justify-content: flex-end;
+            align-self: flex-end;
+        }
+
+        .message.received {
+            justify-content: flex-start;
+            align-self: flex-start;
+        }
+
+        .message-bubble {
+            padding: 12px 16px;
+            border-radius: 20px;
+            position: relative;
+        }
+
+        .message.sent .message-bubble {
+            background: #1a2c3e;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.received .message-bubble {
+            background: white;
+            color: #1a2c3e;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            border: 1px solid #e9eef2;
+        }
+
+        .message-text {
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .message-time {
+            font-size: 0.65rem;
+            margin-top: 4px;
+            opacity: 0.7;
+            text-align: right;
+        }
+
+        .chat-input-area {
+            padding: 20px;
+            border-top: 1px solid #e9eef2;
+            display: flex;
+            gap: 12px;
+            background: white;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            padding: 12px 18px;
+            border: 2px solid #e2edf2;
+            border-radius: 40px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+        }
+
+        .chat-input-area input:focus {
+            outline: none;
+            border-color: #1a2c3e;
+        }
+
+        .send-btn {
+            background: #1a2c3e;
+            color: white;
+            border: none;
+            padding: 0 24px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .send-btn:hover {
+            background: #2c4a6e;
+        }
+
+        .empty-chat {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: #5f7f90;
+            text-align: center;
+        }
+
+        .empty-chat i {
+            font-size: 4rem;
+            margin-bottom: 16px;
+            color: #cbdde6;
+        }
+
+        .toast-msg {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a2c3e;
+            color: white;
+            padding: 12px 28px;
+            border-radius: 60px;
+            font-weight: 500;
+            z-index: 2000;
+            animation: fadeToast 2.5s ease forwards;
+        }
+
+        @keyframes fadeToast {
+            0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            85% { opacity: 1; }
+            100% { opacity: 0; visibility: hidden; }
+        }
+
+        footer {
+            background: #0f212e;
+            color: #cbdde6;
+            padding: 60px 0 30px;
+            margin-top: 60px;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-col h4 {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-col h4::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 2px;
+            background: #2c6e9e;
+        }
+
+        .footer-col ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-col ul li {
+            margin-bottom: 12px;
+        }
+
+        .footer-col ul li a {
+            color: #cbdde6;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-col ul li a:hover {
+            color: #2c6e9e;
+        }
+
+        .footer-col ul li i {
+            width: 25px;
+            margin-right: 8px;
+            color: #2c6e9e;
+        }
+
+        .footer-logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .footer-logo i {
+            color: #2c6e9e;
+            font-size: 1.8rem;
+        }
+
+        .footer-col p {
+            line-height: 1.6;
+            opacity: 0.8;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer-bottom p {
+            opacity: 0.7;
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 800px) {
+            .messages-container {
+                flex-direction: column;
+                height: auto;
+            }
+            .conversations-sidebar {
+                width: 100%;
+                max-height: 300px;
+            }
+            .message {
+                max-width: 85%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header class="main-header">
+    <div class="container">
+        <div class="header-wrapper">
+            <div class="logo">
+               <a href="provider_dashboard.html">
+                    <i class="fas fa-handshake"></i>
+                    <span style="font-weight: 800;">ServiceHub</span>
+                    <span style="font-weight: 400; opacity: 0.7;"> | Messages</span>
+                </a>
+            </div>
+          
+            <div class="header-actions">
+
+                <a href="provider_dashboard.html" class="home-icon" id="homeIcon">
+                    <i class="fas fa-home"></i>
+                </a>
+                <a href="analytics.html" class="analytics-icon">
+                    <i class="fas fa-chart-line"></i>
+                </a>
+                 
+                <div class="message-icon active" id="messageIcon">
+                    <i class="fas fa-envelope"></i>
+                    <span class="message-badge" id="messageCount">0</span>
+                </div>
+                <div class="user-menu-container" id="userMenuContainer">
+                    <div class="user-menu-trigger" id="userMenuTrigger">
+                        <i class="fas fa-user-circle"></i>
+                        <span id="greetingName">Provider</span>
+                        <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i>
+                    </div>
+                    <div class="user-dropdown" id="userDropdown">
+                        <a href="provider_profile.html" class="dropdown-item">
+                            <i class="fas fa-user-circle"></i> My Profile
+                        </a>
+                        <a href="analytics.html" class="dropdown-item">
+                            <i class="fas fa-chart-line"></i> Analytics
+                        </a>
+                        <div class="dropdown-item logout-item" id="logoutBtnHeader">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main>
+    <div class="messages-container" id="messagesContainer">
+        <div class="conversations-sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-comments"></i> Messages from Seekers</h2>
+            </div>
+            <div class="conversations-list" id="conversationsList">
+                <div style="text-align: center; padding: 40px; color: #5f7f90;">
+                    <i class="fas fa-spinner fa-pulse"></i> Loading...
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-area" id="chatArea">
+            <div class="empty-chat">
+                <i class="fas fa-comments"></i>
+                <h3>Select a conversation</h3>
+                <p>Choose a conversation with a seeker from the left to start messaging</p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <div class="footer-logo"><i class="fas fa-handshake"></i> ServiceHub</div>
+                <p>Connecting seekers with trusted pros since 2026.</p>
+            </div>
+            <div class="footer-col"><h4>Contact</h4><ul><li><i class="fas fa-phone"></i> 0993-123-4567</li><li> <i class="fas fa-envelope"></i>support@servicehub.com</li></ul></div>
+            <div class="footer-col"><h4>Company</h4><ul><li><a href="#">About</a></li><li><a href="#">Become a Provider</a></li></ul></div>
+            <div class="footer-col"><h4>Legal</h4><ul><li><a href="#">Terms</a></li><li><a href="#">Privacy</a></li></ul></div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2026 ServiceHub — Trusted marketplace.</p></div>
+    </div>
+</footer>
+
+<script src="database.js"></script>
+<script>
+    // ========== PROVIDER MESSAGES ==========
+    
+    let currentUser = null;
+    let currentConversation = null;
+    let conversations = [];
+    let messages = {};
+
+    const MESSAGES_STORAGE_KEY = 'servicehub_messages';
+
+    function showToast(msg) {
+        let toast = document.createElement('div');
+        toast.className = 'toast-msg';
+        toast.innerText = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2600);
+    }
+
+    function loadCurrentUser() {
+        const storedUser = localStorage.getItem('servicehub_user');
+        if (storedUser) {
+            try {
+                currentUser = JSON.parse(storedUser);
+                
+                // Verify this is a provider
+                if (currentUser.type !== 'provider') {
+                    console.error('This page is for providers only');
+                    window.location.href = 'seeker_messages.html';
+                    return;
+                }
+            } catch(e) { console.error(e); }
+        }
+        
+        if (!currentUser) {
+            window.location.href = 'signin.html';
+            return;
+        }
+        
+        updateUserUI();
+        loadConversations();
+        updateUnreadCount();
+    }
+
+    function updateUserUI() {
+        const greetingSpan = document.getElementById('greetingName');
+        if (greetingSpan && currentUser) {
+            let displayName = currentUser.name;
+            if (displayName && displayName.length > 15) displayName = displayName.substring(0, 12) + '...';
+            greetingSpan.innerText = displayName || 'Provider';
+        }
+    }
+
+    function updateUnreadCount() {
+        let unreadCount = 0;
+        for (const convId in messages) {
+            const convMessages = messages[convId] || [];
+            unreadCount += convMessages.filter(m => !m.read && m.receiver === currentUser.email).length;
+        }
+        const badge = document.getElementById('messageCount');
+        if (badge) {
+            badge.innerText = unreadCount;
+            badge.style.display = unreadCount > 0 ? 'flex' : 'none';
+        }
+    }
+
+    async function loadConversations() {
+        // Initialize database
+        await ServiceHubDB.init();
+        
+        const savedMessages = localStorage.getItem(MESSAGES_STORAGE_KEY);
+        if (savedMessages) {
+            try {
+                messages = JSON.parse(savedMessages);
+            } catch(e) { console.error(e); }
+        }
+        
+        const conversationMap = new Map();
+        
+        for (const convId in messages) {
+            const convMessages = messages[convId];
+            if (convMessages && convMessages.length > 0) {
+                // Determine the other participant
+                const otherParticipant = convMessages[0].sender === currentUser.email ? convMessages[0].receiver : convMessages[0].sender;
+                const lastMessage = convMessages[convMessages.length - 1];
+                
+                // Get the other user from database
+                const otherUser = ServiceHubDB.getUserByEmail(otherParticipant);
+                
+                // Only show conversations with seekers (for provider)
+                if (otherUser && otherUser.userType === 'seeker') {
+                    conversationMap.set(convId, {
+                        id: convId,
+                        participant: otherParticipant,
+                        participantName: otherUser.name,
+                        participantType: otherUser.userType,
+                        lastMessage: lastMessage.text,
+                        lastMessageTime: lastMessage.timestamp,
+                        unread: convMessages.filter(m => !m.read && m.receiver === currentUser.email).length
+                    });
+                }
+            }
+        }
+        
+        // If no conversations exist, create sample ones
+        if (conversationMap.size === 0) {
+            createSampleConversations();
+            return;
+        }
+        
+        conversations = Array.from(conversationMap.values());
+        conversations.sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
+        
+        renderConversationsList();
+        
+        if (conversations.length > 0 && !currentConversation) {
+            selectConversation(conversations[0].id);
+        }
+    }
+    
+    async function createSampleConversations() {
+        // Get all seekers from database
+        const allUsers = ServiceHubDB._users || [];
+        const seekers = allUsers.filter(u => u.type === 'seeker');
+        
+        const sampleMessages = [
+            { text: "Hi! I'm interested in your services. Do you have availability this week?", isOutgoing: false },
+            { text: "Hello! Yes, I'm available. What date were you thinking?", isOutgoing: true },
+            { text: "How about Friday at 2 PM?", isOutgoing: false },
+            { text: "Friday works perfectly! Let me confirm the details.", isOutgoing: true }
+        ];
+        
+        seekers.slice(0, 3).forEach((contact, idx) => {
+            const convId = `${currentUser.email}_${contact.email}`;
+            const convMessages = [];
+            
+            sampleMessages.forEach((msg, msgIdx) => {
+                convMessages.push({
+                    id: Date.now() + msgIdx + idx,
+                    conversationId: convId,
+                    sender: msg.isOutgoing ? currentUser.email : contact.email,
+                    receiver: msg.isOutgoing ? contact.email : currentUser.email,
+                    text: msg.text,
+                    timestamp: new Date(Date.now() - (sampleMessages.length - msgIdx) * 3600000).toISOString(),
+                    read: msg.isOutgoing
+                });
+            });
+            
+            messages[convId] = convMessages;
+        });
+        
+        localStorage.setItem(MESSAGES_STORAGE_KEY, JSON.stringify(messages));
+        loadConversations();
+    }
+    
+    function getParticipantAvatar(email) {
+        const user = ServiceHubDB.getUserByEmail(email);
+        const name = user ? user.name : email.split('@')[0];
+        return name.charAt(0).toUpperCase();
+    }
+    
+    function renderConversationsList() {
+        const container = document.getElementById('conversationsList');
+        if (!container) return;
+        
+        if (conversations.length === 0) {
+            container.innerHTML = `<div style="text-align: center; padding: 40px; color: #5f7f90;">
+                <i class="fas fa-inbox"></i>
+                <p>No conversations with seekers yet. When seekers message you about your services, they will appear here.</p>
+            </div>`;
+            return;
+        }
+        
+        container.innerHTML = conversations.map(conv => `
+            <div class="conversation-item ${currentConversation === conv.id ? 'active' : ''}" data-conv-id="${conv.id}">
+                <div class="conversation-avatar">
+                    ${getParticipantAvatar(conv.participant)}
+                </div>
+                <div class="conversation-info">
+                    <div class="conversation-name">${escapeHtml(conv.participantName)}</div>
+                    <div class="conversation-last-msg">${escapeHtml(conv.lastMessage.substring(0, 50))}</div>
+                </div>
+                <div class="conversation-time">
+                    <div>${formatTime(conv.lastMessageTime)}</div>
+                    ${conv.unread > 0 ? `<div class="conversation-unread">${conv.unread}</div>` : ''}
+                </div>
+            </div>
+        `).join('');
+        
+        document.querySelectorAll('.conversation-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const convId = item.dataset.convId;
+                selectConversation(convId);
+            });
+        });
+    }
+    
+    function selectConversation(convId) {
+        currentConversation = convId;
+        const conversation = conversations.find(c => c.id === convId);
+        
+        if (conversation) {
+            if (messages[convId]) {
+                messages[convId].forEach(msg => {
+                    if (msg.receiver === currentUser.email && !msg.read) {
+                        msg.read = true;
+                    }
+                });
+                localStorage.setItem(MESSAGES_STORAGE_KEY, JSON.stringify(messages));
+                conversation.unread = 0;
+                updateUnreadCount();
+                renderConversationsList();
+            }
+            
+            renderChatArea(conversation);
+        }
+    }
+    
+    function renderChatArea(conversation) {
+        const chatArea = document.getElementById('chatArea');
+        const convMessages = messages[conversation.id] || [];
+        
+        const messagesHtml = convMessages.map(msg => `
+            <div class="message ${msg.sender === currentUser.email ? 'sent' : 'received'}">
+                <div class="message-bubble">
+                    <div class="message-text">${escapeHtml(msg.text)}</div>
+                    <div class="message-time">${formatTime(msg.timestamp)}</div>
+                </div>
+            </div>
+        `).join('');
+        
+        const otherUser = ServiceHubDB.getUserByEmail(conversation.participant);
+        
+        const html = `
+            <div class="chat-header">
+                <div class="chat-avatar">${getParticipantAvatar(conversation.participant)}</div>
+                <div class="chat-contact-info">
+                    <h3>${escapeHtml(conversation.participantName)}</h3>
+                    <p>Seeker</p>
+                </div>
+                <div class="chat-status"><i class="fas fa-circle" style="font-size: 0.5rem; color: #1e7b48;"></i> Active</div>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                ${messagesHtml || '<div style="text-align: center; color: #5f7f90; padding: 40px;">No messages yet. Send a message to start the conversation!</div>'}
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="messageInput" placeholder="Type a message to the seeker..." onkeypress="if(event.key === 'Enter') sendMessage()">
+                <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i> Send</button>
+            </div>
+        `;
+        
+        chatArea.innerHTML = html;
+        
+        const messagesContainer = document.getElementById('chatMessages');
+        if (messagesContainer) {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        const messageInput = document.getElementById('messageInput');
+        if (messageInput) messageInput.focus();
+    }
+    
+    function sendMessage() {
+        const input = document.getElementById('messageInput');
+        const text = input?.value.trim();
+        
+        if (!text || !currentConversation) return;
+        
+        const conversation = conversations.find(c => c.id === currentConversation);
+        if (!conversation) return;
+        
+        const newMessage = {
+            id: Date.now(),
+            conversationId: currentConversation,
+            sender: currentUser.email,
+            receiver: conversation.participant,
+            text: text,
+            timestamp: new Date().toISOString(),
+            read: false
+        };
+        
+        if (!messages[currentConversation]) {
+            messages[currentConversation] = [];
+        }
+        
+        messages[currentConversation].push(newMessage);
+        localStorage.setItem(MESSAGES_STORAGE_KEY, JSON.stringify(messages));
+        
+        conversation.lastMessage = text;
+        conversation.lastMessageTime = newMessage.timestamp;
+        
+        renderChatArea(conversation);
+        renderConversationsList();
+        
+        input.value = '';
+    }
+    
+    function formatTime(timestamp) {
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diff = now - date;
+        
+        if (diff < 60000) return 'Just now';
+        if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+        if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+        
+        return date.toLocaleDateString();
+    }
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    function setupUserMenu() {
+        const trigger = document.getElementById('userMenuTrigger');
+        const dropdown = document.getElementById('userDropdown');
+        if (trigger && dropdown) {
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdown.classList.toggle('show');
+            });
+            document.addEventListener('click', (e) => {
+                if (!trigger.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.classList.remove('show');
+                }
+            });
+        }
+        
+        const logoutBtn = document.getElementById('logoutBtnHeader');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                localStorage.removeItem('servicehub_user');
+                currentUser = null;
+                showToast('Logged out successfully');
+                setTimeout(() => window.location.href = 'signin.html', 1000);
+            });
+        }
+    }
+
+   
+    
+    window.sendMessage = sendMessage;
+    
+    loadCurrentUser();
+    setupUserMenu();
+</script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  SEEKER
+  PROVIDER
+}
+
+enum RequestStatus {
+  PENDING
+  IN_PROGRESS
+  AWAITING_PAYMENT
+  PAID
+  COMPLETED
+  REJECTED
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  phone        String?
+  role         UserRole
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  providerProfile ProviderProfile?
+  seekerRequests   ServiceRequest[] @relation("SeekerRequests")
+  providerRequests ServiceRequest[] @relation("ProviderRequests")
+}
+
+model ProviderProfile {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  service        String
+  category       String
+  priceLabel     String
+  description    String
+  location       String?
+  availability   String?
+  rating         Float    @default(5)
+  avatarImg      String?
+  evidenceImg    String?
+  yearsExperience Int?
+  languages      String[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ServiceRequest {
+  id                 String        @id @default(cuid())
+  requestCode        String        @unique
+  seekerId           String
+  providerId         String
+  serviceName        String
+  preferredDate      DateTime?
+  preferredTime      String?
+  location           String?
+  budget             String?
+  serviceDetails     String?
+  status             RequestStatus @default(PENDING)
+  paymentRequestedAt DateTime?
+  paymentAmount      Float?
+  paymentType        String?
+  paymentConfirmedAt DateTime?
+  completedAt        DateTime?
+  rejectionReason    String?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  seeker   User @relation("SeekerRequests", fields: [seekerId], references: [id], onDelete: Cascade)
+  provider User @relation("ProviderRequests", fields: [providerId], references: [id], onDelete: Cascade)
+}
+

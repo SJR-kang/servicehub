@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>ServiceHub · Secure Payment</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f0f7fc 0%, #e8f0f5 100%);
+            min-height: 100vh;
+            color: #1a2c3e;
+        }
+
+        .payment-container {
+            max-width: 600px;
+            margin: 60px auto;
+            padding: 0 20px;
+        }
+
+        .payment-card {
+            background: white;
+            border-radius: 48px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            transition: transform 0.3s ease;
+        }
+
+        .payment-header {
+            background: linear-gradient(135deg, #1a2c3e, #2c4a6e);
+            color: white;
+            padding: 32px 32px;
+            text-align: center;
+        }
+
+        .payment-header h1 {
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .payment-header p {
+            opacity: 0.85;
+            font-size: 0.95rem;
+        }
+
+        .payment-body {
+            padding: 36px 32px;
+        }
+
+        .amount-summary {
+            background: #f8fafc;
+            border-radius: 28px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 32px;
+            border: 1px solid #e2edf2;
+        }
+
+        .amount-label {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #5f7f90;
+            margin-bottom: 8px;
+        }
+
+        .amount-value {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #1e7b48;
+            letter-spacing: -1px;
+        }
+
+        .amount-value small {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .provider-info {
+            background: #fef9e6;
+            border-radius: 24px;
+            padding: 16px 20px;
+            margin-bottom: 32px;
+            border-left: 4px solid #ffb347;
+        }
+
+        .provider-info p {
+            margin: 6px 0;
+            font-size: 0.9rem;
+        }
+
+        .qr-section {
+            text-align: center;
+            margin: 32px 0;
+            padding: 24px;
+            background: #ffffff;
+            border-radius: 32px;
+            border: 2px dashed #cbdde6;
+        }
+
+        .qr-code {
+            background: white;
+            padding: 20px;
+            display: inline-block;
+            border-radius: 24px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .qr-code canvas {
+            display: block;
+            margin: 0 auto;
+            border-radius: 16px;
+        }
+
+        .payment-instruction {
+            margin-top: 16px;
+            color: #2c4a6e;
+            font-size: 0.9rem;
+        }
+
+        .payment-instruction i {
+            margin-right: 6px;
+            color: #ffb347;
+        }
+
+        .payment-details {
+            background: #f0f6fa;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 24px 0;
+        }
+
+        .detail-line {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #dce5ec;
+        }
+
+        .detail-line:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #4a6272;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: #1a2c3e;
+        }
+
+        .payment-methods {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .method-badge {
+            background: #f0f4f8;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #2c4a6e;
+        }
+
+        .done-btn {
+            background: #1e7b48;
+            color: white;
+            border: none;
+            padding: 18px 32px;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            transition: 0.2s;
+            margin-top: 16px;
+        }
+
+        .done-btn:hover {
+            background: #16633b;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(30,123,72,0.3);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #5f7f90;
+            text-decoration: none;
+            font-size: 0.9rem;
+            text-align: center;
+            width: 100%;
+        }
+
+        .back-link:hover {
+            color: #1a2c3e;
+        }
+
+        .toast-msg {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a2c3e;
+            color: white;
+            padding: 12px 28px;
+            border-radius: 60px;
+            font-weight: 500;
+            z-index: 2000;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.2);
+            animation: fadeToast 2.5s ease forwards;
+        }
+
+        @keyframes fadeToast {
+            0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; visibility: hidden; }
+        }
+
+        .payment-type-badge {
+            display: inline-block;
+            background: #e8f5e9;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #1e7b48;
+            margin-left: 8px;
+        }
+
+        @media (max-width: 500px) {
+            .payment-body {
+                padding: 24px 20px;
+            }
+            .amount-value {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="payment-container">
+    <div class="payment-card">
+        <div class="payment-header">
+            <h1><i class="fas fa-qrcode"></i> Secure Payment</h1>
+            <p>Complete your payment to confirm the booking</p>
+        </div>
+        <div class="payment-body">
+            <div class="amount-summary">
+                <div class="amount-label" id="paymentTypeLabel">Payment Amount</div>
+                <div class="amount-value" id="displayAmount">$0</div>
+            </div>
+
+            <div class="provider-info" id="providerInfo">
+                <i class="fas fa-user-check"></i> <strong id="providerName">Provider</strong><br>
+                <span id="serviceName">Service</span> · <span id="requestDate">Date</span>
+            </div>
+
+            <div class="qr-section">
+                <div class="qr-code" id="qrCodeContainer">
+                    <canvas id="qrCanvas" width="200" height="200"></canvas>
+                </div>
+                <div class="payment-instruction">
+                    <i class="fas fa-mobile-alt"></i> Scan QR code with any UPI / banking app
+                </div>
+                <div class="payment-methods">
+                    <span class="method-badge"><i class="fab fa-google-pay"></i> Google Pay</span>
+                    <span class="method-badge"><i class="fab fa-paypal"></i> PayPal</span>
+                    <span class="method-badge"><i class="fas fa-university"></i> Bank Transfer</span>
+                    <span class="method-badge"><i class="fab fa-amazon-pay"></i> Amazon Pay</span>
+                </div>
+            </div>
+
+            <div class="payment-details">
+                <div class="detail-line">
+                    <span class="detail-label"><i class="fas fa-store"></i> Merchant</span>
+                    <span class="detail-value">ServiceHub Escrow</span>
+                </div>
+                <div class="detail-line">
+                    <span class="detail-label"><i class="fas fa-credit-card"></i> Payment ID</span>
+                    <span class="detail-value" id="paymentId">SVC-XXXXXXXX</span>
+                </div>
+                <div class="detail-line">
+                    <span class="detail-label"><i class="fas fa-clock"></i> Valid Until</span>
+                    <span class="detail-value" id="validUntil">Today, 11:59 PM</span>
+                </div>
+            </div>
+
+            <button class="done-btn" id="paymentDoneBtn">
+                <i class="fas fa-check-circle"></i> I have completed the payment
+            </button>
+
+            <a href="javascript:history.back()" class="back-link">
+                <i class="fas fa-arrow-left"></i> Cancel & Go Back
+            </a>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="database.js"></script>
+<script src="api.js"></script>
+<script>
+    let paymentRequest = null;
+
+    function showToast(msg, isError = false) {
+        let toast = document.createElement('div');
+        toast.className = 'toast-msg';
+        toast.style.background = isError ? '#c7362b' : '#1a2c3e';
+        toast.innerText = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2600);
+    }
+
+    function loadPaymentDetails() {
+        // Get from sessionStorage (set when clicking pay button from user requests)
+        const storedPayment = sessionStorage.getItem('pending_payment');
+        
+        if (storedPayment) {
+            try {
+                paymentRequest = JSON.parse(storedPayment);
+                console.log('📦 Loaded payment from sessionStorage:', paymentRequest);
+            } catch(e) { console.error(e); }
+        }
+        
+        // Fallback demo data if nothing found
+        if (!paymentRequest) {
+            paymentRequest = {
+                amount: 89,
+                paymentType: 'downpayment',
+                providerName: "Elite Home Services",
+                serviceName: "Professional Cleaning & Repair",
+                preferredDate: new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0],
+                requestId: "REQ" + Math.floor(Math.random()*10000)
+            };
+        }
+        
+        // Update UI based on payment type
+        const paymentTypeLabel = document.getElementById('paymentTypeLabel');
+        if (paymentRequest.paymentType === 'downpayment') {
+            paymentTypeLabel.innerHTML = 'Downpayment Amount <span class="payment-type-badge">20% of budget</span>';
+        } else {
+            paymentTypeLabel.innerHTML = 'Full Payment Amount';
+        }
+        
+        document.getElementById('displayAmount').innerHTML = `$${paymentRequest.amount}<small>.00</small>`;
+        document.getElementById('providerName').innerText = paymentRequest.providerName || 'Professional';
+        document.getElementById('serviceName').innerText = paymentRequest.serviceName || 'Service';
+        document.getElementById('requestDate').innerText = paymentRequest.preferredDate || 'Flexible date';
+        
+        // Generate payment ID
+        const paymentId = 'PAY-' + Date.now().toString().slice(-8) + Math.floor(Math.random() * 1000);
+        document.getElementById('paymentId').innerText = paymentId;
+        
+        const today = new Date();
+        document.getElementById('validUntil').innerText = `Today, 11:59 PM (${today.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})`;
+        
+        generateQRCode(paymentRequest, paymentId);
+    }
+    
+    function generateQRCode(paymentDetails, paymentId) {
+        const qrData = `upi://pay?pa=servicehub@merchant&pn=ServiceHub&am=${paymentDetails.amount}&cu=USD&tn=${paymentDetails.paymentType || 'Payment'} for ${paymentDetails.serviceName} - ${paymentId}`;
+        
+        const canvas = document.getElementById('qrCanvas');
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        if (typeof QRCode === 'undefined') {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#000000';
+            ctx.font = '12px monospace';
+            ctx.fillText('QR Code unavailable', 40, 100);
+            ctx.fillText('Use UPI ID: servicehub@merchant', 25, 130);
+            return;
+        }
+        
+        try {
+            new QRCode(canvas, {
+                text: qrData,
+                width: 200,
+                height: 200,
+                colorDark: "#1a2c3e",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        } catch(err) {
+            console.warn("QR Error", err);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#1a2c3e';
+            ctx.font = 'bold 14px monospace';
+            ctx.fillText('Scan to Pay', 60, 100);
+            ctx.font = '10px monospace';
+            ctx.fillText('servicehub@merchant', 40, 140);
+        }
+    }
+
+    async function completePayment() {
+        if (!paymentRequest || !paymentRequest.requestId) {
+            showToast('Payment information missing', true);
+            return;
+        }
+        
+        showToast('Processing payment... Please wait');
+        
+        // Process payment - update status to "inprogress" with payment confirmed
+        const paymentAmount = paymentRequest.amount;
+        const paymentMethod = paymentRequest.paymentType || 'downpayment';
+        let updatedRequest = null;
+
+        if (window.ServiceHubAPI && ServiceHubAPI.getToken()) {
+            try {
+                updatedRequest = await ServiceHubAPI.updateRequestStatus({
+                    requestId: paymentRequest.requestId,
+                    status: "PAID",
+                    paymentAmount: Number(paymentAmount),
+                    paymentType: paymentMethod
+                });
+            } catch (apiErr) {
+                console.warn("API payment update failed, falling back to local DB:", apiErr.message);
+            }
+        }
+
+        if (!updatedRequest) {
+            if (!window.ServiceHubDB) {
+                showToast('Database not available', true);
+                console.error('ServiceHubDB not loaded');
+                return;
+            }
+            const request = ServiceHubDB.getRequestById(paymentRequest.requestId);
+            if (!request) {
+                showToast('Request not found', true);
+                return;
+            }
+            if (request.status !== 'awaiting_payment') {
+                showToast(`Cannot process payment. Current status: ${request.status}`, true);
+                return;
+            }
+            updatedRequest = ServiceHubDB.updateRequest(paymentRequest.requestId, {
+                status: 'inprogress',
+                paymentConfirmed: true,
+                paymentAmount: paymentAmount,
+                paymentMethod: paymentMethod,
+                paymentConfirmedAt: new Date().toISOString(),
+                amountPaid: paymentAmount
+            });
+        }
+        
+        if (updatedRequest) {
+            console.log('✅ Payment processed successfully');
+            console.log(`   Status updated to: inprogress`);
+            console.log(`   Payment confirmed: ${paymentAmount} (${paymentMethod})`);
+            
+            // Store payment receipt info
+            const receiptData = {
+                requestId: paymentRequest.requestId,
+                amount: paymentAmount,
+                paymentMethod: paymentMethod,
+                providerName: paymentRequest.providerName,
+                serviceName: paymentRequest.serviceName,
+                paymentId: document.getElementById('paymentId').innerText,
+                paidAt: new Date().toISOString()
+            };
+            
+            sessionStorage.setItem('last_payment_receipt', JSON.stringify(receiptData));
+            sessionStorage.removeItem('pending_payment');
+            
+            showToast('✓ Payment successful! Your booking is now confirmed.');
+            
+            // Redirect to confirmation page
+            setTimeout(() => {
+                window.location.href = '6payment_confirmation.html';
+            }, 2000);
+        } else {
+            showToast('Payment failed. Please try again.', true);
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', async () => {
+        // Initialize database
+        if (window.ServiceHubDB && typeof ServiceHubDB.init === 'function') {
+            await ServiceHubDB.init();
+        }
+        
+        loadPaymentDetails();
+        
+        const doneBtn = document.getElementById('paymentDoneBtn');
+        if (doneBtn) {
+            doneBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (confirm('Have you completed the payment via QR code? This will confirm your booking.')) {
+                    completePayment();
+                } else {
+                    showToast('Please complete the payment transaction first.', false);
+                }
+            });
+        }
+    });
+    
+    window.addEventListener('resize', () => {
+        if (paymentRequest) {
+            const paymentId = document.getElementById('paymentId')?.innerText || 'PAY-REF';
+            generateQRCode(paymentRequest, paymentId);
+        }
+    });
+</script>
+</body>
+</html>

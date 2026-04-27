@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>ServiceHub · Request Service</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Your existing styles here */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f4f8;
+            color: #1a2c3e;
+            line-height: 1.5;
+        }
+
+        .main-header {
+            background: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 32px;
+        }
+
+        .header-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .logo a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #1a2c3e;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .logo i {
+            color: #2c6e9e;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .cart-icon {
+            position: relative;
+            color: #1a2c3e;
+            font-size: 1.3rem;
+            text-decoration: none;
+            background: #f1f5f9;
+            padding: 8px 14px;
+            border-radius: 40px;
+            transition: 0.2s;
+        }
+
+        .cart-icon:hover {
+            background: #e2edf2;
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .user-menu-container {
+            position: relative;
+        }
+
+        .user-menu-trigger {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f1f5f9;
+            padding: 8px 18px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .user-menu-trigger:hover {
+            background: #e2edf2;
+        }
+
+        .user-menu-trigger i {
+            font-size: 1.2rem;
+            color: #1a2c3e;
+        }
+
+        .user-menu-trigger span {
+            font-weight: 500;
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            min-width: 200px;
+            display: none;
+            z-index: 1000;
+            overflow: hidden;
+            border: 1px solid #e9eef2;
+        }
+
+        .user-dropdown.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: #1a2c3e;
+            transition: 0.2s;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f4f8;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover {
+            background: #f8fafc;
+        }
+
+        .dropdown-item.logout-item {
+            color: #e74c3c;
+        }
+
+        .dropdown-item.logout-item i {
+            color: #e74c3c;
+        }
+
+        .request-container {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 0 32px;
+        }
+
+        .request-card {
+            background: white;
+            border-radius: 32px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15);
+        }
+
+        .request-header {
+            background: linear-gradient(135deg, #1a2c3e, #2c4a6e);
+            color: white;
+            padding: 36px 48px;
+        }
+
+        .request-header h1 {
+            font-size: 2rem;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .request-header p {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        .two-column-layout {
+            display: flex;
+            gap: 40px;
+            padding: 40px 48px;
+        }
+
+        .left-column {
+            flex: 0.8;
+            min-width: 280px;
+        }
+
+        .provider-summary {
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border-radius: 28px;
+            padding: 28px 24px;
+            border: 1px solid #e2edf2;
+            position: sticky;
+            top: 100px;
+        }
+
+        .provider-summary h3 {
+            margin-bottom: 20px;
+            color: #1a2c3e;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e2edf2;
+        }
+
+        .provider-detail-row {
+            display: flex;
+            flex-direction: column;
+            padding: 16px 0;
+            border-bottom: 1px solid #e2edf2;
+        }
+
+        .provider-detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .provider-label {
+            font-weight: 600;
+            color: #4a6272;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .provider-value {
+            font-weight: 700;
+            color: #1a2c3e;
+            font-size: 1.1rem;
+            line-height: 1.4;
+        }
+
+        .right-column {
+            flex: 2;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #1a2c3e;
+            font-size: 0.9rem;
+        }
+
+        .form-group label i {
+            margin-right: 8px;
+            color: #5f7f90;
+            width: 20px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e2edf2;
+            border-radius: 18px;
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1a2c3e;
+            box-shadow: 0 0 0 3px rgba(26, 44, 62, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 110px;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #1a2c3e, #2c4a6e);
+            color: white;
+            border: none;
+            padding: 16px 28px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            transition: all 0.3s ease;
+            margin-top: 16px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(26, 44, 62, 0.25);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 24px;
+            color: #5f7f90;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+
+        .back-link:hover {
+            color: #1a2c3e;
+            transform: translateX(-4px);
+        }
+
+        .toast-msg {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a2c3e;
+            color: white;
+            padding: 14px 32px;
+            border-radius: 60px;
+            font-weight: 500;
+            z-index: 2000;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.2);
+            animation: fadeToast 2.5s ease forwards;
+        }
+
+        @keyframes fadeToast {
+            0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; visibility: hidden; }
+        }
+
+        footer {
+            background: #0f212e;
+            color: #cbdde6;
+            padding: 56px 0 28px;
+            margin-top: 70px;
+        }
+ .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-col h4 {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-col h4::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 2px;
+            background: #2c6e9e;
+        }
+
+        .footer-col ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-col ul li {
+            margin-bottom: 12px;
+        }
+
+        .footer-col ul li a {
+            color: #cbdde6;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-col ul li a:hover {
+            color: #2c6e9e;
+        }
+
+        .footer-col ul li i {
+            width: 25px;
+            margin-right: 8px;
+            color: #2c6e9e;
+        }
+
+        .footer-logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .footer-logo i {
+            color: #2c6e9e;
+            font-size: 1.8rem;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        @media (max-width: 900px) {
+            .two-column-layout {
+                flex-direction: column;
+                padding: 28px 24px;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+            .request-header {
+                padding: 28px 24px;
+            }
+            .request-header h1 {
+                font-size: 1.5rem;
+            }
+            .header-wrapper {
+                flex-direction: column;
+            }
+            .container {
+                padding: 0 20px;
+            }
+            .request-container {
+                padding: 0 20px;
+                margin: 30px auto;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header class="main-header">
+    <div class="container">
+        <div class="header-wrapper">
+            <div class="logo">
+                <a id="homeLink">
+                    <i class="fas fa-handshake"></i>
+                    <span>ServiceHub</span>
+                </a>
+            </div>
+           
+            <div class="header-actions">
+                <a href="#" class="cart-icon" id="cartBtn">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-count" id="cartCount">0</span>
+                </a>
+                
+                <div class="user-menu-container" id="userMenuContainer">
+                    <div class="user-menu-trigger" id="userMenuTrigger">
+                        <i class="fas fa-user-circle"></i>
+                        <span id="greetingName">Account</span>
+                        <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i>
+                    </div>
+                    <div class="user-dropdown" id="userDropdown">
+                        <a href="Seeker_profile.html" class="dropdown-item">
+                            <i class="fas fa-id-card"></i> My Profile
+                        </a>
+                        <a href="4user_requests.html" class="dropdown-item">
+                            <i class="fas fa-clipboard-list"></i> My Requests
+                        </a>
+                        <div class="dropdown-item logout-item" id="logoutBtnHeader">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main>
+    <div class="request-container">
+        <div class="request-card">
+            <div class="request-header">
+                <h1><i class="fas fa-pen-alt"></i> Request Service</h1>
+                <p>Fill out the form below to connect with your chosen provider</p>
+            </div>
+            
+            <div class="two-column-layout">
+                <div class="left-column">
+                    <div class="provider-summary" id="providerSummary">
+                        <h3><i class="fas fa-user-check"></i> Service Provider</h3>
+                        <div id="providerDetails">
+                            <div class="provider-detail-row">
+                                <span class="provider-label">Provider Name</span>
+                                <span class="provider-value" id="providerName">Loading...</span>
+                            </div>
+                            <div class="provider-detail-row">
+                                <span class="provider-label">Service Offered</span>
+                                <span class="provider-value" id="providerService">Loading...</span>
+                            </div>
+                            <div class="provider-detail-row">
+                                <span class="provider-label">Price Range</span>
+                                <span class="provider-value" id="providerPrice">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="right-column">
+                    <form id="requestForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label><i class="fas fa-user"></i> Your Full Name</label>
+                                <input type="text" id="requesterName" placeholder="Enter your full name" required>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-envelope"></i> Email Address</label>
+                                <input type="email" id="requesterEmail" placeholder="you@example.com" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label><i class="fas fa-phone"></i> Phone Number</label>
+                                <input type="tel" id="requesterPhone" placeholder="Your contact number" required>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-calendar"></i> Preferred Date</label>
+                                <input type="date" id="preferredDate" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fas fa-clock"></i> Preferred Time</label>
+                            <input type="time" id="preferredTime" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fas fa-comment-dots"></i> Service Details / Special Requests</label>
+                            <textarea id="serviceDetails" rows="5" placeholder="Describe what you need, any specific requirements, timeline, etc." required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fas fa-map-marker-alt"></i> Location / Address</label>
+                            <input type="text" id="location" placeholder="Where should the service be provided? (Full address)" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fas fa-tag"></i> Estimated Budget</label>
+                            <input type="text" id="budget" placeholder="e.g., $100-200 or $150/session" required>
+                        </div>
+
+                        <button type="submit" class="submit-btn">
+                            <i class="fas fa-paper-plane"></i> Send Request
+                        </button>
+                    </form>
+
+                    <a href="1seeker_dashboard.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> Back to Browse Providers
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <div class="footer-logo"><i class="fas fa-handshake"></i> ServiceHub</div>
+                <p>Connecting seekers with trusted pros since 2026.</p>
+            </div>
+            <div class="footer-col"><h4>Contact</h4><ul><li><i class="fas fa-phone"></i> 0993-123-4567</li><li><i class="fas fa-envelope"></i>support@servicehub.com</li></ul></div>
+            <div class="footer-col"><h4>Company</h4><ul><li><a href="#">About</a></li><li><a href="#">Become a Provider</a></li></ul></div>
+            <div class="footer-col"><h4>Legal</h4><ul><li><a href="#">Terms</a></li><li><a href="#">Privacy</a></li></ul></div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2026 ServiceHub — Trusted marketplace.</p></div>
+    </div>
+</footer>
+
+<script src="database.js"></script>
+<script src="api.js"></script>
+
+<script>
+    let currentUser = null;
+    let selectedProvider = null;
+
+    function showToast(msg) {
+        let toast = document.createElement('div');
+        toast.className = 'toast-msg';
+        toast.innerText = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2600);
+    }
+
+    function loadCurrentUser() {
+        const storedUser = localStorage.getItem('servicehub_user');
+        if (storedUser) {
+            try {
+                currentUser = JSON.parse(storedUser);
+            } catch(e) { console.error(e); }
+        }
+        updateUserUI();
+        updateCartCount();
+    }
+
+    function updateUserUI() {
+        const greetingSpan = document.getElementById('greetingName');
+        if (greetingSpan && currentUser) {
+            let displayName = currentUser.name;
+            if (displayName && displayName.length > 15) displayName = displayName.substring(0, 12) + '...';
+            greetingSpan.innerText = displayName || 'Account';
+        } else if (greetingSpan) {
+            greetingSpan.innerText = 'Guest';
+        }
+    }
+
+    function updateCartCount() {
+        if (window.ServiceHubDB && currentUser && currentUser.email) {
+            const activeCount = ServiceHubDB.getActiveRequestsCount(currentUser.email);
+            const cartCountSpan = document.getElementById('cartCount');
+            if (cartCountSpan) {
+                cartCountSpan.innerText = activeCount;
+            }
+        } else {
+            const cartCountSpan = document.getElementById('cartCount');
+            if (cartCountSpan) {
+                cartCountSpan.innerText = '0';
+            }
+        }
+    }
+
+    function loadProviderData() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const providerName = urlParams.get('provider');
+        const providerService = urlParams.get('service');
+        const providerId = urlParams.get('providerId');
+        const providerPrice = urlParams.get('price');
+        
+        const storedProvider = localStorage.getItem('selectedProvider');
+        
+        if (providerName && providerService) {
+            selectedProvider = {
+                name: decodeURIComponent(providerName),
+                service: decodeURIComponent(providerService),
+                id: providerId,
+                price: providerPrice || 'Contact for price'
+            };
+        } else if (storedProvider) {
+            try {
+                selectedProvider = JSON.parse(storedProvider);
+            } catch(e) { console.error(e); }
+        } else {
+            selectedProvider = {
+                name: "Service Provider",
+                service: "Professional Service",
+                id: 1,
+                price: "Contact for quote"
+            };
+        }
+        
+        const nameEl = document.getElementById('providerName');
+        const serviceEl = document.getElementById('providerService');
+        const priceEl = document.getElementById('providerPrice');
+        
+        if (nameEl) nameEl.innerText = selectedProvider.name || 'Provider';
+        if (serviceEl) serviceEl.innerText = selectedProvider.service || 'Service';
+        if (priceEl) priceEl.innerText = selectedProvider.price || 'Contact for quote';
+    }
+    
+    function autoFillUserData() {
+        if (currentUser) {
+            const nameInput = document.getElementById('requesterName');
+            const emailInput = document.getElementById('requesterEmail');
+            const phoneInput = document.getElementById('requesterPhone');
+            
+            if (nameInput) nameInput.value = currentUser.name || '';
+            if (emailInput) emailInput.value = currentUser.email || '';
+            if (phoneInput && currentUser.phone) phoneInput.value = currentUser.phone;
+        }
+    }
+    
+    function setMinDate() {
+        const today = new Date().toISOString().split('T')[0];
+        const dateInput = document.getElementById('preferredDate');
+        if (dateInput) {
+            dateInput.min = today;
+        }
+    }
+    
+    // FIXED: Form submission with correct data structure
+    const requestForm = document.getElementById('requestForm');
+    if (requestForm) {
+        requestForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Make sure database is initialized
+            await ServiceHubDB.init();
+            
+            const requestData = {
+                customerName: document.getElementById('requesterName')?.value || '',
+                customerEmail: document.getElementById('requesterEmail')?.value || '',
+                customerPhone: document.getElementById('requesterPhone')?.value || '',
+                provider: {
+                    name: selectedProvider.name,
+                    service: selectedProvider.service,
+                    price: selectedProvider.price,
+                    id: selectedProvider.id
+                },
+                serviceName: selectedProvider.service,
+                preferredDate: document.getElementById('preferredDate')?.value || '',
+                preferredTime: document.getElementById('preferredTime')?.value || '',
+                serviceDetails: document.getElementById('serviceDetails')?.value || '',
+                location: document.getElementById('location')?.value || '',
+                budget: document.getElementById('budget')?.value || '',
+                status: 'pending'
+            };
+            
+            // Validate
+            if (!requestData.customerName || !requestData.customerEmail) {
+                showToast('Please fill in all required fields');
+                return;
+            }
+            
+            try {
+                if (window.ServiceHubAPI && ServiceHubAPI.getToken()) {
+                    await ServiceHubAPI.createRequest({
+                        providerId: String(selectedProvider.id || ''),
+                        serviceName: requestData.serviceName,
+                        preferredDate: requestData.preferredDate,
+                        preferredTime: requestData.preferredTime,
+                        location: requestData.location,
+                        budget: requestData.budget,
+                        serviceDetails: requestData.serviceDetails
+                    });
+                    showToast('✓ Request sent successfully!');
+                } else {
+                    // Fallback to local demo DB when no API token is present.
+                    const newRequest = ServiceHubDB.addRequest(requestData);
+                    console.log('✅ Request saved (local fallback):', newRequest);
+                    showToast('✓ Request sent successfully!');
+                }
+                setTimeout(() => {
+                    window.location.href = '4user_requests.html';
+                }, 1500);
+            } catch(error) {
+                console.error('Error saving request:', error);
+                showToast(`Error sending request: ${error.message}`);
+            }
+        });
+    }
+    
+    function setupUserMenu() {
+        const trigger = document.getElementById('userMenuTrigger');
+        const dropdown = document.getElementById('userDropdown');
+        if (trigger && dropdown) {
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdown.classList.toggle('show');
+            });
+            document.addEventListener('click', (e) => {
+                if (!trigger.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.classList.remove('show');
+                }
+            });
+        }
+        
+        const logoutBtn = document.getElementById('logoutBtnHeader');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                localStorage.removeItem('servicehub_user');
+                localStorage.removeItem('serviceCart');
+                currentUser = null;
+                updateUserUI();
+                updateCartCount();
+                showToast('Logged out successfully');
+                setTimeout(() => window.location.reload(), 1000);
+            });
+        }
+    }
+    
+    document.getElementById('homeLink')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.href = '1seeker_dashboard.html';
+    });
+    
+    document.getElementById('cartBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.href = '4user_requests.html';
+    });
+    
+    document.addEventListener('DOMContentLoaded', async () => {
+        await ServiceHubDB.init();
+        loadCurrentUser();
+        loadProviderData();
+        autoFillUserData();
+        setMinDate();
+        setupUserMenu();
+        
+        if (window.ServiceHubDB) {
+            const stats = ServiceHubDB.getStats();
+            console.log('📊 Requests Database Stats:', stats);
+        }
+    });
+</script>
+</body>
+</html>

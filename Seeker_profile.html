@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="ServiceHub - User Profile Management">
+    <title>ServiceHub | My Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f5f7fb;
+            color: #1a2c3e;
+            line-height: 1.45;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 30px;
+        }
+
+        .navbar {
+            background: #ffffff;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 16px 0;
+        }
+
+        .nav-flex {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 28px;
+            flex-wrap: wrap;
+        }
+
+        .logo a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #1a2c3e;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .logo i { color: #1a2c3e; }
+        
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #4a6272;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: #1a2c3e;
+        }
+
+        /* Message Icon */
+        .message-icon {
+            position: relative;
+            color: #1a2c3e;
+            font-size: 1.3rem;
+            text-decoration: none;
+            background: #f1f5f9;
+            padding: 8px 14px;
+            border-radius: 40px;
+            transition: 0.2s;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .message-icon:hover {
+            background: #e2edf2;
+        }
+
+        .message-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        
+        .home-icon { 
+            position: relative;
+            color: #1a2c3e;
+            font-size: 1.3rem;
+            text-decoration: none;
+            background: #f1f5f9;
+            padding: 8px 14px;
+            border-radius: 40px;
+            transition: 0.2s;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .home-icon:hover { 
+            background: #e2edf2; 
+        }
+
+        .cart-icon {
+            position: relative;
+            color: #1a2c3e;
+            font-size: 1.3rem;
+            text-decoration: none;
+            background: #f1f5f9;
+            padding: 8px 14px;
+            border-radius: 40px;
+            transition: 0.2s;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cart-icon:hover {
+            background: #e2edf2;
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        /* Dropdown Menu */
+        .user-menu-container {
+            position: relative;
+        }
+
+        .user-menu-trigger {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f1f5f9;
+            padding: 8px 16px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.2s;
+            border: none;
+            font-family: inherit;
+        }
+
+        .user-menu-trigger:hover {
+            background: #e2edf2;
+        }
+
+        .user-menu-trigger i {
+            font-size: 1.2rem;
+            color: #1a2c3e;
+        }
+
+        .user-menu-trigger span {
+            font-weight: 500;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            min-width: 200px;
+            display: none;
+            z-index: 1000;
+            overflow: hidden;
+            border: 1px solid #e9eef2;
+        }
+
+        .user-dropdown.show {
+            display: block;
+            animation: fadeInDown 0.2s ease;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dropdown-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: #1a2c3e;
+            transition: 0.2s;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f4f8;
+            font-weight: 500;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover {
+            background: #f8fafc;
+        }
+
+        .dropdown-item.logout-item {
+            color: #e74c3c;
+        }
+
+        .dropdown-item.logout-item i {
+            color: #e74c3c;
+        }
+
+        .profile-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 30px;
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 30px;
+        }
+
+        .profile-sidebar {
+            background: white;
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            border: 1px solid #e9eef2;
+        }
+
+        .profile-avatar-section {
+            background: linear-gradient(135deg, #1a2c3e, #2c4a6e);
+            padding: 40px 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 52px;
+            color: #1a2c3e;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        .profile-name-sidebar {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .profile-email-sidebar {
+            font-size: 0.85rem;
+            opacity: 0.85;
+        }
+
+        .profile-role-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            margin-top: 12px;
+        }
+
+        .profile-menu {
+            padding: 20px;
+        }
+
+        .profile-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #4a6272;
+            margin-bottom: 5px;
+        }
+
+        .profile-menu-item i {
+            width: 24px;
+            font-size: 1.2rem;
+        }
+
+        .profile-menu-item.active {
+            background: #1a2c3e;
+            color: white;
+        }
+
+        .profile-menu-item:hover:not(.active) {
+            background: #f1f5f9;
+        }
+
+        .profile-main {
+            background: white;
+            border-radius: 28px;
+            padding: 32px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            border: 1px solid #e9eef2;
+        }
+
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eef2f6;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .profile-header h2 {
+            font-size: 1.6rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .edit-toggle-btn {
+            background: #1a2c3e;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+
+        .edit-toggle-btn.edit-mode {
+            background: #10b981;
+        }
+
+        .profile-form {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .form-row label {
+            font-weight: 600;
+            color: #1a2c3e;
+        }
+
+        .form-row input, .form-row select, .form-row textarea {
+            padding: 12px 16px;
+            border: 2px solid #e2edf2;
+            border-radius: 16px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            transition: 0.2s;
+            background: #f8fafc;
+        }
+
+        .form-row input:focus, .form-row select:focus, .form-row textarea:focus {
+            outline: none;
+            border-color: #1a2c3e;
+            background: white;
+        }
+
+        .form-row input:disabled, .form-row select:disabled, .form-row textarea:disabled {
+            background: #f1f5f9;
+            color: #4a6272;
+            cursor: not-allowed;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eef2f6;
+        }
+
+        .save-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .cancel-btn {
+            background: #e2edf2;
+            color: #4a6272;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .stat-card-profile {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 20px;
+            text-align: center;
+        }
+
+        .stat-number-profile {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #1a2c3e;
+        }
+
+        .stat-label-profile {
+            font-size: 0.85rem;
+            color: #5f7f90;
+            margin-top: 5px;
+        }
+
+        .switch-provider-section {
+            background: linear-gradient(135deg, #fef5e8, #fff8f0);
+            border-radius: 20px;
+            padding: 24px;
+            margin-top: 30px;
+            border: 1px solid #ffe4c4;
+        }
+
+        .switch-provider-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .switch-provider-header i {
+            font-size: 2rem;
+            color: #1a2c3e;
+        }
+
+        .switch-provider-header h3 {
+            font-size: 1.2rem;
+            color: #1a2c3e;
+        }
+
+        .switch-provider-text {
+            color: #5f7f90;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+
+        .switch-to-provider-btn {
+            background: #1a2c3e;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: 0.2s;
+        }
+
+        .switch-to-provider-btn:hover {
+            background: #d97706;
+            transform: translateY(-2px);
+        }
+
+        .toast-message {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a2c3e;
+            color: white;
+            padding: 12px 28px;
+            border-radius: 60px;
+            font-weight: 500;
+            z-index: 2000;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.2);
+            display: none;
+        }
+
+        footer {
+            background: #0f212e;
+            color: #cbdde6;
+            padding: 60px 0 30px;
+            margin-top: 60px;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-col h4 {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-col h4::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 2px;
+            background: #2c6e9e;
+        }
+
+        .footer-col ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-col ul li {
+            margin-bottom: 12px;
+        }
+
+        .footer-col ul li a {
+            color: #cbdde6;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-col ul li a:hover {
+            color: #2c6e9e;
+        }
+
+        .footer-col ul li i {
+            width: 25px;
+            margin-right: 8px;
+            color: #2c6e9e;
+        }
+
+        .footer-logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .footer-logo i {
+            color: #2c6e9e;
+            font-size: 1.8rem;
+        }
+
+        .footer-col p {
+            line-height: 1.6;
+            opacity: 0.8;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer-bottom p {
+            opacity: 0.7;
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 900px) {
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            .stats-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="container nav-flex">
+        <div class="logo">
+            <a href="#" id="logoHomeLink">
+                <i class="fas fa-handshake"></i>
+                <span style="font-weight: 800;">ServiceHub</span>
+                <span style="font-weight: 400; opacity: 0.7;"> | Profile</span>
+            </a>
+        </div>
+        
+        <div class="nav-links" id="navLinks">
+            <a href="1seeker_dashboard.html" class="home-icon" id="homeIcon">
+                <i class="fas fa-home"></i>
+            </a>
+            <!-- Message Icon -->
+            <a href="#" class="message-icon" id="messageBtn">
+                <i class="fas fa-envelope"></i>
+                <span class="message-badge" id="messageCount">0</span>
+            </a>
+            
+            <a href="#" class="cart-icon" id="cartBtn">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-count" id="cartCount">0</span>
+            </a>
+            
+            <div class="user-menu-container" id="userMenuContainer">
+                <div class="user-menu-trigger" id="userMenuTrigger">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="greetingName">Account</span>
+                    <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i>
+                </div>
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="#" class="dropdown-item" id="profileNavLink">
+                        <i class="fas fa-user-circle"></i> My Profile
+                    </a>
+                    <a href="4user_requests.html" class="dropdown-item" id="requestsNavLink">
+                        <i class="fas fa-clipboard-list"></i> My Requests
+                    </a>
+                    <div class="dropdown-item logout-item" id="logoutBtnHeader">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<main>
+    <div class="profile-container">
+        <div class="profile-grid">
+            <aside class="profile-sidebar">
+                <div class="profile-avatar-section">
+                    <div class="profile-avatar" id="profileAvatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="profile-name-sidebar" id="sidebarName">Loading...</div>
+                    <div class="profile-email-sidebar" id="sidebarEmail">loading@email.com</div>
+                    <div class="profile-role-badge" id="roleBadge">Seeker</div>
+                </div>
+                <div class="profile-menu">
+                    <div class="profile-menu-item active" data-tab="info">
+                        <i class="fas fa-user-circle"></i> Personal Information
+                    </div>
+                    <div class="profile-menu-item" data-tab="stats">
+                        <i class="fas fa-chart-line"></i> My Activity
+                    </div>
+                    <div class="profile-menu-item" data-tab="settings">
+                        <i class="fas fa-cog"></i> Account Settings
+                    </div>
+                    <div class="switch-provider-section" id="switchProviderSection">
+                        <div class="switch-provider-header">
+                            <i class="fas fa-exchange-alt"></i>
+                            <h3>Switch to Provider Mode</h3>
+                        </div>
+                        <div class="switch-provider-text">
+                            Offer your services to thousands of seekers. Create a provider profile and start earning today!
+                        </div>
+                        <button class="switch-to-provider-btn" id="switchToProviderBtn">
+                            <i class="fas fa-briefcase"></i> Switch to Provider Mode
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+            <main class="profile-main">
+                <div id="infoTab" class="profile-tab">
+                    <div class="profile-header">
+                        <h2><i class="fas fa-user-edit"></i> Personal Information</h2>
+                        <button class="edit-toggle-btn" id="editToggleBtn">✎ Edit Profile</button>
+                    </div>
+                    
+                    <form id="profileForm" class="profile-form">
+                        <div class="form-row">
+                            <label><i class="fas fa-user"></i> Full Name</label>
+                            <input type="text" id="fullName" disabled value="">
+                        </div>
+                        <div class="form-row">
+                            <label><i class="fas fa-envelope"></i> Email Address</label>
+                            <input type="email" id="email" disabled value="">
+                        </div>
+                        <div class="form-row">
+                            <label><i class="fas fa-phone"></i> Phone Number</label>
+                            <input type="tel" id="phone" disabled value="">
+                        </div>
+                        <div class="form-row">
+                            <label><i class="fas fa-map-marker-alt"></i> Location</label>
+                            <input type="text" id="location" disabled value="">
+                        </div>
+                        <div class="form-row">
+                            <label><i class="fas fa-briefcase"></i> Occupation</label>
+                            <input type="text" id="occupation" disabled value="">
+                        </div>
+                        <div class="form-row">
+                            <label><i class="fas fa-info-circle"></i> Bio</label>
+                            <textarea id="bio" rows="3" disabled placeholder="Tell us a little about yourself..."></textarea>
+                        </div>
+                        <div class="form-actions" id="formActions" style="display: none;">
+                            <button type="button" class="cancel-btn" id="cancelEditBtn">Cancel</button>
+                            <button type="submit" class="save-btn">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="statsTab" class="profile-tab" style="display: none;">
+                    <div class="profile-header">
+                        <h2><i class="fas fa-chart-line"></i> My Activity</h2>
+                    </div>
+                    <div class="stats-cards">
+                        <div class="stat-card-profile">
+                            <div class="stat-number-profile" id="servicesHired">0</div>
+                            <div class="stat-label-profile">Services Hired</div>
+                        </div>
+                        <div class="stat-card-profile">
+                            <div class="stat-number-profile" id="servicesProvided">0</div>
+                            <div class="stat-label-profile">Services Provided</div>
+                        </div>
+                        <div class="stat-card-profile">
+                            <div class="stat-number-profile" id="avgRating">0.0</div>
+                            <div class="stat-label-profile">Average Rating</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 30px;">
+                        <h3><i class="fas fa-clock"></i> Recent Activity</h3>
+                        <div id="recentActivity" style="margin-top: 15px; color: #5f7f90;">
+                            No recent activity yet.
+                        </div>
+                    </div>
+                </div>
+
+                <div id="settingsTab" class="profile-tab" style="display: none;">
+                    <div class="profile-header">
+                        <h2><i class="fas fa-cog"></i> Account Settings</h2>
+                    </div>
+                    <div style="margin-bottom: 30px;">
+                        <h3><i class="fas fa-lock"></i> Security</h3>
+                        <button class="edit-toggle-btn" id="changePasswordBtn" style="margin-top: 15px; background: #1a2c3e;">Change Password</button>
+                    </div>
+                    <div style="border-top: 1px solid #eef2f6; padding-top: 30px;">
+                        <h3><i class="fas fa-trash-alt"></i> Danger Zone</h3>
+                        <button class="edit-toggle-btn" id="deleteAccountBtn" style="margin-top: 15px; background: #dc2626;">Delete Account</button>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <div class="footer-logo"><i class="fas fa-handshake"></i> ServiceHub</div>
+                <p>Connecting seekers with trusted pros since 2026.</p>
+            </div>
+            <div class="footer-col"><h4>Contact</h4><ul><li><i class="fas fa-phone"></i> 0993-123-4567</li><li> <i class="fas fa-envelope"></i>support@servicehub.com</li></ul></div>
+            <div class="footer-col"><h4>Company</h4><ul><li><a href="#">About</a></li><li><a href="#">Become a Provider</a></li></ul></div>
+            <div class="footer-col"><h4>Legal</h4><ul><li><a href="#">Terms</a></li><li><a href="#">Privacy</a></li></ul></div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2026 ServiceHub — Trusted marketplace.</p></div>
+    </div>
+</footer>
+
+<div id="toastMsg" class="toast-message"></div>
+<script src="database.js"></script>
+
+<script>
+    let currentUser = null;
+
+    function showToast(msg, type = 'info') {
+        const toast = document.getElementById('toastMsg');
+        toast.innerText = msg;
+        toast.style.backgroundColor = type === 'success' ? '#10b981' : (type === 'error' ? '#dc2626' : '#1a2c3e');
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 2800);
+    }
+
+    // ========== FIXED: updateUserUI function ==========
+    function updateUserUI() {
+        const greetingSpan = document.getElementById('greetingName');
+        if (greetingSpan && currentUser) {
+            let displayName = currentUser.name || currentUser.displayName || 'User';
+            if (displayName.length > 15) displayName = displayName.substring(0, 12) + '...';
+            greetingSpan.innerText = displayName;
+        }
+        
+        // Update sidebar
+        const sidebarName = document.getElementById('sidebarName');
+        const sidebarEmail = document.getElementById('sidebarEmail');
+        if (sidebarName) sidebarName.innerText = currentUser?.name || 'User';
+        if (sidebarEmail) sidebarEmail.innerText = currentUser?.email || '';
+        
+        // Update avatar
+        const avatarDiv = document.getElementById('profileAvatar');
+        if (avatarDiv && currentUser?.name) {
+            const initial = currentUser.name.charAt(0).toUpperCase();
+            avatarDiv.innerHTML = `<span style="font-size: 3rem; font-weight: 600;">${initial}</span>`;
+        }
+        
+        // Update form fields
+        if (document.getElementById('fullName')) {
+            document.getElementById('fullName').value = currentUser?.name || '';
+            document.getElementById('email').value = currentUser?.email || '';
+            document.getElementById('phone').value = currentUser?.phone || '';
+            document.getElementById('location').value = currentUser?.location || '';
+            document.getElementById('occupation').value = currentUser?.occupation || '';
+            document.getElementById('bio').value = currentUser?.bio || '';
+        }
+    }
+
+    function updateCartCount() {
+        const cartCountSpan = document.getElementById('cartCount');
+        if (!cartCountSpan) return;
+        
+        if (window.ServiceHubDB && currentUser && currentUser.email) {
+            try {
+                const activeCount = window.ServiceHubDB.getActiveRequestsCount ? 
+                    window.ServiceHubDB.getActiveRequestsCount(currentUser.email) : 0;
+                cartCountSpan.innerText = activeCount;
+                cartCountSpan.style.display = activeCount > 0 ? 'flex' : 'none';
+            } catch(e) {
+                console.error('Error updating cart count:', e);
+                cartCountSpan.innerText = '0';
+            }
+        } else {
+            cartCountSpan.innerText = '0';
+        }
+    }
+
+    function updateMessageCount() {
+        const messageBadge = document.getElementById('messageCount');
+        if (!messageBadge) return;
+        
+        let unreadCount = 0;
+        const savedMessages = localStorage.getItem('servicehub_messages');
+        if (savedMessages && currentUser?.email) {
+            try {
+                const messages = JSON.parse(savedMessages);
+                for (const convId in messages) {
+                    const convMessages = messages[convId] || [];
+                    unreadCount += convMessages.filter(m => m.receiver === currentUser.email && !m.read).length;
+                }
+            } catch(e) { console.error(e); }
+        }
+        
+        messageBadge.innerText = unreadCount;
+        messageBadge.style.display = unreadCount > 0 ? 'flex' : 'none';
+    }
+
+    function loadCurrentUser() {
+        const storedUser = localStorage.getItem('servicehub_user');
+        if (storedUser) {
+            try {
+                currentUser = JSON.parse(storedUser);
+                console.log('✅ User loaded:', currentUser);
+            } catch(e) { 
+                console.error(e);
+                currentUser = null;
+            }
+        }
+        
+        if (!currentUser) {
+            // Demo user fallback
+            currentUser = {
+                name: "Demo Seeker",
+                email: "seeker@example.com",
+                phone: "+1 (555) 123-4567",
+                location: "San Francisco, CA",
+                occupation: "Student",
+                bio: "Looking for quality services!",
+                userType: "seeker"
+            };
+            localStorage.setItem('servicehub_user', JSON.stringify(currentUser));
+        }
+        
+        updateUserUI();
+        if (window.ServiceHubDB) {
+            const stats = window.ServiceHubDB.getStats();
+            console.log('📊 Database stats:', stats);
+        }
+        updateCartCount();
+        updateMessageCount();
+        
+        // Update stats display
+        updateStatsDisplay();
+    }
+
+    function updateStatsDisplay() {
+        if (!window.ServiceHubDB || !currentUser) return;
+        
+        try {
+            const userRequests = window.ServiceHubDB.getUserRequests ? 
+                window.ServiceHubDB.getUserRequests(currentUser.email) : [];
+            
+            const hiredCount = userRequests.filter(r => r.status === 'completed' || r.status === 'accepted').length;
+            document.getElementById('servicesHired').innerText = hiredCount;
+            
+            // Recent activity
+            if (userRequests.length > 0) {
+                let activityHtml = '<ul style="list-style: none; padding: 0;">';
+                userRequests.slice(0, 3).forEach(req => {
+                    activityHtml += `<li style="padding: 12px 0; border-bottom: 1px solid #eef2f6;">
+                        <i class="fas fa-check-circle" style="color:#10b981; margin-right: 12px;"></i> 
+                        <strong>${req.serviceName || req.service || 'Service'}</strong> - 
+                        ${req.status || 'pending'} on ${req.preferredDate || new Date().toLocaleDateString()}
+                    </li>`;
+                });
+                activityHtml += '</ul>';
+                document.getElementById('recentActivity').innerHTML = activityHtml;
+            } else {
+                document.getElementById('recentActivity').innerHTML = 'No recent activity yet.';
+            }
+        } catch(e) {
+            console.error('Error updating stats:', e);
+        }
+        
+        document.getElementById('servicesProvided').innerText = '0';
+        document.getElementById('avgRating').innerText = '0.0';
+    }
+
+    function saveProfile(formData) {
+        if (!currentUser) return;
+        
+        currentUser.name = formData.get('fullName');
+        currentUser.phone = formData.get('phone');
+        currentUser.location = formData.get('location');
+        currentUser.occupation = formData.get('occupation');
+        currentUser.bio = formData.get('bio');
+        
+        localStorage.setItem('servicehub_user', JSON.stringify(currentUser));
+        
+        showToast("Profile updated successfully!", "success");
+        updateUserUI();
+        toggleEditMode(false);
+    }
+
+    function toggleEditMode(isEditing) {
+        const inputs = ['fullName', 'phone', 'location', 'occupation', 'bio'];
+        inputs.forEach(id => {
+            const input = document.getElementById(id);
+            if (input) input.disabled = !isEditing;
+        });
+        
+        const editBtn = document.getElementById('editToggleBtn');
+        const formActions = document.getElementById('formActions');
+        
+        if (isEditing) {
+            editBtn.innerText = 'Cancel Editing';
+            editBtn.classList.add('edit-mode');
+            formActions.style.display = 'flex';
+        } else {
+            editBtn.innerText = '✎ Edit Profile';
+            editBtn.classList.remove('edit-mode');
+            formActions.style.display = 'none';
+        }
+    }
+
+    function setupCartRedirect() {
+        const cartBtn = document.getElementById('cartBtn');
+        if (cartBtn) {
+            cartBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.location.href = '4user_requests.html';
+            });
+        }
+    }
+
+    function setupMessageRedirect() {
+        const messageBtn = document.getElementById('messageBtn');
+        if (messageBtn) {
+            messageBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.location.href = 'seeker_messages.html';
+            });
+        }
+    }
+
+    function setupUserMenu() {
+        const trigger = document.getElementById('userMenuTrigger');
+        const dropdown = document.getElementById('userDropdown');
+        
+        if (trigger && dropdown) {
+            trigger.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropdown.classList.toggle('show');
+            });
+            
+            document.addEventListener('click', (e) => {
+                if (!trigger.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.classList.remove('show');
+                }
+            });
+            
+            dropdown.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+        }
+        
+        const logoutBtn = document.getElementById('logoutBtnHeader');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                localStorage.removeItem('servicehub_user');
+                currentUser = null;
+                showToast('Logged out successfully');
+                setTimeout(() => {
+                    window.location.href = 'signin.html';
+                }, 1000);
+            });
+        }
+    }
+
+    function switchToProvider() {
+        if (confirm('Switch to provider mode? Your profile information will be carried over to your provider account.')) {
+            const providerData = {
+                name: currentUser.name,
+                email: currentUser.email,
+                phone: currentUser.phone,
+                location: currentUser.location,
+                occupation: currentUser.occupation,
+                bio: currentUser.bio,
+                role: 'provider'
+            };
+            sessionStorage.setItem('pending_provider_data', JSON.stringify(providerData));
+            showToast("Redirecting to provider profile setup...", "success");
+            setTimeout(() => {
+                window.location.href = 'provider_profile.html';
+            }, 1000);
+        }
+    }
+
+    function switchTab(tabName) {
+        document.querySelectorAll('.profile-tab').forEach(tab => tab.style.display = 'none');
+        const targetTab = document.getElementById(`${tabName}Tab`);
+        if(targetTab) targetTab.style.display = 'block';
+        
+        document.querySelectorAll('.profile-menu-item').forEach(item => item.classList.remove('active'));
+        const activeItem = document.querySelector(`.profile-menu-item[data-tab="${tabName}"]`);
+        if(activeItem) activeItem.classList.add('active');
+        
+        const dropdown = document.getElementById('userDropdown');
+        if(dropdown) dropdown.classList.remove('show');
+        
+        if (tabName === 'stats') {
+            updateStatsDisplay();
+        }
+    }
+
+    // Listen for storage changes
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'servicehub_messages') {
+            updateMessageCount();
+        }
+        if (e.key === 'servicehub_db_data') {
+            updateCartCount();
+            updateStatsDisplay();
+        }
+        if (e.key === 'servicehub_user') {
+            loadCurrentUser();
+        }
+    });
+
+    // Periodically refresh counts
+    setInterval(() => {
+        if (currentUser) {
+            updateCartCount();
+            updateMessageCount();
+        }
+    }, 5000);
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadCurrentUser();
+        
+        document.getElementById('editToggleBtn')?.addEventListener('click', () => {
+            const isCurrentlyEditing = !document.getElementById('fullName').disabled;
+            toggleEditMode(!isCurrentlyEditing);
+        });
+        
+        document.getElementById('cancelEditBtn')?.addEventListener('click', () => {
+            updateUserUI();
+            toggleEditMode(false);
+        });
+        
+        document.getElementById('profileForm')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            saveProfile(formData);
+        });
+        
+        document.getElementById('switchToProviderBtn')?.addEventListener('click', switchToProvider);
+        
+        document.querySelectorAll('.profile-menu-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const tab = item.dataset.tab;
+                switchTab(tab);
+            });
+        });
+        
+        document.getElementById('changePasswordBtn')?.addEventListener('click', () => {
+            showToast("Password reset link sent to your email!", "success");
+        });
+        
+        document.getElementById('deleteAccountBtn')?.addEventListener('click', () => {
+            if (confirm('⚠️ Are you sure? This action cannot be undone. All your data will be permanently removed.')) {
+                localStorage.removeItem('servicehub_user');
+                showToast("Account deleted. Redirecting...", "success");
+                setTimeout(() => window.location.href = 'index.html', 1500);
+            }
+        });
+        
+        const logoLink = document.getElementById('logoHomeLink');
+        if(logoLink) {
+            logoLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.location.href = '1seeker_dashboard.html';
+            });
+        }
+        
+        const homeIcon = document.getElementById('homeIcon');
+        if(homeIcon) {
+            homeIcon.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.location.href = '1seeker_dashboard.html';
+            });
+        }
+        
+        setupCartRedirect();
+        setupMessageRedirect();
+        setupUserMenu();
+    });
+</script>
+</body>
+</html>

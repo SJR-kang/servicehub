@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>ServiceHub · Provider Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f4f8;
+            color: #1a2c3e;
+            line-height: 1.5;
+        }
+
+        .main-header {
+            background: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 32px;
+        }
+
+        .header-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .logo a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #1a2c3e;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .logo i {
+            color: #1a2c3e;
+        }
+
+        .search-bar {
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .search-bar form {
+            display: flex;
+            gap: 8px;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 10px 16px;
+            border: 2px solid #e2edf2;
+            border-radius: 40px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: #1a2c3e;
+        }
+
+        .search-bar button {
+            background: #1a2c3e;
+            border: none;
+            padding: 0 20px;
+            border-radius: 40px;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .search-bar button:hover {
+            background: #2c4a6e;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-menu-container {
+            position: relative;
+        }
+
+        .user-menu-trigger {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f1f5f9;
+            padding: 8px 16px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .user-menu-trigger:hover {
+            background: #e2edf2;
+        }
+
+        .user-menu-trigger i {
+            font-size: 1.2rem;
+            color: #1a2c3e;
+        }
+
+        .user-menu-trigger span {
+            font-weight: 500;
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            min-width: 200px;
+            display: none;
+            z-index: 1000;
+            overflow: hidden;
+            border: 1px solid #e9eef2;
+        }
+
+        .user-dropdown.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: #1a2c3e;
+            transition: 0.2s;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f4f8;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover {
+            background: #f8fafc;
+        }
+
+        .dropdown-item.logout-item {
+            color: #e74c3c;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 0 32px;
+        }
+
+        .tabs-container {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            border-bottom: 2px solid #e2edf2;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 12px 24px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #5f7f90;
+            cursor: pointer;
+            border-radius: 40px;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn.active {
+            background: #1a2c3e;
+            color: white;
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: #e2edf2;
+        }
+
+        .tab-badge {
+            background: rgba(0,0,0,0.2);
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .tab-btn.active .tab-badge {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .products-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .add-product-btn {
+            background: #1a2c3e;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: 0.2s;
+        }
+
+        .add-product-btn:hover {
+            background: #2c4a6e;
+            transform: translateY(-2px);
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: 0.2s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+        }
+
+        .product-image {
+            height: 160px;
+            background: linear-gradient(135deg, #1a2c3e, #2c4a6e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+        }
+
+        .product-info {
+            padding: 20px;
+        }
+
+        .product-category {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #e2edf2;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #1a2c3e;
+            margin-bottom: 12px;
+        }
+
+        .product-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .product-price {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #1e7b48;
+            margin: 12px 0;
+        }
+
+        .product-description {
+            color: #5f7f90;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 12px;
+            border-top: 1px solid #eef2f6;
+            padding-top: 16px;
+        }
+
+        .btn-edit, .btn-delete {
+            flex: 1;
+            padding: 8px;
+            border-radius: 40px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .btn-edit {
+            background: #e2edf2;
+            color: #1a2c3e;
+        }
+
+        .btn-delete {
+            background: #ffe9e9;
+            color: #c7362b;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 28px;
+            width: 90%;
+            max-width: 500px;
+            padding: 32px;
+        }
+
+        .home-icon, .message-icon, .analytics-icon {
+            position: relative;
+            color: #1a2c3e;
+            font-size: 1.3rem;
+            text-decoration: none;
+            background: #f1f5f9;
+            padding: 8px 14px;
+            border-radius: 40px;
+            transition: 0.2s;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .home-icon:hover, .message-icon:hover, .analytics-icon:hover {
+            background: #e2edf2;
+        }
+
+        .message-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .modal-content input,
+        .modal-content select,
+        .modal-content textarea {
+            width: 100%;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            border: 2px solid #e2edf2;
+            border-radius: 16px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .btn-save {
+            background: #1a2c3e;
+            color: white;
+        }
+
+        .btn-cancel {
+            background: #e2edf2;
+            color: #5f7f90;
+        }
+
+        .requests-table {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+          .home-icon { position: relative; color: #f1f5f9; font-size: 1.3rem; text-decoration: none; background: #1a2c3e; padding: 8px 14px; border-radius: 40px; transition: 0.2s; }
+        .home-icon:hover { background: #e2edf2; }
+        
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 16px 20px;
+            background: #f8fafc;
+            font-weight: 600;
+            color: #4a6272;
+            border-bottom: 1px solid #e2edf2;
+        }
+
+        td {
+            padding: 16px 20px;
+            border-bottom: 1px solid #eef2f6;
+            vertical-align: middle;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-pending { background: #fff8e5; color: #b86b00; }
+        .status-inprogress { background: #e3f7ec; color: #1e7b48; }
+        .status-awaiting-payment { background: #fff0e6; color: #e67e22; }
+        .status-paid-downpayment { background: #d1fae5; color: #065f46; }
+        .status-paid-full { background: #d1fae5; color: #065f46; }
+        .status-completed { background: #d1fae5; color: #065f46; }
+        .status-rejected { background: #ffe9e9; color: #c7362b; }
+
+        .view-btn {
+            background: #1a2c3e;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #5f7f90;
+        }
+
+        .toast-msg {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a2c3e;
+            color: white;
+            padding: 12px 28px;
+            border-radius: 60px;
+            z-index: 2000;
+            animation: fadeToast 2.5s ease forwards;
+        }
+
+        @keyframes fadeToast {
+            0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            85% { opacity: 1; }
+            100% { opacity: 0; visibility: hidden; }
+        }
+
+        footer {
+            background: #0f212e;
+            color: #cbdde6;
+            padding: 60px 0 30px;
+            margin-top: 60px;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-col h4 {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-col h4::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 2px;
+            background: #2c6e9e;
+        }
+
+        .footer-col ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .clickable-row {
+            cursor: pointer;
+        }
+        .clickable-row:hover {
+            background: #f0f4f8;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard-container { padding: 0 20px; }
+            .tabs { justify-content: center; }
+            .tab-btn { padding: 10px 16px; font-size: 0.8rem; }
+            table { display: block; overflow-x: auto; }
+            .header-wrapper { flex-direction: column; }
+            .search-bar { max-width: 100%; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="main-header">
+    <div class="container">
+        <div class="header-wrapper">
+            <div class="logo">
+                <a href="provider_dashboard.html">
+                    <i class="fas fa-handshake"></i>
+                    <span>ServiceHub</span>
+                </a>
+            </div>
+            <div class="search-bar">
+                <form id="searchForm">
+                    <input type="text" id="searchInput" placeholder="Search products or requests...">
+                    <button type="submit"><i class="fas fa-search"></i></button>
+                </form>
+            </div>
+            <div class="header-actions">
+                <a href="provider_messages.html" class="message-icon">
+                    <i class="fas fa-envelope"></i>
+                    <span class="message-badge" id="messageCount">0</span>
+                </a>
+                <a href="analytics.html" class="analytics-icon">
+                    <i class="fas fa-chart-line"></i>
+                </a>
+                  <a href="provider_dashboard.html" class="home-icon" id="homeIcon">
+                    <i class="fas fa-home"></i>
+                </a>
+                <div class="user-menu-container" id="userMenuContainer">
+                    <div class="user-menu-trigger" id="userMenuTrigger">
+                        <i class="fas fa-user-circle"></i>
+                        <span id="greetingName">Provider</span>
+                        <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i>
+                    </div>
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="dropdown-item profile-item" id="profileBtnHeader">
+                            <i class="fas fa-user-circle"></i> Profile
+                        </div>
+                        <div class="dropdown-item analytic-item" id="analyticBtnHeader">
+                            <i class="fas fa-chart-line"></i> Analytics
+                        </div>
+                        <div class="dropdown-item logout-item" id="logoutBtnHeader">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs-container">
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="products">My Products & Services
+                    <span class="tab-badge" id="productsCount">0</span>
+                </button>
+                <button class="tab-btn" data-tab="pending">Pending
+                    <span class="tab-badge" id="pendingBadge">0</span>
+                </button>
+                <button class="tab-btn" data-tab="inprogress">In Progress
+                    <span class="tab-badge" id="inProgressBadge">0</span>
+                </button>
+                <button class="tab-btn" data-tab="awaiting_payment">Awaiting Payment
+                    <span class="tab-badge" id="awaitingPaymentBadge">0</span>
+                </button>
+                <button class="tab-btn" data-tab="completed">Completed
+                    <span class="tab-badge" id="completedBadge">0</span>
+                </button>
+                <button class="tab-btn" data-tab="rejected">Rejected
+                    <span class="tab-badge" id="rejectedBadge">0</span>
+                </button>
+                <button class="tab-btn" data-tab="sold">Sold Products
+                    <span class="tab-badge" id="soldBadge">0</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main>
+    <div class="dashboard-container">
+        <div id="productsSection">
+            <div class="products-header"> 
+                <h2><i class="fas fa-box"></i> My Products & Services</h2>
+                <button class="add-product-btn" onclick="openAddProductModal()">
+                    <i class="fas fa-plus"></i> Add New Product/Service
+                </button>
+            </div>
+            <div class="products-grid" id="productsGrid"></div>
+        </div>
+
+        <div id="requestsSection" style="display: none;">
+            <div class="requests-table">
+                <table>
+                    <thead>
+                        <tr><th>Request ID</th><th>Customer</th><th>Service</th><th>Date</th><th>Location</th><th>Budget</th><th>Status</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="soldSection" style="display: none;">
+            <div class="requests-table">
+                <table>
+                    <thead><tr><th>Order ID</th><th>Product Name</th><th>Buyer</th><th>Quantity</th><th>Total Price</th><th>Purchase Date</th><th>Status</th></tr></thead>
+                    <tbody id="soldTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div id="productModal" class="modal">
+    <div class="modal-content">
+        <h3 id="modalTitle">Add New Product/Service</h3>
+        <input type="hidden" id="editProductId">
+        <input type="text" id="productName" placeholder="Product/Service Name" required>
+        <select id="productCategory">
+            <option value="Academics">📚 Academics</option>
+            <option value="Cleaning">🧹 Cleaning</option>
+            <option value="Tutoring">📖 Tutoring</option>
+            <option value="Design">🎨 Design</option>
+            <option value="Photography">📷 Photography</option>
+            <option value="Choreography">💃 Choreography</option>
+            <option value="Delivery">🚚 Delivery</option>
+        </select>
+        <input type="text" id="productPrice" placeholder="Price" required>
+        <textarea id="productDescription" rows="4" placeholder="Description..."></textarea>
+        <div class="modal-buttons">
+            <button class="btn-save" onclick="saveProduct()">Save</button>
+            <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <h3>Delete Product</h3>
+        <p>Are you sure?</p>
+        <div class="modal-buttons">
+            <button class="btn-save" id="confirmDeleteBtn" style="background:#c7362b;">Delete</button>
+            <button class="btn-cancel" onclick="closeDeleteModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-col"><div class="footer-logo"><i class="fas fa-handshake"></i> ServiceHub</div><p>Connecting seekers with trusted pros since 2026.</p></div>
+            <div class="footer-col"><h4>Contact</h4><ul><li><i class="fas fa-phone"></i> 0993-123-4567</li></ul></div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2026 ServiceHub</p></div>
+    </div>
+</footer>
+
+<script src="database.js"></script>
+<script src="api.js"></script>
+<script>
+    let providerProducts = [];
+    let pendingDeleteId = null;
+    let soldProducts = [];
+    let serviceRequests = [];
+    let currentTab = 'products';
+    const toUiStatus = (status) => {
+        const value = String(status || '').toUpperCase();
+        if (value === 'PENDING') return 'pending';
+        if (value === 'IN_PROGRESS') return 'inprogress';
+        if (value === 'AWAITING_PAYMENT') return 'awaiting_payment';
+        if (value === 'PAID') return 'inprogress';
+        if (value === 'COMPLETED') return 'completed';
+        if (value === 'REJECTED') return 'rejected';
+        return String(status || 'pending').toLowerCase();
+    };
+    const mapApiRequest = (r) => ({
+        requestId: r.id,
+        requestCode: r.requestCode,
+        customerName: r.seeker?.name || "Customer",
+        customerEmail: r.seeker?.email || "",
+        serviceName: r.serviceName || "",
+        preferredDate: r.preferredDate ? new Date(r.preferredDate).toISOString().split("T")[0] : "",
+        preferredTime: r.preferredTime || "",
+        location: r.location || "",
+        budget: r.budget || "",
+        status: toUiStatus(r.status),
+        paymentConfirmed: ["PAID", "COMPLETED"].includes(String(r.status || "").toUpperCase()),
+        paymentMethod: r.paymentType || null,
+        amountPaid: r.paymentAmount || null,
+        requestedAmount: r.paymentAmount || null,
+        rejectionReason: r.rejectionReason || null
+    });
+
+    async function loadAllData() {
+        await ServiceHubDB.init();
+        
+        const stored = localStorage.getItem('provider_products');
+        if (stored) {
+            try { providerProducts = JSON.parse(stored); } catch(e) {}
+        }
+        if (providerProducts.length === 0) {
+            providerProducts = [
+                { id: 1, name: "Academic Proofreading", category: "Academics", price: "$25/page", description: "Expert proofreading." },
+                { id: 2, name: "Deep Cleaning", category: "Cleaning", price: "$150/session", description: "Professional cleaning." },
+                { id: 3, name: "Math Tutoring", category: "Tutoring", price: "$75/hour", description: "Expert tutoring." }
+            ];
+            saveProducts();
+        }
+        
+        loadSoldProducts();
+        
+        let loadedFromApi = false;
+        if (window.ServiceHubAPI && ServiceHubAPI.getToken()) {
+            try {
+                const apiRequests = await ServiceHubAPI.listRequests();
+                serviceRequests = (apiRequests || []).map(mapApiRequest);
+                loadedFromApi = true;
+            } catch (e) {
+                console.warn("API request list failed, using local fallback:", e.message);
+            }
+        }
+        const allRequests = loadedFromApi ? [] : ServiceHubDB.getAllRequests();
+        if (!loadedFromApi && allRequests.length === 0) {
+            serviceRequests = [
+                { requestId: "REQ-001", customerName: "John Doe", customerEmail: "john@example.com", serviceName: "Proofreading", preferredDate: "2025-05-15", preferredTime: "2:00 PM", location: "Boston, MA", budget: "$150", status: "pending", paymentConfirmed: false, paymentMethod: null, amountPaid: null },
+                { requestId: "REQ-002", customerName: "Sarah Johnson", customerEmail: "sarah@example.com", serviceName: "Deep Cleaning", preferredDate: "2025-05-10", preferredTime: "10:00 AM", location: "Los Angeles, CA", budget: "$200", status: "inprogress", paymentConfirmed: false, paymentMethod: null, amountPaid: null },
+                { requestId: "REQ-003", customerName: "Michael Brown", customerEmail: "michael@example.com", serviceName: "Math Tutoring", preferredDate: "2025-05-20", preferredTime: "4:00 PM", location: "Chicago, IL", budget: "$225", status: "awaiting_payment", paymentConfirmed: false, requestedAmount: 45, paymentMethod: null, amountPaid: null },
+                // Downpayment paid example - shows in In Progress tab
+                { requestId: "REQ-004", customerName: "Emily Davis", customerEmail: "emily@example.com", serviceName: "Proofreading", preferredDate: "2025-06-01", preferredTime: "1:00 PM", location: "San Francisco, CA", budget: "$350", status: "inprogress", paymentConfirmed: true, paymentMethod: "downpayment", amountPaid: 70 },
+                // Full payment paid example - shows in In Progress tab
+                { requestId: "REQ-005", customerName: "David Wilson", customerEmail: "david@example.com", serviceName: "Deep Cleaning", preferredDate: "2025-06-05", preferredTime: "9:00 AM", location: "Seattle, WA", budget: "$200", status: "inprogress", paymentConfirmed: true, paymentMethod: "full", amountPaid: 200 }
+            ];
+        } else if (!loadedFromApi) {
+            serviceRequests = allRequests;
+        }
+        
+        updateProductsCount();
+        updateTabBadges();
+        renderProducts();
+        renderSoldProducts();
+    }
+
+    function saveProducts() {
+        localStorage.setItem('provider_products', JSON.stringify(providerProducts));
+        updateProductsCount();
+    }
+
+    function updateProductsCount() {
+        const el = document.getElementById('productsCount');
+        if (el) el.innerText = providerProducts.length;
+    }
+
+    function renderProducts() {
+        const grid = document.getElementById('productsGrid');
+        if (!grid) return;
+        if (providerProducts.length === 0) {
+            grid.innerHTML = `<div class="empty-state"><i class="fas fa-box-open"></i><h3>No products yet</h3></div>`;
+            return;
+        }
+        grid.innerHTML = providerProducts.map(p => `
+            <div class="product-card">
+                <div class="product-image">${getCategoryIcon(p.category)}</div>
+                <div class="product-info">
+                    <span class="product-category">${escapeHtml(p.category)}</span>
+                    <h3 class="product-title">${escapeHtml(p.name)}</h3>
+                    <div class="product-price">${escapeHtml(p.price)}</div>
+                    <p class="product-description">${escapeHtml(p.description.substring(0, 100))}</p>
+                    <div class="product-actions">
+                        <button class="btn-edit" onclick="editProduct(${p.id})">Edit</button>
+                        <button class="btn-delete" onclick="confirmDeleteProduct(${p.id})">Delete</button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function getCategoryIcon(cat) {
+        const icons = { 'Academics':'📚','Cleaning':'🧹','Tutoring':'📖','Design':'🎨','Photography':'📷','Choreography':'💃','Delivery':'🚚' };
+        return `<div style="font-size:4rem;">${icons[cat]||'📦'}</div>`;
+    }
+
+    function openAddProductModal() {
+        document.getElementById('modalTitle').innerText = 'Add Product';
+        document.getElementById('editProductId').value = '';
+        document.getElementById('productName').value = '';
+        document.getElementById('productCategory').value = 'Academics';
+        document.getElementById('productPrice').value = '';
+        document.getElementById('productDescription').value = '';
+        document.getElementById('productModal').style.display = 'flex';
+    }
+
+    function editProduct(id) {
+        const p = providerProducts.find(x => x.id === id);
+        if (p) {
+            document.getElementById('modalTitle').innerText = 'Edit Product';
+            document.getElementById('editProductId').value = p.id;
+            document.getElementById('productName').value = p.name;
+            document.getElementById('productCategory').value = p.category;
+            document.getElementById('productPrice').value = p.price;
+            document.getElementById('productDescription').value = p.description;
+            document.getElementById('productModal').style.display = 'flex';
+        }
+    }
+
+    function saveProduct() {
+        const id = document.getElementById('editProductId').value;
+        const name = document.getElementById('productName').value.trim();
+        const category = document.getElementById('productCategory').value;
+        const price = document.getElementById('productPrice').value.trim();
+        const desc = document.getElementById('productDescription').value.trim();
+        if (!name || !price || !desc) { showToast('Please fill all fields'); return; }
+        const product = { id: id ? parseInt(id) : Date.now(), name, category, price, description: desc };
+        if (id) {
+            const idx = providerProducts.findIndex(p => p.id === parseInt(id));
+            if (idx !== -1) providerProducts[idx] = product;
+            showToast('Updated');
+        } else {
+            providerProducts.push(product);
+            showToast('Added');
+        }
+        saveProducts();
+        renderProducts();
+        closeModal();
+    }
+
+    function confirmDeleteProduct(id) { pendingDeleteId = id; document.getElementById('deleteModal').style.display = 'flex'; }
+    function deleteProduct() { if(pendingDeleteId){ providerProducts = providerProducts.filter(p=>p.id!==pendingDeleteId); saveProducts(); renderProducts(); showToast('Deleted'); pendingDeleteId=null; } closeDeleteModal(); }
+    function closeModal() { document.getElementById('productModal').style.display = 'none'; }
+    function closeDeleteModal() { document.getElementById('deleteModal').style.display = 'none'; pendingDeleteId=null; }
+
+    function updateTabBadges() {
+        const pending = serviceRequests.filter(r => r.status === 'pending').length;
+        // In Progress includes both: no payment yet AND paid (downpayment or full)
+        const inProgress = serviceRequests.filter(r => r.status === 'inprogress').length;
+        const awaitingPayment = serviceRequests.filter(r => r.status === 'awaiting_payment').length;
+        const completed = serviceRequests.filter(r => r.status === 'completed').length;
+        const rejected = serviceRequests.filter(r => r.status === 'rejected').length;
+        
+        document.getElementById('pendingBadge').innerText = pending;
+        document.getElementById('inProgressBadge').innerText = inProgress;
+        document.getElementById('awaitingPaymentBadge').innerText = awaitingPayment;
+        document.getElementById('completedBadge').innerText = completed;
+        document.getElementById('rejectedBadge').innerText = rejected;
+        document.getElementById('soldBadge').innerText = soldProducts.length;
+    }
+
+    function viewRequestDetails(id) { window.location.href = `request_details.html?id=${id}`; }
+
+    function getRequestsByTab(tab) {
+        if (tab === 'pending') return serviceRequests.filter(r => r.status === 'pending');
+        // In Progress tab shows ALL requests with status 'inprogress' (both unpaid and paid)
+        if (tab === 'inprogress') return serviceRequests.filter(r => r.status === 'inprogress');
+        if (tab === 'awaiting_payment') return serviceRequests.filter(r => r.status === 'awaiting_payment');
+        if (tab === 'completed') return serviceRequests.filter(r => r.status === 'completed');
+        if (tab === 'rejected') return serviceRequests.filter(r => r.status === 'rejected');
+        return [];
+    }
+
+    function renderRequestsTable() {
+        const tbody = document.getElementById('tableBody');
+        if (!tbody) return;
+        let filtered = getRequestsByTab(currentTab);
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" class="empty-state">No requests found</td></tr>`;
+            return;
+        }
+        
+        tbody.innerHTML = filtered.map(req => {
+            let statusClass = '', statusText = '';
+            
+            if (req.status === 'pending') { 
+                statusClass = 'status-pending'; 
+                statusText = 'PENDING'; 
+            }
+            else if (req.status === 'inprogress' && !req.paymentConfirmed) { 
+                statusClass = 'status-inprogress'; 
+                statusText = 'IN PROGRESS'; 
+            }
+            else if (req.status === 'awaiting_payment') { 
+                statusClass = 'status-awaiting-payment'; 
+                statusText = 'AWAITING PAYMENT'; 
+            }
+            else if (req.status === 'inprogress' && req.paymentConfirmed === true) {
+                // Different display for downpayment vs full payment
+                if (req.paymentMethod === 'downpayment') {
+                    statusClass = 'status-paid-downpayment';
+                    const budgetNum = parseFloat(req.budget?.replace(/[^0-9.-]+/g, '')) || 0;
+                    const remaining = budgetNum - (req.amountPaid || 0);
+                    statusText = `PAID ($${req.amountPaid} Downpayment) | Remaining: $${remaining}`;
+                } else {
+                    statusClass = 'status-paid-full';
+                    statusText = 'FULLY PAID';
+                }
+            }
+            else if (req.status === 'completed') { 
+                statusClass = 'status-completed'; 
+                statusText = 'COMPLETED'; 
+            }
+            else if (req.status === 'rejected') { 
+                statusClass = 'status-rejected'; 
+                statusText = 'REJECTED'; 
+            }
+            
+            return `<tr class="clickable-row" onclick="viewRequestDetails('${req.requestId}')">
+                <td><strong>${escapeHtml(req.requestCode || req.requestId)}</strong></td>
+                <td><strong>${escapeHtml(req.customerName)}</strong><br><small>${escapeHtml(req.customerEmail)}</small></td>
+                <td><strong>${escapeHtml(req.serviceName)}</strong></td>
+                <td>${escapeHtml(req.preferredDate)}<br><small>${escapeHtml(req.preferredTime)}</small></td>
+                <td>${escapeHtml(req.location)}</td>
+                <td>${escapeHtml(req.budget)}</td>
+                <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                <td><button class="view-btn" onclick="event.stopPropagation(); viewRequestDetails('${req.requestId}')">View</button></td>
+            </tr>`;
+        }).join('');
+    }
+
+    function loadSoldProducts() {
+        const stored = localStorage.getItem('sold_products');
+        if (stored) { try { soldProducts = JSON.parse(stored); } catch(e) {} }
+        if (soldProducts.length === 0) {
+            soldProducts = [{ orderId:"ORD-001", productName:"Calculus Notes", buyerName:"John Smith", quantity:1, totalPrice:"$45", purchaseDate:"2025-04-15", status:"delivered" }];
+            saveSoldProducts();
+        }
+    }
+    function saveSoldProducts() { localStorage.setItem('sold_products', JSON.stringify(soldProducts)); }
+    function renderSoldProducts() {
+        const tbody = document.getElementById('soldTableBody');
+        if (!tbody) return;
+        if (!soldProducts.length) { tbody.innerHTML = `<tr><td colspan="7" class="empty-state">No sold products</td></tr>`; return; }
+        tbody.innerHTML = soldProducts.map(i => `<tr><table>${escapeHtml(i.orderId)}</td><td>${escapeHtml(i.productName)}</td><td>${escapeHtml(i.buyerName)}</td><td>${i.quantity}</td><td>${escapeHtml(i.totalPrice)}</td><td>${escapeHtml(i.purchaseDate)}</td><td><span class="sold-badge">${escapeHtml(i.status)}</span></td></tr>`).join('');
+    }
+
+    function showToast(msg) { let t = document.createElement('div'); t.className = 'toast-msg'; t.innerText = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2600); }
+    function escapeHtml(str) { if(!str) return ''; return String(str).replace(/[&<>]/g, m => m==='&'?'&amp;':m==='<'?'&lt;':'&gt;'); }
+
+    function setupTabs() {
+        document.querySelectorAll('.tab-btn').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentTab = tab.getAttribute('data-tab');
+                document.getElementById('productsSection').style.display = currentTab === 'products' ? 'block' : 'none';
+                document.getElementById('requestsSection').style.display = (currentTab !== 'products' && currentTab !== 'sold') ? 'block' : 'none';
+                document.getElementById('soldSection').style.display = currentTab === 'sold' ? 'block' : 'none';
+                if (currentTab === 'products') renderProducts();
+                else if (currentTab === 'sold') renderSoldProducts();
+                else renderRequestsTable();
+            });
+        });
+    }
+
+    function setupUserMenu() {
+        const trigger = document.getElementById('userMenuTrigger');
+        const dropdown = document.getElementById('userDropdown');
+        if (trigger && dropdown) {
+            trigger.addEventListener('click', e => { e.stopPropagation(); dropdown.classList.toggle('show'); });
+            document.addEventListener('click', () => dropdown.classList.remove('show'));
+        }
+        document.getElementById('profileBtnHeader')?.addEventListener('click', () => window.location.href = 'provider_profile.html');
+        document.getElementById('analyticBtnHeader')?.addEventListener('click', () => window.location.href = 'analytics.html');
+        document.getElementById('logoutBtnHeader')?.addEventListener('click', () => { localStorage.removeItem('servicehub_user'); window.location.href = 'signin.html'; });
+    }
+
+    function updateMessageCount() {
+        let unread = 0;
+        const saved = localStorage.getItem('servicehub_messages');
+        if (saved) {
+            try {
+                const msgs = JSON.parse(saved);
+                const user = JSON.parse(localStorage.getItem('servicehub_user') || '{}');
+                const email = user.email || 'provider@servicehub.com';
+                for (const id in msgs) unread += msgs[id].filter(m => !m.read && m.receiver === email).length;
+            } catch(e) {}
+        }
+        const badge = document.getElementById('messageCount');
+        if (badge) badge.innerText = unread;
+    }
+
+    function setupAnalytics() {
+        const badge = document.getElementById('analyticCount');
+        if (badge) badge.innerText = serviceRequests.filter(r => r.status === 'pending').length || '';
+        document.querySelector('.analytics-icon')?.addEventListener('click', e => { e.preventDefault(); window.location.href = 'analytics.html'; });
+    }
+
+    document.getElementById('confirmDeleteBtn')?.addEventListener('click', deleteProduct);
+    document.getElementById('searchForm')?.addEventListener('submit', e => { e.preventDefault(); if (currentTab !== 'products' && currentTab !== 'sold') renderRequestsTable(); });
+
+    window.viewRequestDetails = viewRequestDetails;
+    window.openAddProductModal = openAddProductModal;
+    window.editProduct = editProduct;
+    window.confirmDeleteProduct = confirmDeleteProduct;
+    window.saveProduct = saveProduct;
+    window.closeModal = closeModal;
+    window.closeDeleteModal = closeDeleteModal;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadAllData();
+        setupTabs();
+        setupUserMenu();
+        updateMessageCount();
+        setupAnalytics();
+        const user = JSON.parse(localStorage.getItem('servicehub_user') || '{}');
+        const greeting = document.getElementById('greetingName');
+        if (greeting) greeting.innerText = user.name || user.email?.split('@')[0] || 'Provider';
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+const { z } = require("zod");
+const { prisma } = require("./_lib/db");
+const { json, readBody } = require("./_lib/http");
+const { getBearerToken, verifyToken } = require("./_lib/auth");
+
+const bodySchema = z.object({
+  providerId: z.string().min(1),
+  serviceName: z.string().min(1),
+  preferredDate: z.string().optional(),
+  preferredTime: z.string().optional(),
+  location: z.string().optional(),
+  budget: z.string().optional(),
+  serviceDetails: z.string().optional(),
+});
+
+exports.handler = async (event) => {
+  if (event.httpMethod === "OPTIONS") return json(200, { ok: true });
+  if (event.httpMethod !== "POST") return json(405, { error: "Method not allowed" });
+
+  const token = getBearerToken(event.headers);
+  if (!token) return json(401, { error: "Missing auth token" });
+
+  let session;
+  try {
+    session = verifyToken(token);
+  } catch (_) {
+    return json(401, { error: "Invalid auth token" });
+  }
+
+  const payload = readBody(event);
+  if (!payload) return json(400, { error: "Invalid JSON body" });
+  const parsed = bodySchema.safeParse(payload);
+  if (!parsed.success) return json(400, { error: "Invalid request payload" });
+
+  const request = await prisma.serviceRequest.create({
+    data: {
+      requestCode: `REQ-${Date.now()}`,
+      seekerId: session.sub,
+      providerId: parsed.data.providerId,
+      serviceName: parsed.data.serviceName,
+      preferredDate: parsed.data.preferredDate ? new Date(parsed.data.preferredDate) : null,
+      preferredTime: parsed.data.preferredTime || null,
+      location: parsed.data.location || null,
+      budget: parsed.data.budget || null,
+      serviceDetails: parsed.data.serviceDetails || null,
+      status: "PENDING",
+    },
+  });
+
+  return json(201, request);
+};
+

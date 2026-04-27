@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>ServiceHub · Edit Provider Profile</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f5f7fb;
+            color: #1a2c3e;
+            line-height: 1.45;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 30px;
+        }
+
+        /* ========= NAVBAR ========= */
+        .navbar {
+            background: #ffffff;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 16px 0;
+        }
+
+        .nav-flex {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 28px;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            color: #1a2c3e;
+            cursor: pointer;
+        }
+
+        .logo i {
+            color: #1a2c3e;
+            margin-right: 8px;
+        }
+
+        /* Header Actions Container - All icons side by side */
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        /* Common icon styles - all icons have consistent design */
+        .home-icon, 
+        .message-icon,
+        .analytics-icon {
+            position: relative;
+            color: #1a2c3e;
+            font-size: 1.3rem;
+            text-decoration: none;
+            background: #f1f5f9;
+            padding: 8px 14px;
+            border-radius: 40px;
+            transition: 0.2s;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Hover effect for all icons */
+        .home-icon:hover, 
+        .message-icon:hover, 
+        .analytics-icon:hover {
+            background: #e2edf2;
+            transform: translateY(-1px);
+        }
+
+        /* Active state for current page */
+        .analytics-icon.active {
+            background: #1a2c3e;
+            color: white;
+        }
+
+        /* Badge styles for message and analytics */
+        .message-badge{
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .user-menu-container {
+            position: relative;
+        }
+
+        .user-menu-trigger {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f1f5f9;
+            padding: 8px 16px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .user-menu-trigger:hover {
+            background: #e2edf2;
+        }
+
+        .user-menu-trigger i {
+            font-size: 1.2rem;
+            color: #1a2c3e;
+        }
+
+        .user-menu-trigger span {
+            font-weight: 500;
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            min-width: 200px;
+            display: none;
+            z-index: 1000;
+            overflow: hidden;
+            border: 1px solid #e9eef2;
+        }
+
+        .user-dropdown.show {
+            display: block;
+            animation: fadeInDown 0.2s ease;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dropdown-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: #1a2c3e;
+            transition: 0.2s;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f4f8;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover {
+            background: #f8fafc;
+        }
+
+        .dropdown-item.logout-item {
+            color: #e74c3c;
+        }
+
+        .dropdown-item.logout-item i {
+            color: #e74c3c;
+        }
+
+        /* ========= PROFILE PAGE STYLES ========= */
+        .profile-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 30px;
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 30px;
+        }
+
+        .profile-sidebar {
+            background: white;
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            border: 1px solid #e9eef2;
+            position: sticky;
+            top: 90px;
+            height: fit-content;
+        }
+
+        .profile-avatar-section {
+            background: linear-gradient(135deg, #1a2c3e, #2c4a6e);
+            padding: 40px 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            position: relative;
+            cursor: pointer;
+        }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-upload-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            text-align: center;
+            font-size: 11px;
+            padding: 5px;
+            opacity: 0;
+            transition: 0.2s;
+        }
+
+        .profile-avatar:hover .avatar-upload-overlay {
+            opacity: 1;
+        }
+
+        .profile-name-sidebar {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .profile-email-sidebar {
+            font-size: 0.85rem;
+            opacity: 0.85;
+        }
+
+        .profile-role-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            margin-top: 12px;
+        }
+
+        .profile-menu {
+            padding: 20px;
+        }
+
+        .profile-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #4a6272;
+            margin-bottom: 5px;
+        }
+
+        .profile-menu-item i {
+            width: 24px;
+            font-size: 1.2rem;
+        }
+
+        .profile-menu-item.active {
+            background: #1a2c3e;
+            color: white;
+        }
+
+        .profile-menu-item:hover:not(.active) {
+            background: #f1f5f9;
+        }
+
+        .switch-seeker-section {
+            background: linear-gradient(135deg, #fef5e8, #fff8f0);
+            border-radius: 20px;
+            padding: 24px;
+            margin-top: 30px;
+            border: 1px solid #ffe4c4;
+        }
+
+        .switch-seeker-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .switch-seeker-header i {
+            font-size: 2rem;
+            color: #1a2c3e;
+        }
+
+        .switch-seeker-header h3 {
+            font-size: 1.2rem;
+            color: #1a2c3e;
+        }
+
+        .switch-seeker-text {
+            color: #5f7f90;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+
+        .switch-mode-section {
+            padding: 20px;
+            border-top: 1px solid #e9eef2;
+            margin-top: 10px;
+        }
+
+        .switch-to-seeker-btn {
+            background: #1a2c3e;
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: 0.2s;
+        }
+
+        .switch-to-seeker-btn:hover {
+            background: linear-gradient(135deg, #1a2c3e, #647383);
+            transform: translateY(-2px);
+        }
+
+        .profile-main {
+            background: white;
+            border-radius: 28px;
+            padding: 32px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            border: 1px solid #e9eef2;
+        }
+
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eef2f6;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .profile-header h2 {
+            font-size: 1.6rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .edit-toggle-btn {
+            background: #1a2c3e;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+
+        .edit-toggle-btn.edit-mode {
+            background: #10b981;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .form-row label {
+            font-weight: 600;
+            color: #1a2c3e;
+        }
+
+        .form-row input, .form-row select, .form-row textarea {
+            padding: 12px 16px;
+            border: 2px solid #e2edf2;
+            border-radius: 16px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            transition: 0.2s;
+            background: #f8fafc;
+        }
+
+        .form-row input:focus, .form-row select:focus, .form-row textarea:focus {
+            outline: none;
+            border-color: #1a2c3e;
+            background: white;
+        }
+
+        .form-row input:disabled, .form-row select:disabled, .form-row textarea:disabled {
+            background: #f1f5f9;
+            color: #4a6272;
+            cursor: not-allowed;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eef2f6;
+        }
+
+        .save-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .cancel-btn {
+            background: #e2edf2;
+            color: #4a6272;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .service-item {
+            background: #f8fafc;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #e2edf2;
+            transition: 0.2s;
+        }
+
+        .service-item:hover {
+            border-color: #cbdde6;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .service-header {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 15px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .service-header input {
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1px solid #cbdde6;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+        }
+
+        .service-category-select {
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1px solid #cbdde6;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            background: white;
+        }
+
+        .service-description {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid #cbdde6;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            resize: vertical;
+            margin-bottom: 12px;
+        }
+
+        .service-price-input {
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1px solid #cbdde6;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            width: 120px;
+        }
+
+        .remove-btn {
+            background: #c7362b;
+            color: white;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .remove-btn:hover {
+            background: #a8281e;
+        }
+
+        .add-btn {
+            background: #e2edf2;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 40px;
+            cursor: pointer;
+            margin-top: 15px;
+            font-weight: 500;
+            transition: 0.2s;
+            width: 100%;
+        }
+
+        .add-btn:hover {
+            background: #cbdde6;
+        }
+
+        .credential-item {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 12px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .credential-item input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid #cbdde6;
+        }
+
+        .verification-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            background: #e8f5e9;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            color: #2e7d32;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .categories-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .category-tag {
+            background: #e2edf2;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: #4a6272;
+        }
+
+        .toast-msg {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a2c3e;
+            color: white;
+            padding: 12px 28px;
+            border-radius: 60px;
+            font-weight: 500;
+            z-index: 2000;
+            animation: fadeToast 2.5s ease forwards;
+        }
+
+        @keyframes fadeToast {
+            0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            85% { opacity: 1; }
+            100% { opacity: 0; visibility: hidden; }
+        }
+
+        footer {
+            background: #0f212e;
+            color: #cbdde6;
+            padding: 60px 0 30px;
+            margin-top: 60px;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-col h4 {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-col h4::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 2px;
+            background: #2c6e9e;
+        }
+
+        .footer-col ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-col ul li {
+            margin-bottom: 12px;
+        }
+
+        .footer-col ul li a {
+            color: #cbdde6;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-col ul li a:hover {
+            color: #2c6e9e;
+        }
+
+        .footer-col ul li i {
+            width: 25px;
+            margin-right: 8px;
+            color: #2c6e9e;
+        }
+
+        .footer-logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .footer-logo i {
+            color: #2c6e9e;
+            font-size: 1.8rem;
+        }
+
+        .footer-col p {
+            line-height: 1.6;
+            opacity: 0.8;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer-bottom p {
+            opacity: 0.7;
+            font-size: 0.85rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #5f7f90;
+        }
+
+        @media (max-width: 900px) {
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+            .service-header {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            .profile-sidebar {
+                position: relative;
+                top: 0;
+            }
+            .container {
+                padding: 0 20px;
+            }
+            .nav-flex {
+                flex-direction: column;
+            }
+            .nav-links {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="container nav-flex">
+        <div class="logo" onclick="window.location.href='provider_dashboard.html'" style="cursor:pointer;">
+            <i class="fas fa-handshake"></i>
+            <span style="font-weight: 800;">ServiceHub</span>
+            <span style="font-weight: 400; opacity: 0.7;"> | Profile</span>
+        </div>
+        
+        <!-- All icons side by side in nav-links -->
+        <div class="nav-links">
+            <!-- Home Icon -->
+            <a href="1seeker_dashboard.html" class="home-icon" id="homeIcon">
+                <i class="fas fa-home"></i>
+            </a>
+            
+            <!-- Message Icon -->
+            <div href="provider_messages.html" class="message-icon" id="messageIcon">
+                <i class="fas fa-envelope"></i>
+                <span class="message-badge" id="messageCount">0</span>
+            </div>
+            
+            <!-- Analytics Icon -->
+            <a href="analytics.html" class="analytics-icon" id="analyticsIcon">
+                <i class="fas fa-chart-line"></i>
+            </a>
+            
+            <!-- User Dropdown (Account) -->
+            <div class="user-menu-container" id="userMenuContainer">
+                <div class="user-menu-trigger" id="userMenuTrigger">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="greetingName">Provider</span>
+                    <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i>
+                </div>
+                <div class="user-dropdown" id="userDropdown">
+                    <div class="dropdown-item profile-item" id="profileBtnHeader">
+                        <i class="fas fa-user-circle"></i> Profile
+                    </div>
+                    <div class="dropdown-item analytic-item" id="analyticBtnHeader">
+                        <i class="fas fa-chart-line"></i> Analytics
+                    </div>
+                    <div class="dropdown-item logout-item" id="logoutBtnHeader">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<main>
+    <div class="profile-container">
+        <div class="profile-grid">
+            <aside class="profile-sidebar">
+                <div class="profile-avatar-section">
+                    <div class="profile-avatar" id="profileAvatar">
+                        <img id="avatarImg" src="https://randomuser.me/api/portraits/lego/1.jpg" alt="Avatar">
+                        <div class="avatar-upload-overlay" id="avatarUploadBtn">
+                            <i class="fas fa-camera"></i> Change
+                        </div>
+                        <input type="file" id="avatarFileInput" accept="image/*" style="display:none">
+                    </div>
+                    <div class="profile-name-sidebar" id="sidebarName">Loading...</div>
+                    <div class="profile-email-sidebar" id="sidebarEmail">loading@email.com</div>
+                    <div class="profile-role-badge" id="roleBadge">Provider</div>
+                </div>
+                <div class="profile-menu">
+                    <div class="profile-menu-item active" data-tab="info">
+                        <i class="fas fa-user-circle"></i> Personal Information
+                    </div>
+                    <div class="profile-menu-item" data-tab="services">
+                        <i class="fas fa-briefcase"></i> Services & Pricing
+                    </div>
+                    <div class="profile-menu-item" data-tab="credentials">
+                        <i class="fas fa-graduation-cap"></i> Credentials
+                    </div>
+                </div>
+                <div class="switch-seeker-section" id="switchSeekerSection">
+                    <div class="switch-seeker-header">
+                        <i class="fas fa-exchange-alt"></i>
+                        <h3>Switch to Seeker Mode</h3>
+                    </div>
+                    <div class="switch-seeker-text">
+                        Switch to seeker mode to browse and hire service providers for your needs.
+                    </div>
+                    <div class="switch-mode-section">
+                        <button class="switch-to-seeker-btn" id="switchToSeekerBtn">
+                            <i class="fas fa-exchange-alt"></i> Switch to Seeker Mode
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+            <main class="profile-main">
+                <!-- Tab 1: Personal Information -->
+                <div id="infoTab" class="profile-tab">
+                    <div class="profile-header">
+                        <h2><i class="fas fa-id-card"></i> Personal Information</h2>
+                        <button class="edit-toggle-btn" id="editToggleBtn">✎ Edit Profile</button>
+                    </div>
+                    
+                    <form id="profileForm" class="profile-form">
+                        <div class="form-row">
+                            <label><i class="fas fa-user"></i> Display Name</label>
+                            <input type="text" id="displayName" disabled value="">
+                        </div>
+                        <div class="form-row">
+                            <label><i class="fas fa-tag"></i> Service Title</label>
+                            <input type="text" id="serviceTitle" disabled value="">
+                        </div>
+                        <div class="form-row">
+                            <label><i class="fas fa-map-marker-alt"></i> Location</label>
+                            <input type="text" id="location" disabled value="">
+                        </div>
+                        <div class="form-row">
+                            <label><i class="fas fa-clock"></i> Availability</label>
+                            <input type="text" id="availability" disabled value="">
+                        </div>
+                        <div class="form-row">
+                            <label><i class="fas fa-language"></i> Languages</label>
+                            <input type="text" id="languages" disabled value="" placeholder="e.g., English, Spanish">
+                        </div>
+                        <div class="form-row">
+                            <label><i class="fas fa-calendar-alt"></i> Years Experience</label>
+                            <input type="number" id="yearsExperience" disabled value="">
+                        </div>
+                        <div class="form-row">
+                            <label><i class="fas fa-phone"></i> Contact Phone</label>
+                            <input type="text" id="contactPhone" disabled value="">
+                        </div>
+                        <div class="form-row">
+                            <label><i class="fas fa-envelope"></i> Contact Email</label>
+                            <input type="email" id="contactEmail" disabled value="">
+                        </div>
+                        <div class="form-row">
+                            <label><i class="fas fa-align-left"></i> About Me</label>
+                            <textarea id="description" rows="4" disabled placeholder="Tell clients about yourself..."></textarea>
+                        </div>
+                        <div class="form-actions" id="formActions" style="display: none;">
+                            <button type="button" class="cancel-btn" id="cancelEditBtn">Cancel</button>
+                            <button type="submit" class="save-btn">Save Changes</button>
+                        </div>
+                    </form>
+
+                    <div class="verification-section" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eef2f6;">
+                        <h3 style="margin-bottom: 15px;"><i class="fas fa-shield-alt"></i> Verification Status</h3>
+                        <div id="verificationBadges"></div>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Services & Pricing (Enhanced) -->
+                <div id="servicesTab" class="profile-tab" style="display: none;">
+                    <div class="profile-header">
+                        <h2><i class="fas fa-briefcase"></i> Services & Pricing</h2>
+                        <button class="edit-toggle-btn" id="editServicesBtn">✎ Edit Services</button>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px; padding: 15px; background: #fef5e8; border-radius: 16px;">
+                        <p style="font-size: 0.85rem; color: #e65100;">
+                            <i class="fas fa-info-circle"></i> Add the services you offer. Include service name, category, description, and price.
+                        </p>
+                        <div class="categories-list">
+                            <span class="category-tag">Academic</span>
+                            <span class="category-tag">Cleaning</span>
+                            <span class="category-tag">Tutoring</span>
+                            <span class="category-tag">Design</span>
+                            <span class="category-tag">Photography</span>
+                            <span class="category-tag">Choreography</span>
+                            <span class="category-tag">Delivery</span>
+                        </div>
+                    </div>
+                    
+                    <div id="servicesList" class="services-container"></div>
+                    <button id="addServiceBtn" class="add-btn" style="display:none;"><i class="fas fa-plus"></i> + Add New Service</button>
+                </div>
+
+                <!-- Tab 3: Credentials -->
+                <div id="credentialsTab" class="profile-tab" style="display: none;">
+                    <div class="profile-header">
+                        <h2><i class="fas fa-graduation-cap"></i> Credentials & Certifications</h2>
+                        <button class="edit-toggle-btn" id="editCredentialsBtn">✎ Edit Credentials</button>
+                    </div>
+                    <div id="credentialsList" class="credentials-container"></div>
+                    <button id="addCredentialBtn" class="add-btn" style="display:none;"><i class="fas fa-plus"></i> + Add Credential</button>
+                </div>
+            </main>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <div class="footer-logo"><i class="fas fa-handshake"></i> ServiceHub</div>
+                <p>Connecting seekers with trusted pros since 2026.</p>
+            </div>
+            <div class="footer-col"><h4>Contact</h4><ul><li><i class="fas fa-phone"></i> 0993-123-4567</li><li> <i class="fas fa-envelope"></i>support@servicehub.com</li></ul></div>
+            <div class="footer-col"><h4>Company</h4><ul><li><a href="#">About</a></li><li><a href="#">Become a Provider</a></li></ul></div>
+            <div class="footer-col"><h4>Legal</h4><ul><li><a href="#">Terms</a></li><li><a href="#">Privacy</a></li></ul></div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2026 ServiceHub — Trusted marketplace.</p></div>
+    </div>
+</footer>
+
+<script src="database.js"></script>
+<script>
+    let currentUser = null;
+    let currentProvider = null;
+    let activeTab = 'info';
+    let isEditingInfo = false;
+    let isEditingServices = false;
+    let isEditingCredentials = false;
+
+    const CATEGORIES = ["Academic", "Cleaning", "Tutoring", "Design", "Photography", "Choreography", "Delivery"];
+
+    function showToast(msg, isSuccess = true) {
+        let toast = document.createElement('div');
+        toast.className = 'toast-msg';
+        toast.style.background = isSuccess ? '#1e7b48' : '#c7362b';
+        toast.innerText = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2600);
+    }
+
+    function loadCurrentUser() {
+        const storedUser = localStorage.getItem('servicehub_user');
+        if (storedUser) {
+            try {
+                currentUser = JSON.parse(storedUser);
+                console.log('✅ Current user loaded:', currentUser);
+            } catch(e) { console.error(e); }
+        }
+        
+        if (!currentUser) {
+            currentUser = { name: "Demo Provider", email: "demo@servicehub.com", type: "provider" };
+        }
+        
+        updateUserUI();
+        loadProviderProfile();
+    }
+
+    function updateUserUI() {
+        const greetingSpan = document.getElementById('greetingName');
+        if (greetingSpan && currentUser) {
+            let displayName = currentUser.name;
+            if (displayName && displayName.length > 15) displayName = displayName.substring(0, 12) + '...';
+            greetingSpan.innerText = displayName || 'Account';
+        }
+    }
+
+    function loadProviderProfile() {
+        if (!window.ServiceHubDB) {
+            setTimeout(() => loadProviderProfile(), 500);
+            return;
+        }
+        
+        if (currentUser && currentUser.email) {
+            currentProvider = ServiceHubDB.getProviderByEmail(currentUser.email);
+        }
+        
+        if (!currentProvider && currentUser && currentUser.name) {
+            currentProvider = ServiceHubDB.getProviderByName(currentUser.name);
+        }
+        
+        if (!currentProvider) {
+            currentProvider = ServiceHubDB.getProviderById(4);
+        }
+        
+        if (!currentProvider) {
+            const allProviders = ServiceHubDB.getAllProviders();
+            if (allProviders && allProviders.length > 0) {
+                currentProvider = allProviders[0];
+            }
+        }
+        
+        if (currentProvider) {
+            renderProfileData();
+        } else {
+            document.getElementById('sidebarName').innerText = 'Provider Not Found';
+        }
+    }
+    
+    function renderProfileData() {
+        if (!currentProvider) return;
+        
+        const p = currentProvider;
+        const vs = p.verificationStatus || {};
+        
+        document.getElementById('sidebarName').innerText = p.name || 'Provider';
+        document.getElementById('sidebarEmail').innerText = p.contactEmail || p.email || '';
+        document.getElementById('avatarImg').src = p.avatarImg || 'https://randomuser.me/api/portraits/lego/1.jpg';
+        
+        document.getElementById('displayName').value = p.name || '';
+        document.getElementById('serviceTitle').value = p.service || '';
+        document.getElementById('location').value = p.location || '';
+        document.getElementById('availability').value = p.availability || '';
+        document.getElementById('languages').value = (p.languages || []).join(', ');
+        document.getElementById('yearsExperience').value = p.yearsExperience || '';
+        document.getElementById('contactPhone').value = p.contactPhone || '';
+        document.getElementById('contactEmail').value = p.contactEmail || p.email || '';
+        document.getElementById('description').value = p.description || p.fullDetail || '';
+        
+        const badgesHtml = `
+            ${vs.idVerified ? '<span class="verification-badge"><i class="fas fa-check-circle"></i> ID Verified</span>' : ''}
+            ${vs.emailVerified ? '<span class="verification-badge"><i class="fas fa-envelope"></i> Email Verified</span>' : ''}
+            ${vs.paymentVerified ? '<span class="verification-badge"><i class="fas fa-credit-card"></i> Payment Verified</span>' : ''}
+            ${vs.backgroundChecked ? '<span class="verification-badge"><i class="fas fa-shield-alt"></i> Background Checked</span>' : ''}
+        `;
+        document.getElementById('verificationBadges').innerHTML = badgesHtml || '<span class="verification-badge">Basic Account</span>';
+        
+        renderServicesList();
+        renderCredentialsList();
+    }
+    
+    function renderServicesList() {
+        const container = document.getElementById('servicesList');
+        if (!container || !currentProvider) return;
+        
+        const services = currentProvider.servicesOffered || [];
+        
+        if (services.length === 0) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-box-open" style="font-size: 3rem; margin-bottom: 10px;"></i><p>No services added yet.</p><p style="font-size: 0.85rem;">Click "Edit Services" then "Add New Service" to get started.</p></div>';
+            return;
+        }
+        
+        container.innerHTML = services.map((service, idx) => `
+            <div class="service-item" data-service-idx="${idx}">
+                <div class="service-header">
+                    <input type="text" class="service-name" value="${escapeHtml(service.name)}" placeholder="Service Name" ${!isEditingServices ? 'disabled' : ''}>
+                    <select class="service-category-select" ${!isEditingServices ? 'disabled' : ''}>
+                        ${CATEGORIES.map(cat => `<option value="${cat}" ${service.category === cat ? 'selected' : ''}>${cat}</option>`).join('')}
+                    </select>
+                    <input type="text" class="service-price-input" value="${escapeHtml(service.price)}" placeholder="Price (e.g., $50/hour)" ${!isEditingServices ? 'disabled' : ''}>
+                    ${isEditingServices ? `<button type="button" class="remove-btn" onclick="removeService(${idx})"><i class="fas fa-trash"></i> Remove</button>` : ''}
+                </div>
+                <textarea class="service-description" rows="2" placeholder="Describe your service in detail..." ${!isEditingServices ? 'disabled' : ''}>${escapeHtml(service.description || '')}</textarea>
+            </div>
+        `).join('');
+    }
+    
+    function renderCredentialsList() {
+        const container = document.getElementById('credentialsList');
+        if (!container || !currentProvider) return;
+        
+        const credentials = currentProvider.credentials || [];
+        
+        if (credentials.length === 0) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-certificate" style="font-size: 3rem; margin-bottom: 10px;"></i><p>No credentials added yet.</p></div>';
+            return;
+        }
+        
+        container.innerHTML = credentials.map((cred, idx) => `
+            <div class="credential-item" data-cred-idx="${idx}">
+                <input type="text" class="credential-input" value="${escapeHtml(cred)}" placeholder="Credential" ${!isEditingCredentials ? 'disabled' : ''}>
+                ${isEditingCredentials ? `<button type="button" class="remove-btn" onclick="removeCredential(${idx})"><i class="fas fa-trash"></i> Remove</button>` : ''}
+            </div>
+        `).join('');
+    }
+    
+    function saveProfileInfo() {
+        const updatedData = {
+            name: document.getElementById('displayName')?.value,
+            service: document.getElementById('serviceTitle')?.value,
+            location: document.getElementById('location')?.value,
+            availability: document.getElementById('availability')?.value,
+            yearsExperience: parseInt(document.getElementById('yearsExperience')?.value) || 0,
+            contactPhone: document.getElementById('contactPhone')?.value,
+            contactEmail: document.getElementById('contactEmail')?.value,
+            description: document.getElementById('description')?.value,
+            fullDetail: document.getElementById('description')?.value
+        };
+        
+        const languagesInput = document.getElementById('languages')?.value;
+        if (languagesInput) {
+            updatedData.languages = languagesInput.split(',').map(l => l.trim());
+        }
+        
+        const result = ServiceHubDB.updateProvider(currentProvider.id, updatedData);
+        
+        if (result) {
+            currentProvider = result;
+            showToast('Profile updated successfully!');
+            toggleInfoEdit(false);
+            renderProfileData();
+        } else {
+            showToast('Error saving profile.', false);
+        }
+    }
+    
+    function saveServices() {
+        const services = [];
+        const serviceItems = document.querySelectorAll('.service-item');
+        serviceItems.forEach(item => {
+            const name = item.querySelector('.service-name')?.value;
+            const category = item.querySelector('.service-category-select')?.value;
+            const price = item.querySelector('.service-price-input')?.value;
+            const description = item.querySelector('.service-description')?.value;
+            if (name && name.trim()) {
+                services.push({ 
+                    name: name.trim(), 
+                    category: category || 'General',
+                    price: price || 'Contact for price', 
+                    description: description || '' 
+                });
+            }
+        });
+        
+        const result = ServiceHubDB.updateProvider(currentProvider.id, { servicesOffered: services });
+        if (result) {
+            currentProvider = result;
+            showToast('Services updated successfully!');
+            toggleServicesEdit(false);
+            renderServicesList();
+        } else {
+            showToast('Error saving services.', false);
+        }
+    }
+    
+    function saveCredentials() {
+        const credentials = [];
+        const credItems = document.querySelectorAll('.credential-item');
+        credItems.forEach(item => {
+            const cred = item.querySelector('.credential-input')?.value;
+            if (cred && cred.trim()) {
+                credentials.push(cred.trim());
+            }
+        });
+        
+        const result = ServiceHubDB.updateProvider(currentProvider.id, { credentials: credentials });
+        if (result) {
+            currentProvider = result;
+            showToast('Credentials updated successfully!');
+            toggleCredentialsEdit(false);
+            renderCredentialsList();
+        } else {
+            showToast('Error saving credentials.', false);
+        }
+    }
+    
+    function toggleInfoEdit(editing) {
+        isEditingInfo = editing;
+        const inputs = ['displayName', 'serviceTitle', 'location', 'availability', 'languages', 'yearsExperience', 'contactPhone', 'contactEmail', 'description'];
+        inputs.forEach(id => {
+            const input = document.getElementById(id);
+            if (input) input.disabled = !editing;
+        });
+        
+        const editBtn = document.getElementById('editToggleBtn');
+        const formActions = document.getElementById('formActions');
+        
+        if (editing) {
+            editBtn.innerText = 'Cancel Editing';
+            editBtn.classList.add('edit-mode');
+            formActions.style.display = 'flex';
+        } else {
+            editBtn.innerText = '✎ Edit Profile';
+            editBtn.classList.remove('edit-mode');
+            formActions.style.display = 'none';
+        }
+    }
+    
+    function toggleServicesEdit(editing) {
+        isEditingServices = editing;
+        const editBtn = document.getElementById('editServicesBtn');
+        const addBtn = document.getElementById('addServiceBtn');
+        
+        if (editing) {
+            editBtn.innerText = 'Cancel Editing';
+            editBtn.classList.add('edit-mode');
+            addBtn.style.display = 'block';
+            renderServicesList();
+        } else {
+            editBtn.innerText = '✎ Edit Services';
+            editBtn.classList.remove('edit-mode');
+            addBtn.style.display = 'none';
+            renderServicesList();
+        }
+    }
+    
+    function toggleCredentialsEdit(editing) {
+        isEditingCredentials = editing;
+        const editBtn = document.getElementById('editCredentialsBtn');
+        const addBtn = document.getElementById('addCredentialBtn');
+        
+        if (editing) {
+            editBtn.innerText = 'Cancel Editing';
+            editBtn.classList.add('edit-mode');
+            addBtn.style.display = 'block';
+            renderCredentialsList();
+        } else {
+            editBtn.innerText = '✎ Edit Credentials';
+            editBtn.classList.remove('edit-mode');
+            addBtn.style.display = 'none';
+            renderCredentialsList();
+        }
+    }
+    
+    function addServiceField() {
+        const container = document.getElementById('servicesList');
+        const emptyState = container.querySelector('.empty-state');
+        if (emptyState) {
+            container.innerHTML = '';
+        }
+        
+        const newIndex = Date.now();
+        const newServiceHtml = `
+            <div class="service-item" data-service-idx="${newIndex}">
+                <div class="service-header">
+                    <input type="text" class="service-name" placeholder="Service Name" style="background:white;">
+                    <select class="service-category-select" style="background:white;">
+                        ${CATEGORIES.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+                    </select>
+                    <input type="text" class="service-price-input" placeholder="Price (e.g., $50/hour)" style="background:white;">
+                    <button type="button" class="remove-btn" onclick="this.closest('.service-item').remove()"><i class="fas fa-trash"></i> Remove</button>
+                </div>
+                <textarea class="service-description" rows="2" placeholder="Describe your service in detail..." style="background:white;"></textarea>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', newServiceHtml);
+    }
+    
+    function addCredentialField() {
+        const container = document.getElementById('credentialsList');
+        const emptyState = container.querySelector('.empty-state');
+        if (emptyState) {
+            container.innerHTML = '';
+        }
+        
+        const newIndex = Date.now();
+        const newCredHtml = `
+            <div class="credential-item" data-cred-idx="${newIndex}">
+                <input type="text" class="credential-input" placeholder="Enter credential (e.g., PhD, Certification)" style="background:white;">
+                <button type="button" class="remove-btn" onclick="this.closest('.credential-item').remove()"><i class="fas fa-trash"></i> Remove</button>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', newCredHtml);
+    }
+    
+    function switchToSeeker() {
+        if (confirm('Switch to Seeker Mode? Your provider profile will be saved and you will be redirected to the seeker dashboard.')) {
+            const seekerData = {
+                name: currentProvider.name,
+                email: currentProvider.contactEmail || currentProvider.email,
+                phone: currentProvider.contactPhone || '',
+                location: currentProvider.location || '',
+                occupation: currentProvider.service || '',
+                bio: currentProvider.description || currentProvider.fullDetail || '',
+                role: 'seeker'
+            };
+            
+            const currentUserData = {
+                name: currentProvider.name,
+                email: currentProvider.contactEmail || currentProvider.email,
+                phone: currentProvider.contactPhone || '',
+                location: currentProvider.location || '',
+                occupation: currentProvider.service || '',
+                bio: currentProvider.description || currentProvider.fullDetail || '',
+                type: 'seeker'
+            };
+            
+            localStorage.setItem('servicehub_user', JSON.stringify(currentUserData));
+            sessionStorage.setItem('pending_seeker_data', JSON.stringify(seekerData));
+            
+            showToast('Switching to Seeker Mode...', true);
+            setTimeout(() => {
+                window.location.href = '1seeker_dashboard.html';
+            }, 1000);
+        }
+    }
+    
+    window.removeService = function(idx) {
+        const serviceItem = document.querySelector(`.service-item[data-service-idx="${idx}"]`);
+        if (serviceItem) serviceItem.remove();
+        const remainingServices = document.querySelectorAll('.service-item');
+        if (remainingServices.length === 0 && isEditingServices) {
+            document.getElementById('servicesList').innerHTML = '<div class="empty-state"><i class="fas fa-box-open" style="font-size: 3rem; margin-bottom: 10px;"></i><p>No services added yet.</p></div>';
+        }
+    };
+    
+    window.removeCredential = function(idx) {
+        const credItem = document.querySelector(`.credential-item[data-cred-idx="${idx}"]`);
+        if (credItem) credItem.remove();
+        const remainingCreds = document.querySelectorAll('.credential-item');
+        if (remainingCreds.length === 0 && isEditingCredentials) {
+            document.getElementById('credentialsList').innerHTML = '<div class="empty-state"><i class="fas fa-certificate" style="font-size: 3rem; margin-bottom: 10px;"></i><p>No credentials added yet.</p></div>';
+        }
+    };
+    
+    function handleAvatarUpload(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('avatarImg').src = e.target.result;
+                ServiceHubDB.updateProvider(currentProvider.id, { avatarImg: e.target.result });
+                showToast('Avatar updated!');
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+    
+    function switchTab(tabName) {
+        activeTab = tabName;
+        
+        document.getElementById('infoTab').style.display = 'none';
+        document.getElementById('servicesTab').style.display = 'none';
+        document.getElementById('credentialsTab').style.display = 'none';
+        
+        document.getElementById(`${tabName}Tab`).style.display = 'block';
+        
+        document.querySelectorAll('.profile-menu-item').forEach(item => {
+            item.classList.remove('active');
+            if (item.dataset.tab === tabName) {
+                item.classList.add('active');
+            }
+        });
+        
+        if (tabName !== 'info') toggleInfoEdit(false);
+        if (tabName !== 'services') toggleServicesEdit(false);
+        if (tabName !== 'credentials') toggleCredentialsEdit(false);
+    }
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    function setupUserMenu() {
+        const trigger = document.getElementById('userMenuTrigger');
+        const dropdown = document.getElementById('userDropdown');
+        if (trigger && dropdown) {
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdown.classList.toggle('show');
+            });
+            document.addEventListener('click', (e) => {
+                if (!trigger.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.classList.remove('show');
+                }
+            });
+        }
+        
+        const analyticBtn = document.getElementById('analyticBtnHeader');
+        if (analyticBtn) {
+            analyticBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                window.location.href = 'analytics.html';
+            });
+        }
+        
+        const profileBtn = document.getElementById('profileBtnHeader');
+        if (profileBtn) {
+            profileBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropdown.classList.remove('show');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        }
+        
+        const logoutBtn = document.getElementById('logoutBtnHeader');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                localStorage.removeItem('servicehub_user');
+                showToast('Logged out successfully');
+                setTimeout(() => {
+                    window.location.href = 'signin.html';
+                }, 800);
+            });
+        }
+    }
+
+    // Event Listeners
+    document.getElementById('editToggleBtn')?.addEventListener('click', () => {
+        if (isEditingInfo) {
+            saveProfileInfo();
+        } else {
+            toggleInfoEdit(true);
+        }
+    });
+    
+    document.getElementById('cancelEditBtn')?.addEventListener('click', () => {
+        toggleInfoEdit(false);
+        renderProfileData();
+    });
+    
+    document.getElementById('profileForm')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        saveProfileInfo();
+    });
+    
+    document.getElementById('editServicesBtn')?.addEventListener('click', () => {
+        if (isEditingServices) {
+            saveServices();
+        } else {
+            toggleServicesEdit(true);
+        }
+    });
+    
+    document.getElementById('editCredentialsBtn')?.addEventListener('click', () => {
+        if (isEditingCredentials) {
+            saveCredentials();
+        } else {
+            toggleCredentialsEdit(true);
+        }
+    });
+    
+    document.getElementById('addServiceBtn')?.addEventListener('click', addServiceField);
+    document.getElementById('addCredentialBtn')?.addEventListener('click', addCredentialField);
+    document.getElementById('avatarUploadBtn')?.addEventListener('click', () => {
+        document.getElementById('avatarFileInput').click();
+    });
+    document.getElementById('avatarFileInput')?.addEventListener('change', handleAvatarUpload);
+    
+    document.getElementById('switchToSeekerBtn')?.addEventListener('click', switchToSeeker);
+    
+    document.querySelectorAll('.profile-menu-item').forEach(item => {
+        item.addEventListener('click', () => {
+            switchTab(item.dataset.tab);
+        });
+    });
+    
+    loadCurrentUser();
+    setupUserMenu();
+</script>
+</body>
+</html>

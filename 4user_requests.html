@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>ServiceHub · Your Requests</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f5f9fc; color: #1a2c3e; line-height: 1.5; }
+        .main-header { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border-bottom: 1px solid #e9eef2; position: sticky; top: 0; z-index: 100; }
+        .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+        .header-wrapper { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; gap: 20px; flex-wrap: wrap; }
+        .logo a { display: flex; align-items: center; gap: 10px; font-size: 1.5rem; font-weight: 800; color: #1a2c3e; text-decoration: none; cursor: pointer; }
+        .logo i { color: #1a2c3e; }
+        .search-bar { flex: 1; max-width: 400px; }
+        .search-bar form { display: flex; gap: 8px; }
+        .search-bar input { flex: 1; padding: 10px 16px; border: 2px solid #e2edf2; border-radius: 40px; font-family: 'Inter', sans-serif; }
+        .search-bar button { background: #1a2c3e; border: none; padding: 0 20px; border-radius: 40px; color: white; cursor: pointer; }
+        .header-actions { display: flex; align-items: center; gap: 20px; }
+        
+        .message-icon {
+            position: relative;
+            color: #1a2c3e;
+            font-size: 1.3rem;
+            text-decoration: none;
+            background: #f1f5f9;
+            padding: 8px 14px;
+            border-radius: 40px;
+            transition: 0.2s;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .message-icon:hover { background: #e2edf2; }
+        .message-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        .home-icon { position: relative;
+            color: #1a2c3e;
+            font-size: 1.3rem;
+            text-decoration: none;
+            background: #f1f5f9;
+            padding: 8px 14px;
+            border-radius: 40px;
+            transition: 0.2s;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;}
+        .home-icon:hover { background: #e2edf2; }
+        
+        .cart-icon { position: relative; color: #f1f5f9; font-size: 1.3rem; text-decoration: none; background: #1a2c3e; padding: 8px 14px; border-radius: 40px; transition: 0.2s; }
+        .cart-icon:hover { background: #e2edf2; }
+        .cart-count { position: absolute; top: -6px; right: -6px; background: #e74c3c; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+        .user-menu-container { position: relative; }
+        .user-menu-trigger { display: flex; align-items: center; gap: 10px; background: #f1f5f9; padding: 8px 16px; border-radius: 40px; cursor: pointer; transition: 0.2s; }
+        .user-menu-trigger:hover { background: #e2edf2; }
+        .user-menu-trigger i { font-size: 1.2rem; color: #1a2c3e; }
+        .user-menu-trigger span { font-weight: 500; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .user-dropdown { position: absolute; top: 100%; right: 0; margin-top: 8px; background: white; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); min-width: 180px; display: none; z-index: 1000; overflow: hidden; border: 1px solid #e9eef2; }
+        .user-dropdown.show { display: block; }
+        .dropdown-item { padding: 12px 20px; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #1a2c3e; transition: 0.2s; cursor: pointer; border-bottom: 1px solid #f0f4f8; }
+        .dropdown-item:last-child { border-bottom: none; }
+        .dropdown-item:hover { background: #f8fafc; }
+        .dropdown-item.logout-item { color: #e74c3c; }
+        .dropdown-item.logout-item i { color: #e74c3c; }
+        
+        /* Tabs Styles */
+        .tabs-container {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: center;
+        }
+        .tabs {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            border-bottom: 2px solid #e2edf2;
+            padding-bottom: 12px;
+        }
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 10px 24px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #5f7f90;
+            cursor: pointer;
+            border-radius: 40px;
+            transition: all 0.2s ease;
+        }
+        .tab-btn:hover {
+            background: #eef2f6;
+            color: #1a2c3e;
+        }
+        .tab-btn.active {
+            background: #1a2c3e;
+            color: white;
+        }
+        .tab-count {
+            display: inline-block;
+            background: #e2edf2;
+            color: #4a6272;
+            border-radius: 40px;
+            padding: 2px 8px;
+            font-size: 0.7rem;
+            margin-left: 6px;
+        }
+        .tab-btn.active .tab-count {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .requests-container { max-width: 1100px; margin: 48px auto; padding: 0 24px; }
+        .requests-grid { display: flex; flex-direction: column; gap: 24px; }
+        .request-card-item { background: white; border-radius: 28px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; border: 1px solid #eef3f8; }
+        .request-card-item:hover { transform: translateY(-2px); box-shadow: 0 16px 28px rgba(0,0,0,0.08); }
+        .request-status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 40px; font-size: 0.75rem; font-weight: 700; }
+        
+        /* Status Colors */
+        .status-pending { background: #fff8e5; color: #b86b00; }
+        .status-awaiting-payment { background: #fff0e6; color: #e67e22; }
+        .status-inprogress { background: #e3f7ec; color: #1e7b48; }
+        .status-paid { background: #d1fae5; color: #065f46; }
+        .status-completed { background: #d1fae5; color: #065f46; }
+        .status-rejected { background: #ffe9e9; color: #c7362b; }
+        
+        .request-header-info { padding: 20px 28px; border-bottom: 1px solid #eef2f6; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; background: #fefefe; }
+        .provider-name { font-weight: 800; font-size: 1.2rem; }
+        .service-name { color: #4a6272; font-weight: 500; margin-left: 8px; }
+        .request-body-details { padding: 20px 28px; display: flex; flex-direction: column; gap: 18px; }
+        .detail-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: baseline; font-size: 0.95rem; }
+        .detail-label { width: 130px; font-weight: 600; color: #4a6272; }
+        .detail-value { flex: 1; color: #1e2f3c; font-weight: 500; }
+        .downpayment-section { background: #fafcfd; border-radius: 20px; padding: 16px 20px; margin-top: 8px; border: 1px solid #e2edf2; }
+        .downpayment-amount { font-size: 1.3rem; font-weight: 800; color: #1e7b48; }
+        .action-btn { background: none; border: 1px solid #cbdde6; padding: 8px 18px; border-radius: 40px; font-weight: 600; cursor: pointer; transition: 0.2s; font-family: 'Inter', sans-serif; }
+        .action-btn:hover { background: #f0f4f8; }
+        .empty-state { text-align: center; padding: 64px 20px; background: white; border-radius: 36px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+        .empty-state i { font-size: 4rem; color: #cbdde6; margin-bottom: 16px; }
+        .back-link { display: inline-block; margin-top: 28px; color: #2c6e9e; text-decoration: none; font-weight: 500; }
+        .toast-msg { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #1a2c3e; color: white; padding: 12px 28px; border-radius: 60px; font-weight: 500; z-index: 2000; animation: fadeToast 2.5s ease forwards; }
+        @keyframes fadeToast { 0% { opacity: 0; transform: translateX(-50%) translateY(20px); } 15% { opacity: 1; transform: translateX(-50%) translateY(0); } 85% { opacity: 1; transform: translateX(-50%) translateY(0); } 100% { opacity: 0; visibility: hidden; } }
+        
+        footer {
+            background: #0f212e;
+            color: #cbdde6;
+            padding: 60px 0 30px;
+            margin-top: 60px;
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        .footer-col h4 {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+        .footer-col h4::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 2px;
+            background: #2c6e9e;
+        }
+        .footer-col ul { list-style: none; padding: 0; }
+        .footer-col ul li { margin-bottom: 12px; }
+        .footer-col ul li a { color: #cbdde6; text-decoration: none; transition: color 0.2s; }
+        .footer-col ul li a:hover { color: #2c6e9e; }
+        .footer-col ul li i { width: 25px; margin-right: 8px; color: #2c6e9e; }
+        .footer-logo { font-size: 1.5rem; font-weight: 800; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        .footer-logo i { color: #2c6e9e; font-size: 1.8rem; }
+        .footer-bottom { text-align: center; padding-top: 30px; border-top: 1px solid rgba(255, 255, 255, 0.1); }
+        
+        @media (max-width: 680px) { .detail-label { width: 100%; } .request-header-info { flex-direction: column; align-items: flex-start; } .header-wrapper { flex-direction: column; gap: 12px; } .search-bar { max-width: 100%; width: 100%; } .tabs { justify-content: center; } }
+    </style>
+</head>
+<body>
+
+<header class="main-header">
+    <div class="container">
+        <div class="header-wrapper">
+            <div class="logo">
+                <a href="1seeker_dashboard.html">
+                    <i class="fas fa-handshake"></i>
+                    <span style="font-weight: 800;">ServiceHub</span>
+                    <span style="font-weight: 400; opacity: 0.7;"> | Your Requests</span>
+                </a>
+            </div>
+            <div class="search-bar">
+                <form id="searchForm">
+                    <input type="text" id="searchInput" placeholder="Search your requests...">
+                    <button type="submit"><i class="fas fa-search"></i></button>
+                </form>
+            </div>
+            <div class="header-actions">
+                <a href="1seeker_dashboard.html" class="home-icon" id="homeIcon">
+                    <i class="fas fa-home"></i>
+                </a>
+                <a href="#" class="message-icon" id="messageBtn">
+                    <i class="fas fa-envelope"></i>
+                    <span class="message-badge" id="messageCount">0</span>
+                </a>
+                <a href="4user_requests.html" class="cart-icon" id="cartBtn">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-count" id="cartCount">0</span>
+                </a>
+                <div class="user-menu-container" id="userMenuContainer">
+                    <div class="user-menu-trigger" id="userMenuTrigger">
+                        <i class="fas fa-user-circle"></i>
+                        <span id="greetingName">Account</span>
+                        <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i>
+                    </div>
+                    <div class="user-dropdown" id="userDropdown">
+                        <a href="Seeker_profile.html" class="dropdown-item"><i class="fas fa-user-circle"></i> My Profile</a>
+                        <a href="1seeker_dashboard.html" class="dropdown-item"><i class="fas fa-search"></i> Browse Services</a>
+                        <div class="dropdown-item logout-item" id="logoutBtnHeader"><i class="fas fa-sign-out-alt"></i> Logout</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tabs Section -->
+        <div class="tabs-container">
+            <div class="tabs" id="tabsContainer">
+                <button class="tab-btn active" data-tab="all">All Requests <span class="tab-count" id="countAll">0</span></button>
+                <button class="tab-btn" data-tab="pending">Pending <span class="tab-count" id="countPending">0</span></button>
+                <button class="tab-btn" data-tab="awaiting_payment">Awaiting Payment <span class="tab-count" id="countAwaitingPayment">0</span></button>
+                <button class="tab-btn" data-tab="inprogress">In Progress <span class="tab-count" id="countInProgress">0</span></button>
+                <button class="tab-btn" data-tab="completed">Completed <span class="tab-count" id="countCompleted">0</span></button>
+                <button class="tab-btn" data-tab="rejected">Rejected <span class="tab-count" id="countRejected">0</span></button>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main>
+    <div class="requests-container">
+        <div id="requestsList" class="requests-grid">
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <h3>No service requests yet</h3>
+                <p>When you request a service from a provider, it will appear here.</p>
+                <a href="1seeker_dashboard.html" class="back-link" style="margin-top: 16px;"><i class="fas fa-search"></i> Browse providers</a>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <div class="footer-logo"><i class="fas fa-handshake"></i> ServiceHub</div>
+                <p>Connecting seekers with trusted pros since 2026.</p>
+            </div>
+            <div class="footer-col"><h4>Contact</h4><ul><li><i class="fas fa-phone"></i> 0993-123-4567</li><li><i class="fas fa-envelope"></i>support@servicehub.com</li></ul></div>
+            <div class="footer-col"><h4>Company</h4><ul><li><a href="#">About</a></li><li><a href="#">Become a Provider</a></li></ul></div>
+            <div class="footer-col"><h4>Legal</h4><ul><li><a href="#">Terms</a></li><li><a href="#">Privacy</a></li></ul></div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2026 ServiceHub — Trusted marketplace.</p></div>
+    </div>
+</footer>
+
+<script src="database.js"></script>
+<script src="api.js"></script>
+
+<script>
+    function showToast(msg) {
+        let toast = document.createElement('div');
+        toast.className = 'toast-msg';
+        toast.innerText = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2600);
+    }
+
+    let currentUser = null;
+    let currentTab = 'all';
+    let remoteRequests = [];
+
+    function normalizeStatus(status) {
+        const value = String(status || '').toUpperCase();
+        if (value === 'PENDING') return 'pending';
+        if (value === 'IN_PROGRESS') return 'inprogress';
+        if (value === 'AWAITING_PAYMENT') return 'awaiting_payment';
+        if (value === 'PAID') return 'inprogress';
+        if (value === 'COMPLETED') return 'completed';
+        if (value === 'REJECTED') return 'rejected';
+        return String(status || 'pending').toLowerCase();
+    }
+
+    function mapRemoteRequest(r) {
+        return {
+            requestId: r.id,
+            requestCode: r.requestCode,
+            provider: { name: r.provider?.name || 'Provider', service: r.serviceName || 'Service' },
+            serviceName: r.serviceName,
+            preferredDate: r.preferredDate ? new Date(r.preferredDate).toISOString().split('T')[0] : '',
+            preferredTime: r.preferredTime || '',
+            location: r.location || '',
+            budget: r.budget || '',
+            serviceDetails: r.serviceDetails || '',
+            status: normalizeStatus(r.status),
+            requestedAmount: r.paymentAmount || '',
+            paymentMethod: r.paymentType || '',
+            amountPaid: r.paymentAmount || '',
+            paymentConfirmed: ['PAID', 'COMPLETED'].includes(String(r.status || '').toUpperCase()),
+            completedAt: r.completedAt || null,
+            rejectionReason: r.rejectionReason || null
+        };
+    }
+    
+    function updateCartCount() {
+        if (window.ServiceHubDB && currentUser && currentUser.email) {
+            const totalCount = ServiceHubDB.getActiveRequestsCount ? 
+                ServiceHubDB.getActiveRequestsCount(currentUser.email) : 0;
+            const cartCountSpan = document.getElementById('cartCount');
+            if (cartCountSpan) cartCountSpan.innerText = totalCount;
+        } else {
+            const cartCountSpan = document.getElementById('cartCount');
+            if (cartCountSpan) cartCountSpan.innerText = '0';
+        }
+    }
+
+    function updateMessageCount() {
+        let unreadCount = 0;
+        const savedMessages = localStorage.getItem('servicehub_messages');
+        if (savedMessages && currentUser?.email) {
+            try {
+                const messages = JSON.parse(savedMessages);
+                for (const convId in messages) {
+                    const convMessages = messages[convId] || [];
+                    unreadCount += convMessages.filter(m => !m.read && m.receiver === currentUser.email).length;
+                }
+            } catch(e) { console.error(e); }
+        }
+        
+        const messageBadge = document.getElementById('messageCount');
+        if (messageBadge) {
+            messageBadge.innerText = unreadCount;
+            messageBadge.style.display = unreadCount > 0 ? 'flex' : 'none';
+        }
+    }
+
+    function loadCurrentUser() {
+        const storedUser = localStorage.getItem('servicehub_user');
+        if (storedUser) {
+            try {
+                currentUser = JSON.parse(storedUser);
+            } catch(e) { console.error(e); }
+        }
+        if (!currentUser) {
+            currentUser = { name: "Test User", email: "test@example.com", type: "seeker" };
+        }
+        updateUserUI();
+        updateCartCount();
+        updateMessageCount();
+        
+        if (window.ServiceHubDB) {
+            const stats = ServiceHubDB.getStats();
+            console.log('📊 Database stats:', stats);
+        }
+    }
+
+    function updateUserUI() {
+        const greetingSpan = document.getElementById('greetingName');
+        if (greetingSpan && currentUser) {
+            let displayName = currentUser.name;
+            if (displayName && displayName.length > 15) displayName = displayName.substring(0, 12) + '...';
+            greetingSpan.innerText = displayName;
+        }
+    }
+
+    function getRequestsByTab(requests, tab) {
+        switch(tab) {
+            case 'pending':
+                // Step 1: Pending - waiting for provider to accept
+                return requests.filter(r => r.status === 'pending');
+            case 'awaiting_payment':
+                // Step 2: Awaiting Payment - provider requested payment
+                return requests.filter(r => r.status === 'awaiting_payment');
+            case 'inprogress':
+                // Step 3: In Progress - provider accepted OR payment confirmed
+                return requests.filter(r => r.status === 'inprogress');
+            case 'completed':
+                return requests.filter(r => r.status === 'completed');
+            case 'rejected':
+                return requests.filter(r => r.status === 'rejected');
+            default:
+                return requests;
+        }
+    }
+
+    function updateTabCounts(requests) {
+        document.getElementById('countAll').innerText = requests.length;
+        document.getElementById('countPending').innerText = requests.filter(r => r.status === 'pending').length;
+        document.getElementById('countAwaitingPayment').innerText = requests.filter(r => r.status === 'awaiting_payment').length;
+        document.getElementById('countInProgress').innerText = requests.filter(r => r.status === 'inprogress').length;
+        document.getElementById('countCompleted').innerText = requests.filter(r => r.status === 'completed').length;
+        document.getElementById('countRejected').innerText = requests.filter(r => r.status === 'rejected').length;
+    }
+
+    async function renderUserRequests() {
+        const container = document.getElementById('requestsList');
+        if (!container) return;
+        
+        if (!window.ServiceHubDB) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-database"></i><h3>Database not loaded</h3></div>';
+            return;
+        }
+        
+        let userEmail = currentUser?.email;
+        
+        let allUserRequests = [];
+        
+        if (userEmail) {
+            if (window.ServiceHubAPI && ServiceHubAPI.getToken()) {
+                try {
+                    const apiRequests = await ServiceHubAPI.listRequests();
+                    remoteRequests = (apiRequests || []).map(mapRemoteRequest);
+                    allUserRequests = remoteRequests;
+                } catch (e) {
+                    console.warn('API request list failed, using local fallback:', e.message);
+                }
+            }
+            if (allUserRequests.length === 0) {
+            if (typeof ServiceHubDB.getUserRequests === 'function') {
+                allUserRequests = ServiceHubDB.getUserRequests(userEmail);
+            } else if (ServiceHubDB._requests) {
+                allUserRequests = ServiceHubDB._requests.filter(req => {
+                    const reqEmail = req.customerEmail || req.requesterEmail || (req.requester && req.requester.email);
+                    return reqEmail && reqEmail.toLowerCase() === userEmail.toLowerCase();
+                });
+            }
+            }
+        }
+        
+        // Search filter
+        const searchQuery = document.getElementById('searchInput')?.value.toLowerCase() || '';
+        if (searchQuery) {
+            allUserRequests = allUserRequests.filter(req => {
+                const providerName = req.provider?.name?.toLowerCase() || '';
+                const serviceName = req.serviceName?.toLowerCase() || '';
+                return providerName.includes(searchQuery) || serviceName.includes(searchQuery);
+            });
+        }
+        
+        updateTabCounts(allUserRequests);
+        
+        let filteredRequests = getRequestsByTab(allUserRequests, currentTab);
+        
+        if (!filteredRequests.length) {
+            let tabMessages = {
+                'all': searchQuery ? `No requests matching "${searchQuery}"` : 'No service requests yet.',
+                'pending': searchQuery ? `No pending requests matching "${searchQuery}"` : 'No pending requests.',
+                'awaiting_payment': searchQuery ? `No payment requests matching "${searchQuery}"` : 'No requests waiting for payment.',
+                'inprogress': searchQuery ? `No in-progress requests matching "${searchQuery}"` : 'No services in progress.',
+                'completed': searchQuery ? `No completed requests matching "${searchQuery}"` : 'No completed requests yet.',
+                'rejected': searchQuery ? `No rejected requests matching "${searchQuery}"` : 'No rejected requests.'
+            };
+            container.innerHTML = `<div class="empty-state">
+                <i class="fas fa-clipboard"></i>
+                <h3>${tabMessages[currentTab] || 'No requests found'}</h3>
+                ${searchQuery ? `<p>Try a different search term.</p>` : `<a href="1seeker_dashboard.html" class="back-link" style="margin-top: 16px;"><i class="fas fa-search"></i> Browse providers</a>`}
+            </div>`;
+            return;
+        }
+        
+        const sorted = [...filteredRequests].reverse();
+        
+        const html = sorted.map((req) => {
+            const providerName = req.provider?.name || req.customerName || 'Service Provider';
+            const serviceName = req.provider?.service || req.serviceName || 'General Service';
+            const budgetDisplay = req.budget || 'Not specified';
+            const preferredDate = req.preferredDate || 'Not set';
+            const preferredTime = req.preferredTime || 'Any';
+            const location = req.location || 'Not provided';
+            const serviceDetails = req.serviceDetails || 'No details';
+            const status = req.status || 'pending';
+            const requestedAmount = req.requestedAmount || req.downpayment || '';
+            const paymentMethod = req.paymentMethod;
+            const amountPaid = req.amountPaid;
+            
+            let statusClass = '', statusIcon = '', statusText = '', extraBlock = '';
+            
+            // STEP 1: PENDING - Waiting for provider response
+            if (status === 'pending') {
+                statusClass = 'status-pending';
+                statusIcon = '<i class="fas fa-hourglass-half"></i>';
+                statusText = 'Pending';
+                extraBlock = `
+                    <div class="detail-row">
+                        <span class="detail-label">Status:</span>
+                        <span class="detail-value">Waiting for provider to respond to your request</span>
+                    </div>
+                `;
+            }
+            // STEP 2: AWAITING PAYMENT - Provider requested payment
+            else if (status === 'awaiting_payment') {
+                statusClass = 'status-awaiting-payment';
+                statusIcon = '<i class="fas fa-credit-card"></i>';
+                statusText = 'Payment Required';
+                extraBlock = `
+                    <div class="downpayment-section">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                            <div>
+                                <i class="fas fa-hand-holding-usd" style="color:#1e7b48;"></i> 
+                                <strong>Payment Required: $${requestedAmount}</strong>
+                                <div class="downpayment-amount" style="margin-top:6px;">Amount: $${requestedAmount}</div>
+                                <small>The provider has requested payment. Please pay to confirm your booking.</small>
+                            </div>
+                            <button class="action-btn pay-btn" data-request-id="${req.requestId}" data-provider="${escapeHtml(providerName)}" data-service="${escapeHtml(serviceName)}" data-amount="${requestedAmount}" data-date="${escapeHtml(preferredDate)}" style="background:#1e7b48; color:white; border:none;"><i class="fas fa-credit-card"></i> Pay Now</button>
+                        </div>
+                    </div>
+                `;
+            }
+            // STEP 3: IN PROGRESS - Provider working on service (could be before or after payment)
+            else if (status === 'inprogress') {
+                const isPaid = req.paymentConfirmed === true;
+                if (isPaid) {
+                    const paidText = paymentMethod === 'downpayment' ? `PAID (${amountPaid} Downpayment)` : 'FULLY PAID';
+                    statusClass = 'status-paid';
+                    statusIcon = '<i class="fas fa-check-circle"></i>';
+                    statusText = paidText;
+                    extraBlock = `
+                        <div class="downpayment-section" style="background: #e3f7ec;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                                <div>
+                                    <i class="fas fa-check-circle" style="color:#1e7b48;"></i> 
+                                    <strong>Payment Confirmed!</strong>
+                                    <div>Amount Paid: $${amountPaid || requestedAmount || '--'}</div>
+                                    <small>Your payment has been received. The provider is now working on your service.</small>
+                                </div>
+                                <div style="background:#f59e0b; color:white; padding:8px 16px; border-radius:40px;">
+                                    <i class="fas fa-hourglass-half"></i> In Progress
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    statusClass = 'status-inprogress';
+                    statusIcon = '<i class="fas fa-spinner fa-pulse"></i>';
+                    statusText = 'In Progress';
+                    extraBlock = `
+                        <div class="downpayment-section" style="background: #e3f7ec;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                                <div>
+                                    <i class="fas fa-check-circle" style="color:#1e7b48;"></i> 
+                                    <strong>Request Accepted!</strong>
+                                    <div>The provider has accepted your request and is working on it.</div>
+                                    <small>The provider will request payment when ready.</small>
+                                </div>
+                                <div style="background:#1e7b48; color:white; padding:8px 16px; border-radius:40px;">
+                                    <i class="fas fa-clock"></i> In Progress
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+            // STEP 4: COMPLETED
+            else if (status === 'completed') {
+                statusClass = 'status-completed';
+                statusIcon = '<i class="fas fa-check-double"></i>';
+                statusText = 'Completed';
+                extraBlock = `
+                    <div class="downpayment-section" style="background: #e8f5e9;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                            <div>
+                                <i class="fas fa-check-circle" style="color:#1e7b48;"></i> 
+                                <strong>Service Completed!</strong>
+                                <div>Total Paid: $${amountPaid || requestedAmount || '--'}</div>
+                                <small>Completed on ${req.completedAt ? new Date(req.completedAt).toLocaleDateString() : 'Recently'}</small>
+                            </div>
+                            <div style="background:#1e7b48; color:white; padding:8px 16px; border-radius:40px;">
+                                <i class="fas fa-star"></i> Done
+                            </div>
+                        </div>
+                        <div style="margin-top:12px; font-size:0.8rem; background:#c8e6c9; padding:8px 12px; border-radius:16px;">
+                            <i class="fas fa-smile"></i> Thank you for choosing ServiceHub!
+                        </div>
+                    </div>
+                `;
+            }
+            // REJECTED
+            else if (status === 'rejected') {
+                statusClass = 'status-rejected';
+                statusIcon = '<i class="fas fa-times-circle"></i>';
+                statusText = 'Rejected';
+                extraBlock = `
+                    <div class="detail-row"><span class="detail-label">❌ Reason:</span><span class="detail-value">${req.rejectionReason || 'Provider cannot accommodate your request at this time.'}</span></div>
+                    <div style="margin-top:8px;"><button class="action-btn dismiss-btn" data-request-id="${req.requestId}" style="border-color:#c7362b; color:#c7362b;"><i class="fas fa-trash"></i> Remove Request</button></div>
+                `;
+            }
+            
+            return `
+                <div class="request-card-item" data-request-id="${req.requestId}">
+                    <div class="request-header-info">
+                        <div>
+                            <span class="provider-name"><i class="fas fa-user-tie"></i> ${escapeHtml(providerName)}</span>
+                            <span class="service-name">· ${escapeHtml(serviceName)}</span>
+                        </div>
+                        <div class="request-status-badge ${statusClass}">${statusIcon} ${statusText}</div>
+                    </div>
+                    <div class="request-body-details">
+                        <div class="detail-row">
+                            <span class="detail-label"><i class="fas fa-calendar-alt"></i> Date & Time</span>
+                            <span class="detail-value">${escapeHtml(preferredDate)} at ${escapeHtml(preferredTime)}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label"><i class="fas fa-map-pin"></i> Location</span>
+                            <span class="detail-value">${escapeHtml(location)}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label"><i class="fas fa-tag"></i> Budget</span>
+                            <span class="detail-value">${escapeHtml(budgetDisplay)}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label"><i class="fas fa-comment-dots"></i> Details</span>
+                            <span class="detail-value">${escapeHtml(serviceDetails)}</span>
+                        </div>
+                        ${extraBlock}
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        container.innerHTML = html;
+        
+        // Pay button event listeners
+        document.querySelectorAll('.pay-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const provider = btn.getAttribute('data-provider');
+                const service = btn.getAttribute('data-service');
+                const amount = btn.getAttribute('data-amount');
+                const date = btn.getAttribute('data-date');
+                const requestId = btn.getAttribute('data-request-id');
+                
+                sessionStorage.setItem('pending_payment', JSON.stringify({
+                    amount: parseFloat(amount), 
+                    providerName: provider, 
+                    serviceName: service, 
+                    preferredDate: date, 
+                    requestId: requestId
+                }));
+                window.location.href = '5payment.html';
+            });
+        });
+        
+        // Dismiss button event listeners
+        document.querySelectorAll('.dismiss-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const requestId = btn.getAttribute('data-request-id');
+                if (window.ServiceHubDB && requestId) {
+                    ServiceHubDB.deleteRequest(requestId);
+                    showToast('Request removed.');
+                    renderUserRequests();
+                    updateCartCount();
+                }
+            });
+        });
+    }
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    function setupTabs() {
+        const tabs = document.querySelectorAll('.tab-btn');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentTab = tab.getAttribute('data-tab');
+                renderUserRequests();
+            });
+        });
+    }
+    
+    function setupMessageRedirect() {
+        const messageBtn = document.getElementById('messageBtn');
+        if (messageBtn) {
+            messageBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.location.href = 'seeker_messages.html';
+            });
+        }
+    }
+    
+    function setupUserMenu() {
+        const trigger = document.getElementById('userMenuTrigger');
+        const dropdown = document.getElementById('userDropdown');
+        if (trigger && dropdown) {
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdown.classList.toggle('show');
+            });
+            document.addEventListener('click', (e) => {
+                if (!trigger.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.classList.remove('show');
+                }
+            });
+        }
+        
+        const logoutBtn = document.getElementById('logoutBtnHeader');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                localStorage.removeItem('servicehub_user');
+                currentUser = null;
+                showToast('Logged out successfully');
+                setTimeout(() => {
+                    window.location.href = 'signin.html';
+                }, 1000);
+            });
+        }
+    }
+    
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'servicehub_messages') {
+            updateMessageCount();
+        }
+        if (e.key === 'servicehub_db_data') {
+            updateCartCount();
+            renderUserRequests();
+        }
+        if (e.key === 'servicehub_user') {
+            loadCurrentUser();
+            renderUserRequests();
+        }
+    });
+    
+    document.getElementById('cartBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.href = '4user_requests.html';
+    });
+    
+    document.getElementById('homeLink')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.href = '1seeker_dashboard.html';
+    });
+
+    document.getElementById('searchForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await renderUserRequests();
+    });
+    
+    setInterval(() => {
+        if (currentUser) {
+            updateCartCount();
+            updateMessageCount();
+        }
+    }, 5000);
+    
+    document.addEventListener('DOMContentLoaded', async () => {
+        loadCurrentUser();
+        setupUserMenu();
+        setupMessageRedirect();
+        setupTabs();
+        await renderUserRequests();
+    });
+</script>
+</body>
+</html>
