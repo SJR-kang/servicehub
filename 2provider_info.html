@@ -428,7 +428,7 @@
         
         document.querySelectorAll('.similar-provider-card').forEach(card => {
             card.addEventListener('click', () => { 
-                window.location.href = `2provider_info.html?id=${parseInt(card.dataset.id)}`; 
+                window.location.href = `2provider_info.html?id=${encodeURIComponent(card.dataset.id)}`; 
             });
         });
     }

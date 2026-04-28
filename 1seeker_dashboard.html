@@ -851,7 +851,7 @@
         document.querySelectorAll('.provider-card').forEach(card => {
             card.addEventListener('click', (e) => {
                 if (e.target.closest('.request-service-btn')) return;
-                const providerId = parseInt(card.dataset.providerId);
+                const providerId = card.dataset.providerId;
                 window.location.href = `2provider_info.html?id=${providerId}`;
             });
         });
