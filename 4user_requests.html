@@ -741,6 +741,7 @@
             logoutBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 localStorage.removeItem('servicehub_user');
+                ServiceHubAPI?.clearToken?.();
                 currentUser = null;
                 showToast('Logged out successfully');
                 setTimeout(() => {

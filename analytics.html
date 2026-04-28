@@ -941,6 +941,7 @@
         if (logoutBtnHeader) {
             logoutBtnHeader.addEventListener('click', () => {
                 localStorage.removeItem('servicehub_user');
+                ServiceHubAPI?.clearToken?.();
                 window.location.href = 'signin.html';
             });
         }

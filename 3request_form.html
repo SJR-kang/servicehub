@@ -852,14 +852,16 @@
         if (logoutBtn) {
             logoutBtn.addEventListener('click', (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 localStorage.removeItem('servicehub_user');
                 ServiceHubAPI?.clearToken?.();
                 localStorage.removeItem('serviceCart');
                 currentUser = null;
                 updateUserUI();
                 updateCartCount();
+                dropdown?.classList.remove('show');
                 showToast('Logged out successfully');
-                setTimeout(() => window.location.reload(), 1000);
+                setTimeout(() => { window.location.href = 'signin.html'; }, 800);
             });
         }
     }
