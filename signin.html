@@ -243,6 +243,9 @@
   <script src="database.js"></script>
   <script src="api.js"></script>
   <script>
+    // API-only mode (Neon/Postgres). No local demo login fallback.
+    window.SERVICEHUB_API_ONLY = true;
+
     const toastMsg = document.getElementById('toastMsg');
     const loginEmail = document.getElementById('loginEmail');
     const loginPassword = document.getElementById('loginPassword');
@@ -326,14 +329,6 @@
         
         return true;
       } catch (apiErr) {
-        // Fallback to localStorage database for local demo usage.
-        const user = ServiceHubDB.authenticateUser(email, password);
-        if (user) {
-          console.log('✅ Local fallback login successful! User:', user.name);
-          showToast(`🎉 Welcome back, ${user.name}! Redirecting...`, 'success');
-          setTimeout(() => redirectToDashboard(user), 500);
-          return true;
-        }
         console.log('❌ Login failed for:', email);
         showToast(`❌ ${apiErr.message || 'Invalid email or password'}`, 'error');
         return false;

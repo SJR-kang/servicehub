@@ -190,21 +190,18 @@
 </footer>
 
 <script src="database.js"></script>
+<script src="api.js"></script>
 <script>
     let cart = JSON.parse(localStorage.getItem('serviceCart') || '[]');
     let currentUser = null;
 
-    function loadCurrentUser() {
+    async function loadCurrentUser() {
         const storedUser = localStorage.getItem('servicehub_user');
         if (storedUser) {
             try { currentUser = JSON.parse(storedUser); } catch(e) { console.error(e); }
         }
         updateUserUI();
-        updateCartCount();
-        if (window.ServiceHubDB) {
-            const stats = ServiceHubDB.getStats();
-            console.log('📊 Database Stats:', stats);
-        }
+        await updateCartCount();
     }
 
     function updateUserUI() {
@@ -218,14 +215,18 @@
         }
     }
 
-    function updateCartCount() {
-        if (window.ServiceHubDB && currentUser && currentUser.email) {
-            const activeCount = ServiceHubDB.getActiveRequestsCount(currentUser.email);
-            const cartCountSpan = document.getElementById('cartCount');
-            if (cartCountSpan) cartCountSpan.innerText = activeCount;
-        } else {
-            const cartCountSpan = document.getElementById('cartCount');
-            if (cartCountSpan) cartCountSpan.innerText = '0';
+    async function updateCartCount() {
+        const cartCountSpan = document.getElementById('cartCount');
+        if (!cartCountSpan) return;
+        if (!window.ServiceHubAPI || !ServiceHubAPI.getToken()) {
+            cartCountSpan.innerText = '0';
+            return;
+        }
+        try {
+            const requests = await ServiceHubAPI.listRequests();
+            cartCountSpan.innerText = Array.isArray(requests) ? requests.length : '0';
+        } catch (_) {
+            cartCountSpan.innerText = '0';
         }
     }
 
@@ -239,21 +240,17 @@
         setTimeout(() => toast.remove(), 2600);
     }
 
-    function renderProviderDetails(providerId) {
-        if (!window.ServiceHubDB) {
-            document.getElementById('detailsContainer').innerHTML = '<div style="text-align:center; padding:60px;">Database not loaded.</div>';
+    async function renderProviderDetails(providerId) {
+        let provider;
+        let similar = [];
+        try {
+            provider = await ServiceHubAPI.getProviderDetails(providerId);
+            const allProviders = await ServiceHubAPI.listProviders();
+            similar = (allProviders || []).filter((item) => item.id !== providerId && item.category === provider.category).slice(0, 3);
+        } catch (error) {
+            document.getElementById('detailsContainer').innerHTML = `<div style="text-align:center; padding:60px;">Unable to load provider. ${escapeHtml(error.message || 'Please try again.')} <a href="1seeker_dashboard.html">Go back</a></div>`;
             return;
         }
-        
-        const provider = ServiceHubDB.getProviderById(providerId);
-        if (!provider) {
-            document.getElementById('detailsContainer').innerHTML = '<div style="text-align:center; padding:60px;">Provider not found. <a href="1seeker_dashboard.html">Go back</a></div>';
-            return;
-        }
-        
-        console.log('📋 Provider Data:', provider);
-        
-        const similar = ServiceHubDB.getSimilarProviders(providerId, 3);
         
         // Services HTML - using provider.servicesOffered from JSON
         const servicesHtml = provider.servicesOffered && provider.servicesOffered.length > 0 
@@ -448,6 +445,7 @@
             logoutBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 localStorage.removeItem('servicehub_user');
+                ServiceHubAPI?.clearToken?.();
                 localStorage.removeItem('serviceCart');
                 currentUser = null;
                 updateUserUI();
@@ -459,7 +457,7 @@
     }
     
     const urlParams = new URLSearchParams(window.location.search);
-    const providerId = parseInt(urlParams.get('id'));
+    const providerId = urlParams.get('id');
     
     document.getElementById('homeLink')?.addEventListener('click', (e) => { 
         e.preventDefault(); 

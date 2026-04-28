@@ -249,8 +249,8 @@
             <div class="tabs" id="tabsContainer">
                 <button class="tab-btn active" data-tab="all">All Requests <span class="tab-count" id="countAll">0</span></button>
                 <button class="tab-btn" data-tab="pending">Pending <span class="tab-count" id="countPending">0</span></button>
-                <button class="tab-btn" data-tab="awaiting_payment">Awaiting Payment <span class="tab-count" id="countAwaitingPayment">0</span></button>
                 <button class="tab-btn" data-tab="inprogress">In Progress <span class="tab-count" id="countInProgress">0</span></button>
+                <button class="tab-btn" data-tab="awaiting_payment">Awaiting Payment <span class="tab-count" id="countAwaitingPayment">0</span></button>
                 <button class="tab-btn" data-tab="completed">Completed <span class="tab-count" id="countCompleted">0</span></button>
                 <button class="tab-btn" data-tab="rejected">Rejected <span class="tab-count" id="countRejected">0</span></button>
             </div>
@@ -429,8 +429,9 @@
         const container = document.getElementById('requestsList');
         if (!container) return;
         
-        if (!window.ServiceHubDB) {
-            container.innerHTML = '<div class="empty-state"><i class="fas fa-database"></i><h3>Database not loaded</h3></div>';
+        if (!window.ServiceHubAPI || !ServiceHubAPI.getToken()) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-lock"></i><h3>Please sign in to view your requests.</h3></div>';
+            setTimeout(() => { window.location.href = 'signin.html'; }, 900);
             return;
         }
         
@@ -439,25 +440,9 @@
         let allUserRequests = [];
         
         if (userEmail) {
-            if (window.ServiceHubAPI && ServiceHubAPI.getToken()) {
-                try {
-                    const apiRequests = await ServiceHubAPI.listRequests();
-                    remoteRequests = (apiRequests || []).map(mapRemoteRequest);
-                    allUserRequests = remoteRequests;
-                } catch (e) {
-                    console.warn('API request list failed, using local fallback:', e.message);
-                }
-            }
-            if (allUserRequests.length === 0) {
-            if (typeof ServiceHubDB.getUserRequests === 'function') {
-                allUserRequests = ServiceHubDB.getUserRequests(userEmail);
-            } else if (ServiceHubDB._requests) {
-                allUserRequests = ServiceHubDB._requests.filter(req => {
-                    const reqEmail = req.customerEmail || req.requesterEmail || (req.requester && req.requester.email);
-                    return reqEmail && reqEmail.toLowerCase() === userEmail.toLowerCase();
-                });
-            }
-            }
+            const apiRequests = await ServiceHubAPI.listRequests();
+            remoteRequests = (apiRequests || []).map(mapRemoteRequest);
+            allUserRequests = remoteRequests;
         }
         
         // Search filter
@@ -541,7 +526,7 @@
                                 <div class="downpayment-amount" style="margin-top:6px;">Amount: ${window.ServiceHubDB ? ServiceHubDB.formatPHP(requestedAmount || 0) : requestedAmount}</div>
                                 <small>The provider has requested payment. Please pay to confirm your booking.</small>
                             </div>
-                            <button class="action-btn pay-btn" data-request-id="${req.requestId}" data-provider="${escapeHtml(providerName)}" data-service="${escapeHtml(serviceName)}" data-amount="${requestedAmount}" data-date="${escapeHtml(preferredDate)}" style="background:#1e7b48; color:white; border:none;"><i class="fas fa-credit-card"></i> Pay Now</button>
+                            <button class="action-btn pay-btn" data-request-id="${req.requestId}" data-provider="${escapeHtml(providerName)}" data-service="${escapeHtml(serviceName)}" data-amount="${requestedAmount}" data-payment-type="${escapeHtml(paymentMethod || 'full')}" data-date="${escapeHtml(preferredDate)}" style="background:#1e7b48; color:white; border:none;"><i class="fas fa-credit-card"></i> Pay Now</button>
                         </div>
                     </div>
                 `;
@@ -550,6 +535,10 @@
             else if (status === 'inprogress') {
                 const isPaid = req.paymentConfirmed === true;
                 if (isPaid) {
+                    const totalAmount = servicePriceAmount;
+                    const amountPaid = Number(req.amountPaid ?? req.paymentAmount ?? 0) || 0;
+                    const remainingBalance = Math.max(0, totalAmount - amountPaid);
+                    const pct = totalAmount > 0 ? Math.min(100, Math.round((amountPaid / totalAmount) * 100)) : 0;
                     const paidText = paymentMethod === 'downpayment'
                         ? `PAID (${window.ServiceHubDB ? ServiceHubDB.formatPHP(amountPaid || 0) : amountPaid} Downpayment)`
                         : 'FULLY PAID';
@@ -562,13 +551,26 @@
                                 <div>
                                     <i class="fas fa-check-circle" style="color:#1e7b48;"></i> 
                                     <strong>Payment Confirmed!</strong>
-                                    <div>Amount Paid: ${window.ServiceHubDB ? ServiceHubDB.formatPHP(amountPaid || requestedAmount || 0) : (amountPaid || requestedAmount || '--')}</div>
+                                    <div>Paid: ${window.ServiceHubDB ? ServiceHubDB.formatPHP(Number(req.amountPaid || req.paymentAmount || 0)) : (req.amountPaid || req.paymentAmount || '--')} (${pct}% of total)</div>
+                                    <div>Remaining: ${window.ServiceHubDB ? ServiceHubDB.formatPHP(remainingBalance) : remainingBalance}</div>
+                                    <div style="margin-top:6px; font-size:0.85rem; opacity:0.9;">Paid: ${window.ServiceHubDB ? ServiceHubDB.formatPHP(Number(req.amountPaid || 0)) : (req.amountPaid || 0)} / ${window.ServiceHubDB ? ServiceHubDB.formatPHP(totalAmount) : totalAmount}</div>
                                     <small>Your payment has been received. The provider is now working on your service.</small>
                                 </div>
                                 <div style="background:#f59e0b; color:white; padding:8px 16px; border-radius:40px;">
                                     <i class="fas fa-hourglass-half"></i> In Progress
                                 </div>
                             </div>
+                            ${remainingBalance > 0 ? `
+                                <div style="margin-top:12px; display:flex; justify-content:flex-end;">
+                                    <button class="action-btn pay-remaining-btn" data-request-id="${req.requestId}" data-provider="${escapeHtml(providerName)}" data-service="${escapeHtml(serviceName)}" data-amount="${remainingBalance}" data-payment-type="remaining" data-date="${escapeHtml(preferredDate)}" style="background:#1e7b48; color:white; border:none;">
+                                        <i class="fas fa-money-bill-wave"></i> Pay Remaining
+                                    </button>
+                                </div>
+                            ` : `
+                                <div style="margin-top:12px; background:#1e7b48; color:white; padding:8px 14px; border-radius:40px; display:inline-flex; align-items:center; gap:8px;">
+                                    <i class="fas fa-check-double"></i> Fully Paid
+                                </div>
+                            `}
                         </div>
                     `;
                 } else {
@@ -666,7 +668,7 @@
         container.innerHTML = html;
         
         // Pay button event listeners
-        document.querySelectorAll('.pay-btn').forEach(btn => {
+        document.querySelectorAll('.pay-btn, .pay-remaining-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const provider = btn.getAttribute('data-provider');
@@ -677,6 +679,7 @@
                 
                 sessionStorage.setItem('pending_payment', JSON.stringify({
                     amount: parseFloat(amount), 
+                    paymentType: btn.getAttribute('data-payment-type') || 'full',
                     providerName: provider, 
                     serviceName: service, 
                     preferredDate: date, 

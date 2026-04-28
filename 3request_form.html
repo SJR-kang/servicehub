@@ -678,66 +678,46 @@
         }
     }
 
-    function updateCartCount() {
-        if (window.ServiceHubDB && currentUser && currentUser.email) {
-            const activeCount = ServiceHubDB.getActiveRequestsCount(currentUser.email);
-            const cartCountSpan = document.getElementById('cartCount');
-            if (cartCountSpan) {
-                cartCountSpan.innerText = activeCount;
-            }
-        } else {
-            const cartCountSpan = document.getElementById('cartCount');
-            if (cartCountSpan) {
-                cartCountSpan.innerText = '0';
-            }
+    async function updateCartCount() {
+        const cartCountSpan = document.getElementById('cartCount');
+        if (!cartCountSpan) return;
+        if (!window.ServiceHubAPI || !ServiceHubAPI.getToken()) {
+            cartCountSpan.innerText = '0';
+            return;
+        }
+        try {
+            const requests = await ServiceHubAPI.listRequests();
+            cartCountSpan.innerText = Array.isArray(requests) ? requests.length : '0';
+        } catch (_) {
+            cartCountSpan.innerText = '0';
         }
     }
 
-    function loadProviderData() {
+    async function loadProviderData() {
         const urlParams = new URLSearchParams(window.location.search);
         const serviceId = urlParams.get('serviceId');
-        const providerName = urlParams.get('provider');
-        const providerService = urlParams.get('service');
-        const providerId = urlParams.get('providerId');
-        const providerPrice = urlParams.get('price');
-        
-        const storedProvider = localStorage.getItem('selectedProvider');
-        
-        if (serviceId && window.ServiceHubDB) {
-            const service = ServiceHubDB.getServiceById(serviceId);
-            if (service) {
-                selectedService = service;
-                selectedProvider = {
-                    name: service.providerName,
-                    service: service.name,
-                    id: service.providerId,
-                    price: service.price
-                };
-            }
-        } else if (providerName && providerService) {
-            selectedProvider = {
-                name: decodeURIComponent(providerName),
-                service: decodeURIComponent(providerService),
-                id: providerId,
-                price: providerPrice || 'Contact for price'
-            };
-        } else if (storedProvider) {
-            try {
-                selectedProvider = JSON.parse(storedProvider);
-            } catch(e) { console.error(e); }
-        } else {
-            selectedProvider = {
-                name: "Service Provider",
-                service: "Professional Service",
-                id: 1,
-                price: "Contact for quote"
-            };
+        const providers = await ServiceHubAPI.listProviders();
+        const allServices = (providers || []).flatMap((provider) =>
+            (provider.servicesOffered || []).map((service) => ({
+                ...service,
+                providerName: provider.name,
+                providerId: provider.id,
+            }))
+        );
+        if (serviceId) {
+            selectedService = allServices.find((service) => String(service.id) === String(serviceId)) || null;
         }
-
-        if (!selectedService && window.ServiceHubDB && selectedProvider?.id) {
-            const providerServices = ServiceHubDB.getServicesByProvider(selectedProvider.id);
-            selectedService = providerServices.find(service => service.name === selectedProvider.service) || providerServices[0] || null;
+        if (!selectedService) {
+            showToast('Unable to load the selected service');
+            setTimeout(() => { window.location.href = '1seeker_dashboard.html'; }, 900);
+            return;
         }
+        selectedProvider = {
+            name: selectedService.providerName,
+            service: selectedService.name,
+            id: selectedService.providerId,
+            price: selectedService.price
+        };
         if (selectedService) {
             selectedProvider.service = selectedService.name;
             selectedProvider.price = selectedService.price;
@@ -791,7 +771,13 @@
         requestForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // Make sure database is initialized
+            if (!window.ServiceHubAPI || !ServiceHubAPI.getToken()) {
+                showToast('Please sign in to submit a request');
+                setTimeout(() => { window.location.href = 'signin.html'; }, 900);
+                return;
+            }
+
+            window.SERVICEHUB_API_ONLY = true;
             await ServiceHubDB.init();
             
             const requestData = {
@@ -822,31 +808,21 @@
                 showToast('Please fill in all required fields');
                 return;
             }
-            if (!requestData.serviceId) {
-                showToast('Please select a specific service first');
-                return;
-            }
+            // API-only mode: serviceId is optional (providers are stored by profile/user, not per-service).
             
             try {
-                if (window.ServiceHubAPI && ServiceHubAPI.getToken()) {
-                    await ServiceHubAPI.createRequest({
-                        providerId: String(requestData.providerId || ''),
-                        serviceId: requestData.serviceId,
-                        serviceName: requestData.serviceName,
-                        priceAmount: requestData.priceAmount,
-                        preferredDate: requestData.preferredDate,
-                        preferredTime: requestData.preferredTime,
-                        location: requestData.location,
-                        budget: requestData.budget,
-                        serviceDetails: requestData.serviceDetails
-                    });
-                    showToast('✓ Request sent successfully!');
-                } else {
-                    // Fallback to local demo DB when no API token is present.
-                    const newRequest = ServiceHubDB.addRequest(requestData);
-                    console.log('✅ Request saved (local fallback):', newRequest);
-                    showToast('✓ Request sent successfully!');
-                }
+                await ServiceHubAPI.createRequest({
+                    providerId: String(requestData.providerId || ''),
+                    serviceId: requestData.serviceId || undefined,
+                    serviceName: requestData.serviceName,
+                    priceAmount: requestData.priceAmount,
+                    preferredDate: requestData.preferredDate,
+                    preferredTime: requestData.preferredTime,
+                    location: requestData.location,
+                    budget: requestData.budget,
+                    serviceDetails: requestData.serviceDetails
+                });
+                showToast('✓ Request sent successfully!');
                 setTimeout(() => {
                     window.location.href = '4user_requests.html';
                 }, 1500);
@@ -877,6 +853,7 @@
             logoutBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 localStorage.removeItem('servicehub_user');
+                ServiceHubAPI?.clearToken?.();
                 localStorage.removeItem('serviceCart');
                 currentUser = null;
                 updateUserUI();
@@ -900,7 +877,7 @@
     document.addEventListener('DOMContentLoaded', async () => {
         await ServiceHubDB.init();
         loadCurrentUser();
-        loadProviderData();
+        await loadProviderData();
         autoFillUserData();
         setMinDate();
         setupUserMenu();

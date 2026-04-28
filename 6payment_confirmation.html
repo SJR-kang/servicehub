@@ -499,7 +499,8 @@
             paymentTypeLabel.innerHTML = 'Amount Paid';
         }
         
-        document.getElementById('paidAmount').innerHTML = `$${paymentData.amount}.00`;
+        const paidAmountNum = Number(paymentData.amount) || 0;
+        document.getElementById('paidAmount').innerHTML = `₱${Math.round(paidAmountNum).toLocaleString('en-PH')}.00`;
         document.getElementById('paymentId').innerText = paymentData.paymentId || 'PAY-' + Date.now().toString().slice(-8);
         document.getElementById('providerName').innerText = paymentData.providerName || 'Service Provider';
         document.getElementById('serviceName').innerText = paymentData.serviceName || 'Professional Service';

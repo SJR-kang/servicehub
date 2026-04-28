@@ -37,6 +37,23 @@ exports.handler = async (event) => {
     },
   });
 
+  if (parsed.data.role === "PROVIDER") {
+    await prisma.providerProfile.create({
+      data: {
+        userId: user.id,
+        service: "General Service",
+        category: "General",
+        priceLabel: "₱0",
+        description: "Tell clients about the services you offer.",
+        fullDetail: "Tell clients about the services you offer.",
+        contactPhone: parsed.data.phone || null,
+        languages: [],
+        credentials: [],
+        services: [],
+      },
+    });
+  }
+
   const token = signToken(user);
   return json(201, {
     token,

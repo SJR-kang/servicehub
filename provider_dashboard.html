@@ -654,7 +654,7 @@
                 <button class="tab-btn" data-tab="inprogress">In Progress
                     <span class="tab-badge" id="inProgressBadge">0</span>
                 </button>
-                <button class="tab-btn" data-tab="awaiting_payment">Awaiting Payment
+                <button class="tab-btn" data-tab="awaiting_payment">Payment Required
                     <span class="tab-badge" id="awaitingPaymentBadge">0</span>
                 </button>
                 <button class="tab-btn" data-tab="completed">Completed
@@ -782,56 +782,45 @@
         status: toUiStatus(r.status),
         paymentConfirmed: ["PAID", "COMPLETED"].includes(String(r.status || "").toUpperCase()),
         paymentMethod: r.paymentType || null,
-        amountPaid: r.paymentAmount || null,
-        requestedAmount: r.paymentAmount || null,
+        amountPaid: r.amountPaid ?? (["PAID", "COMPLETED"].includes(String(r.status || "").toUpperCase()) ? (r.paymentAmount || null) : null),
+        requestedAmount: (String(r.status || "").toUpperCase() === "AWAITING_PAYMENT") ? (r.paymentAmount || null) : null,
+        remainingBalance: r.remainingBalance ?? null,
+        isFullyPaid: r.isFullyPaid ?? false,
         rejectionReason: r.rejectionReason || null
     });
 
-    function loadCurrentProvider() {
-        const user = JSON.parse(localStorage.getItem('servicehub_user') || '{}');
-        currentProvider = ServiceHubDB.getProviderByEmail(user.email || '') || null;
-        if (!currentProvider) {
-            currentProvider = ServiceHubDB.getAllProviders()[0] || null;
-        }
+    async function loadCurrentProvider() {
+        currentProvider = await ServiceHubAPI.getProviderProfile();
         return currentProvider;
     }
 
     async function loadAllData() {
+        // API-only mode: this page requires an API session.
+        if (!window.ServiceHubAPI || !ServiceHubAPI.getToken()) {
+            document.getElementById('productsSection').style.display = 'none';
+            document.getElementById('soldSection').style.display = 'none';
+            document.getElementById('requestsSection').style.display = 'block';
+            document.getElementById('tableBody').innerHTML = `<tr><td colspan="8" class="empty-state">Please sign in as a provider to view requests.</td></tr>`;
+            setTimeout(() => { window.location.href = 'signin.html'; }, 900);
+            return;
+        }
+
+        window.SERVICEHUB_API_ONLY = true;
         await ServiceHubDB.init();
-        loadCurrentProvider();
-        providerProducts = currentProvider ? ServiceHubDB.getServicesByProvider(currentProvider.id) : [];
+        try {
+            await loadCurrentProvider();
+            providerProducts = currentProvider?.servicesOffered || [];
+            const apiRequests = await ServiceHubAPI.listRequests();
+            serviceRequests = (apiRequests || []).map(mapApiRequest);
+        } catch (error) {
+            document.getElementById('productsSection').style.display = 'none';
+            document.getElementById('soldSection').style.display = 'none';
+            document.getElementById('requestsSection').style.display = 'block';
+            document.getElementById('tableBody').innerHTML = `<tr><td colspan="8" class="empty-state">${escapeHtml(error.message || 'Unable to load dashboard data')}</td></tr>`;
+            return;
+        }
         
         loadSoldProducts();
-        
-        let loadedFromApi = false;
-        if (window.ServiceHubAPI && ServiceHubAPI.getToken()) {
-            try {
-                const apiRequests = await ServiceHubAPI.listRequests();
-                serviceRequests = (apiRequests || []).map(mapApiRequest);
-                loadedFromApi = true;
-            } catch (e) {
-                console.warn("API request list failed, using local fallback:", e.message);
-            }
-        }
-        const allRequests = loadedFromApi ? [] : ServiceHubDB.getAllRequests();
-        if (!loadedFromApi && allRequests.length === 0) {
-            serviceRequests = [
-                { requestId: "REQ-001", customerName: "John Doe", customerEmail: "john@example.com", serviceName: "Proofreading", preferredDate: "2025-05-15", preferredTime: "2:00 PM", location: "Boston, MA", budget: "₱8,250", priceAmount: 8250, status: "pending", paymentConfirmed: false, paymentMethod: null, amountPaid: null },
-                { requestId: "REQ-002", customerName: "Sarah Johnson", customerEmail: "sarah@example.com", serviceName: "Deep Cleaning", preferredDate: "2025-05-10", preferredTime: "10:00 AM", location: "Los Angeles, CA", budget: "₱11,000", priceAmount: 11000, status: "inprogress", paymentConfirmed: false, paymentMethod: null, amountPaid: null },
-                { requestId: "REQ-003", customerName: "Michael Brown", customerEmail: "michael@example.com", serviceName: "Math Tutoring", preferredDate: "2025-05-20", preferredTime: "4:00 PM", location: "Chicago, IL", budget: "₱12,375", priceAmount: 12375, status: "awaiting_payment", paymentConfirmed: false, requestedAmount: 2475, paymentMethod: null, amountPaid: null },
-                // Downpayment paid example - shows in In Progress tab
-                { requestId: "REQ-004", customerName: "Emily Davis", customerEmail: "emily@example.com", serviceName: "Proofreading", preferredDate: "2025-06-01", preferredTime: "1:00 PM", location: "San Francisco, CA", budget: "₱19,250", priceAmount: 19250, status: "inprogress", paymentConfirmed: true, paymentMethod: "downpayment", amountPaid: 3850 },
-                // Full payment paid example - shows in In Progress tab
-                { requestId: "REQ-005", customerName: "David Wilson", customerEmail: "david@example.com", serviceName: "Deep Cleaning", preferredDate: "2025-06-05", preferredTime: "9:00 AM", location: "Seattle, WA", budget: "₱11,000", priceAmount: 11000, status: "inprogress", paymentConfirmed: true, paymentMethod: "full", amountPaid: 11000 }
-            ];
-        } else if (!loadedFromApi) {
-            const providerId = currentProvider?.id;
-            serviceRequests = allRequests.filter(req => {
-                const requestProviderId = req.providerId || req.provider?.id || null;
-                return providerId ? String(requestProviderId) === String(providerId) : true;
-            });
-        }
-        
         updateProductsCount();
         updateTabBadges();
         renderProducts();
@@ -840,6 +829,25 @@
 
     function saveProducts() {
         updateProductsCount();
+    }
+
+    async function persistProducts(nextProducts, successMessage) {
+        if (!currentProvider) {
+            showToast('Provider account not found');
+            return false;
+        }
+        try {
+            const updated = await ServiceHubAPI.updateProviderProfile({ servicesOffered: nextProducts });
+            currentProvider = updated;
+            providerProducts = updated.servicesOffered || [];
+            saveProducts();
+            renderProducts();
+            if (successMessage) showToast(successMessage);
+            return true;
+        } catch (error) {
+            showToast(`Save failed: ${error.message || 'Please try again.'}`);
+            return false;
+        }
     }
 
     function updateProductsCount() {
@@ -899,7 +907,7 @@
         }
     }
 
-    function saveProduct() {
+    async function saveProduct() {
         const id = document.getElementById('editProductId').value;
         const name = document.getElementById('productName').value.trim();
         const category = document.getElementById('productCategory').value;
@@ -908,24 +916,21 @@
         if (!name || !price || !desc) { showToast('Please fill all fields'); return; }
         if (!currentProvider) { showToast('Provider account not found'); return; }
         const parsedAmount = ServiceHubDB.parsePriceToPHPAmount(price, 0);
-        const product = ServiceHubDB.upsertProviderService(currentProvider.id, { id, name, category, priceAmount: parsedAmount, description: desc });
-        if (!product) { showToast('Unable to save service'); return; }
-        providerProducts = ServiceHubDB.getServicesByProvider(currentProvider.id);
-        showToast(id ? 'Updated' : 'Added');
-        saveProducts();
-        renderProducts();
-        closeModal();
+        const nextProducts = [...providerProducts];
+        const nextProduct = { id: id || `svc_${Date.now()}`, name, category, priceAmount: parsedAmount, price: ServiceHubDB.formatPHP(parsedAmount), description: desc };
+        const existingIndex = nextProducts.findIndex((item) => item.id === id);
+        if (existingIndex >= 0) nextProducts[existingIndex] = nextProduct;
+        else nextProducts.push(nextProduct);
+        const saved = await persistProducts(nextProducts, id ? 'Updated' : 'Added');
+        if (saved) closeModal();
     }
 
     function confirmDeleteProduct(id) { pendingDeleteId = id; document.getElementById('deleteModal').style.display = 'flex'; }
-    function deleteProduct() {
+    async function deleteProduct() {
         if (pendingDeleteId && currentProvider) {
-            ServiceHubDB.deleteProviderService(currentProvider.id, pendingDeleteId);
-            providerProducts = ServiceHubDB.getServicesByProvider(currentProvider.id);
-            saveProducts();
-            renderProducts();
-            showToast('Deleted');
-            pendingDeleteId = null;
+            const nextProducts = providerProducts.filter((item) => item.id !== pendingDeleteId);
+            const saved = await persistProducts(nextProducts, 'Deleted');
+            if (saved) pendingDeleteId = null;
         }
         closeDeleteModal();
     }
@@ -986,14 +991,20 @@
             }
             else if (req.status === 'inprogress' && req.paymentConfirmed === true) {
                 // Different display for downpayment vs full payment
-                if (req.paymentMethod === 'downpayment') {
-                    statusClass = 'status-paid-downpayment';
-                    const budgetNum = req.priceAmount ?? ServiceHubDB.parsePriceToPHPAmount(req.budget, 0);
-                    const remaining = budgetNum - (req.amountPaid || 0);
-                    statusText = `PAID (${ServiceHubDB.formatPHP(req.amountPaid || 0)} Downpayment) | Remaining: ${ServiceHubDB.formatPHP(remaining)}`;
-                } else {
+                const budgetNum = req.priceAmount ?? ServiceHubDB.parsePriceToPHPAmount(req.budget, 0);
+                const paid = Number(req.amountPaid ?? 0) || 0;
+                const remaining = Number(req.remainingBalance ?? (budgetNum - paid)) || 0;
+                const fullyPaid = req.isFullyPaid === true || remaining <= 0;
+
+                if (fullyPaid) {
                     statusClass = 'status-paid-full';
                     statusText = 'FULLY PAID';
+                } else if (String(req.paymentMethod || '').startsWith('downpayment')) {
+                    statusClass = 'status-paid-downpayment';
+                    statusText = `DOWNPAYMENT PAID (${ServiceHubDB.formatPHP(paid)}) | Remaining: ${ServiceHubDB.formatPHP(remaining)}`;
+                } else {
+                    statusClass = 'status-paid-downpayment';
+                    statusText = `PARTIALLY PAID (${ServiceHubDB.formatPHP(paid)}) | Remaining: ${ServiceHubDB.formatPHP(remaining)}`;
                 }
             }
             else if (req.status === 'completed') { 
@@ -1062,7 +1073,7 @@
         }
         document.getElementById('profileBtnHeader')?.addEventListener('click', () => window.location.href = 'provider_profile.html');
         document.getElementById('analyticBtnHeader')?.addEventListener('click', () => window.location.href = 'analytics.html');
-        document.getElementById('logoutBtnHeader')?.addEventListener('click', () => { localStorage.removeItem('servicehub_user'); window.location.href = 'signin.html'; });
+        document.getElementById('logoutBtnHeader')?.addEventListener('click', () => { localStorage.removeItem('servicehub_user'); ServiceHubAPI.clearToken(); window.location.href = 'signin.html'; });
     }
 
     function updateMessageCount() {

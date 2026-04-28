@@ -573,8 +573,10 @@
         paymentConfirmed: ['PAID', 'COMPLETED'].includes(String(r.status || '').toUpperCase()),
         paymentType: r.paymentType || null,
         paymentAmount: r.paymentAmount || null,
-        amountPaid: r.paymentAmount || null,
-        requestedAmount: r.paymentAmount || null,
+        amountPaid: r.amountPaid ?? (['PAID', 'COMPLETED'].includes(String(r.status || '').toUpperCase()) ? (r.paymentAmount || null) : null),
+        requestedAmount: (String(r.status || '').toUpperCase() === 'AWAITING_PAYMENT') ? (r.paymentAmount || null) : null,
+        remainingBalance: r.remainingBalance ?? null,
+        isFullyPaid: r.isFullyPaid ?? false,
         completedAt: r.completedAt || null,
         rejectionReason: r.rejectionReason || null
     });
@@ -644,7 +646,18 @@
     async function loadRequestFromStorage() {
         const urlParams = new URLSearchParams(window.location.search);
         const requestId = urlParams.get('id');
-        
+        if (!window.ServiceHubAPI || !ServiceHubAPI.getToken()) {
+            document.getElementById('detailsBody').innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <i class="fas fa-lock" style="font-size: 3rem; color: #cbdde6;"></i>
+                    <h3>Please sign in to view this request</h3>
+                    <a href="signin.html" style="display: inline-block; margin-top: 20px; background: #1a2c3e; color: white; padding: 10px 24px; border-radius: 40px; text-decoration: none;">Sign in</a>
+                </div>
+            `;
+            return;
+        }
+
+        window.SERVICEHUB_API_ONLY = true;
         await ServiceHubDB.init();
         
         if (!requestId) {
@@ -658,42 +671,19 @@
             return;
         }
         
-        if (window.ServiceHubAPI && ServiceHubAPI.getToken()) {
-            try {
-                const all = await ServiceHubAPI.listRequests();
-                const found = (all || []).find((r) => r.id === requestId);
-                if (found) {
-                    currentRequest = mapApiRequest(found);
-                    renderRequestDetails();
-                    return;
-                }
-            } catch (e) {
-                console.warn('API load failed, using local fallback:', e.message);
-            }
+        const all = await ServiceHubAPI.listRequests();
+        const found = (all || []).find((r) => r.id === requestId);
+        if (!found) {
+            document.getElementById('detailsBody').innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <i class="fas fa-search" style="font-size: 3rem; color: #cbdde6;"></i>
+                    <h3>Request not found</h3>
+                    <a href="provider_dashboard.html" style="display: inline-block; margin-top: 20px; background: #1a2c3e; color: white; padding: 10px 24px; border-radius: 40px; text-decoration: none;">Go to Dashboard</a>
+                </div>
+            `;
+            return;
         }
-
-        const request = ServiceHubDB.getRequestById(requestId);
-        
-        if (!request) {
-            const allRequests = ServiceHubDB.getAllRequests();
-            const foundRequest = allRequests.find(r => r.requestId === requestId);
-            
-            if (foundRequest) {
-                currentRequest = ServiceHubDB.formatRequestForDisplay(foundRequest);
-            } else {
-                document.getElementById('detailsBody').innerHTML = `
-                    <div style="text-align: center; padding: 40px;">
-                        <i class="fas fa-search" style="font-size: 3rem; color: #cbdde6;"></i>
-                        <h3>Request not found</h3>
-                        <a href="provider_dashboard.html" style="display: inline-block; margin-top: 20px; background: #1a2c3e; color: white; padding: 10px 24px; border-radius: 40px; text-decoration: none;">Go to Dashboard</a>
-                    </div>
-                `;
-                return;
-            }
-        } else {
-            currentRequest = ServiceHubDB.formatRequestForDisplay(request);
-        }
-        
+        currentRequest = mapApiRequest(found);
         renderRequestDetails();
     }
     
@@ -742,54 +732,62 @@
             }
         }
         else if (newStatus === 'request_payment') {
-            const paymentType = confirm("Request Downpayment? Click OK for Downpayment, Cancel for Full Payment");
-            if (paymentType) {
-                const amount = prompt("Enter downpayment amount in PHP (20-50% of service price):", String(Math.round((currentRequest.priceAmount || ServiceHubDB.parsePriceToPHPAmount(currentRequest.budget, 0)) * 0.3)));
-                if (amount) {
-                    if (window.ServiceHubAPI && ServiceHubAPI.getToken()) {
-                        await ServiceHubAPI.updateRequestStatus({
-                            requestId: currentRequest.requestId,
-                            status: "AWAITING_PAYMENT",
-                            paymentAmount: Number(amount),
-                            paymentType: "downpayment"
-                        });
-                        currentRequest.status = "awaiting_payment";
-                        currentRequest.requestedAmount = Number(amount);
-                        currentRequest.paymentType = "downpayment";
-                        showToast(`💵 Downpayment request of ${ServiceHubDB.formatPHP(amount)} sent to customer.`);
-                        renderRequestDetails();
-                        return;
-                    }
-                    ServiceHubDB.updateRequestStatus(currentRequest.requestId, 'awaiting_payment', {
-                        requestedAmount: amount,
-                        paymentType: 'downpayment'
-                    });
-                    showToast(`💵 Downpayment request of ${ServiceHubDB.formatPHP(amount)} sent to customer.`);
-                }
+            const total = currentRequest.priceAmount || ServiceHubDB.parsePriceToPHPAmount(currentRequest.budget, 0);
+            const down20 = Math.round(total * 0.2);
+            const down50 = Math.round(total * 0.5);
+            const full = Math.round(total);
+
+            const choice = prompt(
+                `Request payment:\n\n` +
+                `1) Downpayment 20% (${ServiceHubDB.formatPHP(down20)})\n` +
+                `2) Downpayment 50% (${ServiceHubDB.formatPHP(down50)})\n` +
+                `3) Full payment (${ServiceHubDB.formatPHP(full)})\n` +
+                `4) Custom amount\n\n` +
+                `Enter 1, 2, 3, or 4:`,
+                "1"
+            );
+            if (!choice) return;
+
+            let paymentType = '';
+            let amount = 0;
+            const pick = String(choice).trim();
+            if (pick === '1') { paymentType = 'downpayment_20'; amount = down20; }
+            else if (pick === '2') { paymentType = 'downpayment_50'; amount = down50; }
+            else if (pick === '3') { paymentType = 'full'; amount = full; }
+            else if (pick === '4') {
+                const custom = prompt(`Enter custom amount in PHP (Total: ${ServiceHubDB.formatPHP(full)}):`, String(down20));
+                if (!custom) return;
+                paymentType = 'custom';
+                amount = Number(custom);
             } else {
-                const amount = prompt("Enter full payment amount in PHP:", String(currentRequest.priceAmount || ServiceHubDB.parsePriceToPHPAmount(currentRequest.budget, 0)));
-                if (amount) {
-                    if (window.ServiceHubAPI && ServiceHubAPI.getToken()) {
-                        await ServiceHubAPI.updateRequestStatus({
-                            requestId: currentRequest.requestId,
-                            status: "AWAITING_PAYMENT",
-                            paymentAmount: Number(amount),
-                            paymentType: "full"
-                        });
-                        currentRequest.status = "awaiting_payment";
-                        currentRequest.requestedAmount = Number(amount);
-                        currentRequest.paymentType = "full";
-                        showToast(`💰 Full payment request of ${ServiceHubDB.formatPHP(amount)} sent to customer.`);
-                        renderRequestDetails();
-                        return;
-                    }
-                    ServiceHubDB.updateRequestStatus(currentRequest.requestId, 'awaiting_payment', {
-                        requestedAmount: amount,
-                        paymentType: 'full'
-                    });
-                    showToast(`💰 Full payment request of ${ServiceHubDB.formatPHP(amount)} sent to customer.`);
-                }
+                showToast('Invalid choice.', true);
+                return;
             }
+            if (!Number.isFinite(Number(amount)) || Number(amount) <= 0) {
+                showToast('Invalid amount.', true);
+                return;
+            }
+
+            if (window.ServiceHubAPI && ServiceHubAPI.getToken()) {
+                await ServiceHubAPI.updateRequestStatus({
+                    requestId: currentRequest.requestId,
+                    status: "AWAITING_PAYMENT",
+                    paymentAmount: Number(amount),
+                    paymentType: paymentType
+                });
+                currentRequest.status = "awaiting_payment";
+                currentRequest.requestedAmount = Number(amount);
+                currentRequest.paymentType = paymentType;
+                showToast(`💵 Payment request of ${ServiceHubDB.formatPHP(amount)} sent to customer.`);
+                renderRequestDetails();
+                return;
+            }
+
+            ServiceHubDB.updateRequestStatus(currentRequest.requestId, 'awaiting_payment', {
+                requestedAmount: Number(amount),
+                paymentType: paymentType
+            });
+            showToast(`💵 Payment request of ${ServiceHubDB.formatPHP(amount)} sent to customer.`);
             currentRequest = ServiceHubDB.formatRequestForDisplay(
                 ServiceHubDB.getRequestById(currentRequest.requestId)
             );
@@ -867,7 +865,8 @@
         }
     }
     
-    const remainingAmount = budget - (amountPaid || 0);
+    const remainingAmount = Number(currentRequest.remainingBalance ?? (budget - (amountPaid || 0)));
+    const isFullyPaid = currentRequest.isFullyPaid === true || remainingAmount <= 0;
     
     let statusClass = '', statusText = '', statusIcon = '';
     let paymentOptionsHtml = '';
@@ -951,7 +950,45 @@
     // STEP 4: AFTER PAYMENT - Customer paid (Downpayment or Full)
     else if (status === 'inprogress' && paymentConfirmed === true) {
         // Check if it was downpayment or full payment
-        if (paymentType === 'downpayment') {
+        if (isFullyPaid) {
+            statusClass = 'status-paid-full';
+            statusText = 'FULLY PAID';
+            statusIcon = 'fa-check-circle';
+            paymentSummaryHtml = `
+                <div class="payment-summary-card">
+                    <h4><i class="fas fa-receipt"></i> Payment Summary</h4>
+                    <div class="payment-row">
+                        <span>Amount Paid:</span>
+                        <strong>${ServiceHubDB.formatPHP(amountPaid || 0)}</strong>
+                    </div>
+                    <div class="payment-row">
+                        <span>Remaining Balance:</span>
+                        <strong>${ServiceHubDB.formatPHP(0)}</strong>
+                    </div>
+                    <div class="payment-row">
+                        <span>Total Budget:</span>
+                        <span>${ServiceHubDB.formatPHP(budget)}</span>
+                    </div>
+                </div>
+            `;
+            paymentOptionsHtml = `
+                <div class="payment-options" style="background: #e8f5e9; margin-top: 16px;">
+                    <h4><i class="fas fa-check-circle"></i> Payment Complete</h4>
+                    <p>The customer is fully paid. You can now complete the service.</p>
+                </div>
+            `;
+            actionButtonsHtml = `
+                <div class="action-buttons" style="margin-top: 16px;">
+                    <button class="btn-message" onclick="updateRequestStatus('mark_complete')" style="background: #1e7b48;">
+                        <i class="fas fa-check-double"></i> Mark as Complete
+                    </button>
+                    <a href="provider_messages.html" class="btn-message">
+                        <i class="fas fa-envelope"></i> Message Customer
+                    </a>
+                </div>
+            `;
+        }
+        else if (String(paymentType || '').startsWith('downpayment')) {
             statusClass = 'status-paid-downpayment';
             statusText = `PAID (${ServiceHubDB.formatPHP(amountPaid || 0)} Downpayment) | Remaining: ${ServiceHubDB.formatPHP(remainingAmount > 0 ? remainingAmount : 0)}`;
             statusIcon = 'fa-check-circle';

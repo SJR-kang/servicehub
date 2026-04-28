@@ -971,6 +971,7 @@
 </footer>
 
 <script src="database.js"></script>
+<script src="api.js"></script>
 <script>
     let currentUser = null;
     let currentProvider = null;
@@ -990,7 +991,7 @@
         setTimeout(() => toast.remove(), 2600);
     }
 
-    function loadCurrentUser() {
+    async function loadCurrentUser() {
         const storedUser = localStorage.getItem('servicehub_user');
         if (storedUser) {
             try {
@@ -999,12 +1000,10 @@
             } catch(e) { console.error(e); }
         }
         
-        if (!currentUser) {
-            currentUser = { name: "Demo Provider", email: "demo@servicehub.com", type: "provider" };
-        }
+        if (!currentUser) currentUser = { type: "provider" };
         
         updateUserUI();
-        loadProviderProfile();
+        await loadProviderProfile();
     }
 
     function updateUserUI() {
@@ -1016,35 +1015,18 @@
         }
     }
 
-    function loadProviderProfile() {
-        if (!window.ServiceHubDB) {
-            setTimeout(() => loadProviderProfile(), 500);
+    async function loadProviderProfile() {
+        if (!window.ServiceHubAPI || !ServiceHubAPI.getToken()) {
+            document.getElementById('sidebarName').innerText = 'Please sign in';
+            setTimeout(() => { window.location.href = 'signin.html'; }, 900);
             return;
         }
-        
-        if (currentUser && currentUser.email) {
-            currentProvider = ServiceHubDB.getProviderByEmail(currentUser.email);
-        }
-        
-        if (!currentProvider && currentUser && currentUser.name) {
-            currentProvider = ServiceHubDB.getProviderByName(currentUser.name);
-        }
-        
-        if (!currentProvider) {
-            currentProvider = ServiceHubDB.getProviderById(4);
-        }
-        
-        if (!currentProvider) {
-            const allProviders = ServiceHubDB.getAllProviders();
-            if (allProviders && allProviders.length > 0) {
-                currentProvider = allProviders[0];
-            }
-        }
-        
-        if (currentProvider) {
+        try {
+            currentProvider = await ServiceHubAPI.getProviderProfile();
             renderProfileData();
-        } else {
+        } catch (error) {
             document.getElementById('sidebarName').innerText = 'Provider Not Found';
+            showToast(error.message || 'Unable to load provider profile.', false);
         }
     }
     
@@ -1125,15 +1107,14 @@
         `).join('');
     }
     
-    function saveProfileInfo() {
+    async function saveProfileInfo() {
         const updatedData = {
             name: document.getElementById('displayName')?.value,
-            service: document.getElementById('serviceTitle')?.value,
+            serviceTitle: document.getElementById('serviceTitle')?.value,
             location: document.getElementById('location')?.value,
             availability: document.getElementById('availability')?.value,
             yearsExperience: parseInt(document.getElementById('yearsExperience')?.value) || 0,
             contactPhone: document.getElementById('contactPhone')?.value,
-            contactEmail: document.getElementById('contactEmail')?.value,
             description: document.getElementById('description')?.value,
             fullDetail: document.getElementById('description')?.value
         };
@@ -1143,19 +1124,21 @@
             updatedData.languages = languagesInput.split(',').map(l => l.trim());
         }
         
-        const result = ServiceHubDB.updateProvider(currentProvider.id, updatedData);
-        
-        if (result) {
-            currentProvider = result;
+        try {
+            currentProvider = await ServiceHubAPI.updateProviderProfile(updatedData);
             showToast('Profile updated successfully!');
             toggleInfoEdit(false);
             renderProfileData();
-        } else {
-            showToast('Error saving profile.', false);
+            const nextUser = { ...(currentUser || {}), name: currentProvider.name, phone: currentProvider.contactPhone, email: currentProvider.contactEmail };
+            localStorage.setItem('servicehub_user', JSON.stringify(nextUser));
+            currentUser = nextUser;
+            updateUserUI();
+        } catch (error) {
+            showToast(error.message || 'Error saving profile.', false);
         }
     }
     
-    function saveServices() {
+    async function saveServices() {
         const services = [];
         const serviceItems = document.querySelectorAll('.service-item');
         serviceItems.forEach(item => {
@@ -1173,18 +1156,17 @@
             }
         });
         
-        const result = ServiceHubDB.updateProvider(currentProvider.id, { servicesOffered: services });
-        if (result) {
-            currentProvider = result;
+        try {
+            currentProvider = await ServiceHubAPI.updateProviderProfile({ servicesOffered: services });
             showToast('Services updated successfully!');
             toggleServicesEdit(false);
             renderServicesList();
-        } else {
-            showToast('Error saving services.', false);
+        } catch (error) {
+            showToast(error.message || 'Error saving services.', false);
         }
     }
     
-    function saveCredentials() {
+    async function saveCredentials() {
         const credentials = [];
         const credItems = document.querySelectorAll('.credential-item');
         credItems.forEach(item => {
@@ -1194,14 +1176,13 @@
             }
         });
         
-        const result = ServiceHubDB.updateProvider(currentProvider.id, { credentials: credentials });
-        if (result) {
-            currentProvider = result;
+        try {
+            currentProvider = await ServiceHubAPI.updateProviderProfile({ credentials: credentials });
             showToast('Credentials updated successfully!');
             toggleCredentialsEdit(false);
             renderCredentialsList();
-        } else {
-            showToast('Error saving credentials.', false);
+        } catch (error) {
+            showToast(error.message || 'Error saving credentials.', false);
         }
     }
     
@@ -1358,10 +1339,16 @@
         const file = event.target.files[0];
         if (file) {
             const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('avatarImg').src = e.target.result;
-                ServiceHubDB.updateProvider(currentProvider.id, { avatarImg: e.target.result });
-                showToast('Avatar updated!');
+            reader.onload = async function(e) {
+                const nextAvatar = e.target.result;
+                document.getElementById('avatarImg').src = nextAvatar;
+                try {
+                    currentProvider = await ServiceHubAPI.updateProviderProfile({ avatarImg: nextAvatar });
+                    showToast('Avatar updated!');
+                } catch (error) {
+                    document.getElementById('avatarImg').src = currentProvider?.avatarImg || 'https://randomuser.me/api/portraits/lego/1.jpg';
+                    showToast(error.message || 'Avatar update failed.', false);
+                }
             };
             reader.readAsDataURL(file);
         }
@@ -1438,6 +1425,7 @@
                 e.preventDefault();
                 e.stopPropagation();
                 localStorage.removeItem('servicehub_user');
+                ServiceHubAPI?.clearToken?.();
                 showToast('Logged out successfully');
                 setTimeout(() => {
                     window.location.href = 'signin.html';

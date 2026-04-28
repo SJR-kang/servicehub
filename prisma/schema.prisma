@@ -42,13 +42,17 @@ model ProviderProfile {
   category       String
   priceLabel     String
   description    String
+  fullDetail     String?
   location       String?
   availability   String?
   rating         Float    @default(5)
   avatarImg      String?
   evidenceImg    String?
+  contactPhone   String?
   yearsExperience Int?
   languages      String[]
+  credentials    String[] @default([])
+  services       Json?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -61,6 +65,7 @@ model ServiceRequest {
   seekerId           String
   providerId         String
   serviceName        String
+  priceAmount        Float?
   preferredDate      DateTime?
   preferredTime      String?
   location           String?
@@ -68,9 +73,12 @@ model ServiceRequest {
   serviceDetails     String?
   status             RequestStatus @default(PENDING)
   paymentRequestedAt DateTime?
-  paymentAmount      Float?
+  paymentAmount      Float? // requested amount (AWAITING_PAYMENT) OR paid amount (PAID) for legacy clients
   paymentType        String?
   paymentConfirmedAt DateTime?
+  amountPaid         Float?   @default(0)
+  remainingBalance   Float?   @default(0)
+  isFullyPaid        Boolean  @default(false)
   completedAt        DateTime?
   rejectionReason    String?
   createdAt          DateTime      @default(now())

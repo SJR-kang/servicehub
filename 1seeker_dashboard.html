@@ -698,10 +698,12 @@
 </footer>
 
 <script src="database.js"></script>
+<script src="api.js"></script>
 <script>
     let cart = [];
 
     let currentUser = null;
+    let backendServices = [];
     let listingFilters = {
         search: "",
         categories: [],
@@ -723,14 +725,18 @@
         setTimeout(() => toast.remove(), 2600);
     }
 
-    function updateCartCount() {
-        if (window.ServiceHubDB && currentUser && currentUser.email) {
-            const activeCount = ServiceHubDB.getActiveRequestsCount(currentUser.email);
-            const cartCountSpan = document.getElementById('cartCount');
-            if (cartCountSpan) cartCountSpan.innerText = activeCount;
-        } else {
-            const cartCountSpan = document.getElementById('cartCount');
-            if (cartCountSpan) cartCountSpan.innerText = '0';
+    async function updateCartCount() {
+        const cartCountSpan = document.getElementById('cartCount');
+        if (!cartCountSpan) return;
+        if (!window.ServiceHubAPI || !ServiceHubAPI.getToken()) {
+            cartCountSpan.innerText = '0';
+            return;
+        }
+        try {
+            const requests = await ServiceHubAPI.listRequests();
+            cartCountSpan.innerText = Array.isArray(requests) ? requests.length : 0;
+        } catch (_) {
+            cartCountSpan.innerText = '0';
         }
     }
 
@@ -755,7 +761,7 @@
         }
     }
 
-    function loadCurrentUser() {
+    async function loadCurrentUser() {
         const storedUser = localStorage.getItem('servicehub_user');
         if (storedUser) {
             try {
@@ -765,12 +771,7 @@
 
         updateUserUI();
         
-        if (window.ServiceHubDB) {
-            const stats = ServiceHubDB.getStats();
-            console.log('📊 Unified Database:', stats.totalProviders, 'providers,', stats.totalRequests, 'requests');
-        }
-        
-        updateCartCount();
+        await updateCartCount();
         updateMessageCount();
     }
 
@@ -784,9 +785,7 @@
     }
 
     function getFilteredServices() {
-        const services = window.ServiceHubDB ? ServiceHubDB.getAllServices() : [];
-
-        return services.filter(service => {
+        return backendServices.filter(service => {
             const providerName = service.providerName || '';
             const serviceName = service.name || '';
             const category = service.category || service.providerCategory || 'General';
@@ -823,9 +822,7 @@
                     ${paginated.map(service => {
                         const avatarImg = service.providerAvatar || 'https://randomuser.me/api/portraits/lego/1.jpg';
                         const description = (service.description || '').substring(0, 100);
-                        const displayPrice = window.ServiceHubDB
-                            ? ServiceHubDB.formatPHP(service.priceAmount ?? 0)
-                            : (service.price || '₱0');
+                        const displayPrice = service.price || (window.ServiceHubDB ? ServiceHubDB.formatPHP(service.priceAmount ?? 0) : '₱0');
                         return `
                         <div class="provider-card" data-provider-id="${service.providerId}" data-service-id="${service.id}">
                             <div class="card-header">
@@ -986,16 +983,27 @@
     });
 
     async function init() {
-        if (window.ServiceHubDB) {
-            setTimeout(() => {
-                loadCurrentUser();
-                setupCartRedirect();
-                setupMessageRedirect();
-                setupUserMenu();
-                renderListing();
-            }, 100);
-        } else {
-            document.getElementById('dynamicContent').innerHTML = '<div style="text-align:center; padding:100px;"><i class="fas fa-database"></i><h3>Database not loaded</h3><p>Make sure database.js is in the same folder.</p></div>';
+        try {
+            const providers = await ServiceHubAPI.listProviders();
+            backendServices = (providers || []).flatMap((provider) =>
+                (provider.servicesOffered || []).map((service) => ({
+                    ...service,
+                    providerName: provider.name,
+                    providerRating: provider.rating,
+                    providerAvatar: provider.avatarImg,
+                    providerCategory: provider.category,
+                    providerId: provider.id,
+                    price: service.price || provider.price,
+                    priceAmount: service.priceAmount ?? provider.priceAmount ?? 0,
+                }))
+            );
+            await loadCurrentUser();
+            setupCartRedirect();
+            setupMessageRedirect();
+            setupUserMenu();
+            renderListing();
+        } catch (error) {
+            document.getElementById('dynamicContent').innerHTML = `<div style="text-align:center; padding:100px;"><i class="fas fa-circle-exclamation"></i><h3>Unable to load services</h3><p>${error.message || 'Please try again.'}</p></div>`;
         }
     }
     

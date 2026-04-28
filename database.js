@@ -11,10 +11,40 @@
         _storageKey: 'servicehub_db_data',
         _soldKey: 'sold_products',
         _usdToPhpRate: 55,
+
+        // ============================================
+        // PAYMENT CALC HELPERS
+        // ============================================
+        computePaymentSnapshot: function(request) {
+            const total = Number(request?.priceAmount ?? this.parsePriceToPHPAmount(request?.price || request?.budget, 0)) || 0;
+            const paid = Number(request?.amountPaid ?? request?.paymentAmount ?? 0) || 0;
+            const remaining = Math.max(0, total - paid);
+            const isFullyPaid = total > 0 ? remaining <= 0 : paid > 0;
+            return { total, paid, remaining, isFullyPaid };
+        },
+
+        applyPaymentSnapshot: function(request) {
+            if (!request) return request;
+            const snap = this.computePaymentSnapshot(request);
+            request.amountPaid = snap.paid;
+            request.remainingBalance = snap.remaining;
+            request.isFullyPaid = snap.isFullyPaid;
+            return request;
+        },
         
         // Initialize database
         init: async function() {
             console.log('🔄 Initializing ServiceHub Unified Database...');
+
+            // API-only mode: do not load/save localStorage or built-in demo data.
+            if (typeof window !== 'undefined' && window.SERVICEHUB_API_ONLY === true) {
+                this._providers = [];
+                this._requests = [];
+                this._users = [];
+                this._soldProducts = [];
+                console.log('✅ API-only mode: local demo DB disabled');
+                return true;
+            }
             
             const saved = this.loadFromStorage();
             
@@ -236,6 +266,7 @@
                     email: "provider@example.com",
                     password: "demo123",
                     type: "provider",
+                    providerId: 4,
                     phone: "+1 (555) 0001",
                     avatarImg: "https://randomuser.me/api/portraits/lego/2.jpg"
                 }
@@ -407,7 +438,7 @@
                 const lockedPriceAmount = request.priceAmount
                     ?? matchedService?.priceAmount
                     ?? this.parsePriceToPHPAmount(request.price || request.provider?.price || request.budget, 0);
-                return {
+                const normalized = {
                     ...request,
                     providerId: matchedService?.providerId || providerId || null,
                     serviceId: matchedService?.id || request.serviceId || null,
@@ -423,6 +454,10 @@
                         price: this.formatPHP(lockedPriceAmount)
                     }
                 };
+
+                // Ensure payment fields exist and are consistent
+                this.applyPaymentSnapshot(normalized);
+                return normalized;
             });
         },
 
@@ -1009,6 +1044,10 @@
         formatRequestForDisplay: function(request) {
             if (!request) return null;
             
+            const inferredPaymentConfirmed =
+                request.paymentConfirmed === true ||
+                ['paid', 'completed'].includes(String(request.status || '').toLowerCase());
+
             return {
                 requestId: request.requestId,
                 customerName: request.customerName || (request.requester?.name) || 'Unknown',
@@ -1024,10 +1063,15 @@
                 status: request.status || 'pending',
                 serviceDetails: request.serviceDetails || 'No additional details provided.',
                 rejectionReason: request.rejectionReason || null,
-                requestedPaymentAmount: request.requestedPaymentAmount || null,
-                requestedPaymentType: request.requestedPaymentType || null,
-                paymentConfirmed: request.paymentConfirmed || false,
-                paymentAmount: request.paymentAmount || null,
+                // Payment request fields (new workflow)
+                requestedAmount: request.requestedAmount ?? request.requestedPaymentAmount ?? request.paymentAmount ?? null,
+                paymentType: request.paymentType ?? request.requestedPaymentType ?? request.paymentMethod ?? null,
+                paymentMethod: request.paymentMethod ?? request.paymentType ?? request.requestedPaymentType ?? null,
+
+                // Payment confirmation fields
+                paymentConfirmed: inferredPaymentConfirmed,
+                paymentAmount: request.paymentAmount ?? null,
+                amountPaid: request.amountPaid ?? request.paymentAmount ?? null,
                 completedAt: request.completedAt
             };
         },
@@ -1073,8 +1117,16 @@
         
         getProviderRequests: function(providerName) {
             if (!providerName) return [];
-            return this._requests.filter(req => 
-                req.provider && req.provider.name === providerName
+            // Backwards compatible: accept providerId (number/string) OR providerName (string)
+            const isNumericId = String(providerName).match(/^\d+$/);
+            if (isNumericId) {
+                const id = String(providerName);
+                return this._requests.filter(req => String(req.providerId ?? req.provider?.id ?? '') === id);
+            }
+            const name = String(providerName);
+            return this._requests.filter(req =>
+                (req.provider && req.provider.name === name) ||
+                String(req.providerName || '') === name
             );
         },
         
@@ -1097,12 +1149,15 @@
             const service = this.getServiceById(requestData.serviceId);
             const normalizedData = {
                 ...requestData,
-                requestId: 'REQ-' + Date.now() + '-' + Math.floor(Math.random() * 10000),
+                // Allow API-created requests to be mirrored into local DB
+                requestId: requestData.requestId || ('REQ-' + Date.now() + '-' + Math.floor(Math.random() * 10000)),
+                requestCode: requestData.requestCode || requestData.requestId || null,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
                 status: 'pending',  // Step 1: Status becomes "pending"
                 serviceId: requestData.serviceId || service?.id || null,
                 providerId: requestData.providerId || service?.providerId || requestData.provider?.id || null,
+                providerName: requestData.provider?.name || null,
                 serviceName: requestData.serviceName || service?.name || 'General Service',
                 priceAmount: requestData.priceAmount ?? service?.priceAmount ?? this.parsePriceToPHPAmount(requestData.price || requestData.budget, 0),
                 price: this.formatPHP(requestData.priceAmount ?? service?.priceAmount ?? this.parsePriceToPHPAmount(requestData.price || requestData.budget, 0)),
@@ -1121,6 +1176,9 @@
                     price: this.formatPHP(requestData.priceAmount ?? service?.priceAmount ?? this.parsePriceToPHPAmount(requestData.price || requestData.budget, 0))
                 }
             };
+
+            // Initialize payment fields
+            this.applyPaymentSnapshot(normalizedData);
             
             this._requests.push(normalizedData);
             this.saveToStorage();
@@ -1139,6 +1197,7 @@
                     ...updateData,
                     updatedAt: new Date().toISOString()
                 };
+                this.applyPaymentSnapshot(this._requests[index]);
                 this.saveToStorage();
                 return this._requests[index];
             }
@@ -1194,6 +1253,12 @@
 
     // Initialize when script loads
     (async function() {
+        // In API-only mode we expose helpers but skip localStorage-backed init.
+        if (typeof window !== 'undefined' && window.SERVICEHUB_API_ONLY === true) {
+            window.ServiceHubDB = ServiceHubDB;
+            console.log('🎯 ServiceHub helpers ready (API-only mode)');
+            return;
+        }
         await ServiceHubDB.init();
         window.ServiceHubDB = ServiceHubDB;
         console.log('🎯 ServiceHub Unified Database ready!');

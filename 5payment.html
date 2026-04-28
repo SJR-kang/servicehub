@@ -367,7 +367,9 @@
             paymentTypeLabel.innerHTML = 'Full Payment Amount';
         }
         
-        document.getElementById('displayAmount').innerHTML = `$${paymentRequest.amount}<small>.00</small>`;
+        // Amounts across ServiceHub are treated as PHP in the request workflow
+        const amountNum = Number(paymentRequest.amount) || 0;
+        document.getElementById('displayAmount').innerHTML = `₱${Math.round(amountNum).toLocaleString('en-PH')}<small>.00</small>`;
         document.getElementById('providerName').innerText = paymentRequest.providerName || 'Professional';
         document.getElementById('serviceName').innerText = paymentRequest.serviceName || 'Service';
         document.getElementById('requestDate').innerText = paymentRequest.preferredDate || 'Flexible date';
@@ -383,7 +385,7 @@
     }
     
     function generateQRCode(paymentDetails, paymentId) {
-        const qrData = `upi://pay?pa=servicehub@merchant&pn=ServiceHub&am=${paymentDetails.amount}&cu=USD&tn=${paymentDetails.paymentType || 'Payment'} for ${paymentDetails.serviceName} - ${paymentId}`;
+        const qrData = `upi://pay?pa=servicehub@merchant&pn=ServiceHub&am=${paymentDetails.amount}&cu=PHP&tn=${paymentDetails.paymentType || 'Payment'} for ${paymentDetails.serviceName} - ${paymentId}`;
         
         const canvas = document.getElementById('qrCanvas');
         if (!canvas) return;
@@ -427,51 +429,46 @@
             showToast('Payment information missing', true);
             return;
         }
+
+        if (!window.ServiceHubAPI || !ServiceHubAPI.getToken()) {
+            showToast('Please sign in to complete payment', true);
+            setTimeout(() => { window.location.href = 'signin.html'; }, 900);
+            return;
+        }
         
         showToast('Processing payment... Please wait');
         
-        // Process payment - update status to "inprogress" with payment confirmed
-        const paymentAmount = paymentRequest.amount;
-        const paymentMethod = paymentRequest.paymentType || 'downpayment';
+        // Process payment - update status to "paid" / "inprogress" with payment confirmed
+        const paymentAmount = Number(paymentRequest.amount) || 0;
+        const paymentMethod = paymentRequest.paymentType || 'full';
         let updatedRequest = null;
 
         if (window.ServiceHubAPI && ServiceHubAPI.getToken()) {
             try {
+                // For partial payments, we need to accumulate against existing amountPaid.
+                let priorPaid = 0;
+                try {
+                    const all = await ServiceHubAPI.listRequests();
+                    const found = (all || []).find(r => r.id === paymentRequest.requestId);
+                    if (found && typeof found.amountPaid === 'number') priorPaid = found.amountPaid;
+                } catch (_) {}
+
+                const isRemaining = String(paymentMethod).toLowerCase() === 'remaining';
+                const nextAmountPaid = isRemaining ? (Number(priorPaid) + Number(paymentAmount)) : Number(paymentAmount);
                 updatedRequest = await ServiceHubAPI.updateRequestStatus({
                     requestId: paymentRequest.requestId,
                     status: "PAID",
                     paymentAmount: Number(paymentAmount),
-                    paymentType: paymentMethod
+                    paymentType: paymentMethod,
+                    amountPaid: Number(nextAmountPaid)
                 });
             } catch (apiErr) {
                 console.warn("API payment update failed, falling back to local DB:", apiErr.message);
             }
         }
 
-        if (!updatedRequest) {
-            if (!window.ServiceHubDB) {
-                showToast('Database not available', true);
-                console.error('ServiceHubDB not loaded');
-                return;
-            }
-            const request = ServiceHubDB.getRequestById(paymentRequest.requestId);
-            if (!request) {
-                showToast('Request not found', true);
-                return;
-            }
-            if (request.status !== 'awaiting_payment') {
-                showToast(`Cannot process payment. Current status: ${request.status}`, true);
-                return;
-            }
-            updatedRequest = ServiceHubDB.updateRequest(paymentRequest.requestId, {
-                status: 'inprogress',
-                paymentConfirmed: true,
-                paymentAmount: paymentAmount,
-                paymentMethod: paymentMethod,
-                paymentConfirmedAt: new Date().toISOString(),
-                amountPaid: paymentAmount
-            });
-        }
+        // API-only mode: no local fallback.
+        if (!updatedRequest) return;
         
         if (updatedRequest) {
             console.log('✅ Payment processed successfully');

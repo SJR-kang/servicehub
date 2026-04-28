@@ -31,6 +31,10 @@
     signup: (payload) => request("auth-signup", { method: "POST", body: JSON.stringify(payload) }),
     signin: (payload) => request("auth-signin", { method: "POST", body: JSON.stringify(payload) }),
     listProviders: () => request("providers-list"),
+    getProviderDetails: (providerId) => request(`provider-details?id=${encodeURIComponent(providerId)}`),
+    getProviderProfile: () => request("provider-profile"),
+    updateProviderProfile: (payload) =>
+      request("provider-profile", { method: "PATCH", body: JSON.stringify(payload) }),
     createRequest: (payload) => request("requests-create", { method: "POST", body: JSON.stringify(payload) }),
     listRequests: () => request("requests-list"),
     updateRequestStatus: (payload) =>
