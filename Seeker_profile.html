@@ -841,6 +841,8 @@
 
 <div id="toastMsg" class="toast-message"></div>
 <script src="database.js"></script>
+<script src="api.js"></script>
+<script src="messaging-client.js"></script>
 
 <script>
     let currentUser = null;
@@ -905,24 +907,8 @@
         }
     }
 
-    function updateMessageCount() {
-        const messageBadge = document.getElementById('messageCount');
-        if (!messageBadge) return;
-        
-        let unreadCount = 0;
-        const savedMessages = localStorage.getItem('servicehub_messages');
-        if (savedMessages && currentUser?.email) {
-            try {
-                const messages = JSON.parse(savedMessages);
-                for (const convId in messages) {
-                    const convMessages = messages[convId] || [];
-                    unreadCount += convMessages.filter(m => m.receiver === currentUser.email && !m.read).length;
-                }
-            } catch(e) { console.error(e); }
-        }
-        
-        messageBadge.innerText = unreadCount;
-        messageBadge.style.display = unreadCount > 0 ? 'flex' : 'none';
+    async function updateMessageCount() {
+        await ServiceHubMessaging.renderUnreadBadge('messageCount');
     }
 
     function loadCurrentUser() {

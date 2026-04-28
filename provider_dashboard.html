@@ -751,6 +751,7 @@
 
 <script src="database.js"></script>
 <script src="api.js"></script>
+<script src="messaging-client.js"></script>
 <script>
     let providerProducts = [];
     let pendingDeleteId = null;
@@ -1076,19 +1077,8 @@
         document.getElementById('logoutBtnHeader')?.addEventListener('click', () => { localStorage.removeItem('servicehub_user'); ServiceHubAPI.clearToken(); window.location.href = 'signin.html'; });
     }
 
-    function updateMessageCount() {
-        let unread = 0;
-        const saved = localStorage.getItem('servicehub_messages');
-        if (saved) {
-            try {
-                const msgs = JSON.parse(saved);
-                const user = JSON.parse(localStorage.getItem('servicehub_user') || '{}');
-                const email = user.email || 'provider@servicehub.com';
-                for (const id in msgs) unread += msgs[id].filter(m => !m.read && m.receiver === email).length;
-            } catch(e) {}
-        }
-        const badge = document.getElementById('messageCount');
-        if (badge) badge.innerText = unread;
+    async function updateMessageCount() {
+        await ServiceHubMessaging.renderUnreadBadge('messageCount');
     }
 
     function setupAnalytics() {
@@ -1112,7 +1102,7 @@
         await loadAllData();
         setupTabs();
         setupUserMenu();
-        updateMessageCount();
+        await updateMessageCount();
         setupAnalytics();
         const user = JSON.parse(localStorage.getItem('servicehub_user') || '{}');
         const greeting = document.getElementById('greetingName');

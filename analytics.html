@@ -659,6 +659,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="database.js"></script>
+<script src="api.js"></script>
+<script src="messaging-client.js"></script>
 <script>
     // ============================================
     // ANALYTICS DASHBOARD
@@ -948,6 +950,7 @@
     document.addEventListener('DOMContentLoaded', async () => {
         await loadAnalyticsData();
         setupUserMenu();
+        await ServiceHubMessaging.renderUnreadBadge('messageCount');
         
         const greetingSpan = document.getElementById('greetingName');
         if (greetingSpan && currentUser) {

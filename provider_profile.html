@@ -972,6 +972,7 @@
 
 <script src="database.js"></script>
 <script src="api.js"></script>
+<script src="messaging-client.js"></script>
 <script>
     let currentUser = null;
     let currentProvider = null;
@@ -1486,6 +1487,7 @@
     
     loadCurrentUser();
     setupUserMenu();
+    ServiceHubMessaging.renderUnreadBadge('messageCount');
 </script>
 </body>
 </html>

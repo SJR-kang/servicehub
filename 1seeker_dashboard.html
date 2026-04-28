@@ -699,6 +699,7 @@
 
 <script src="database.js"></script>
 <script src="api.js"></script>
+<script src="messaging-client.js"></script>
 <script>
     let cart = [];
 
@@ -740,25 +741,8 @@
         }
     }
 
-    function updateMessageCount() {
-        // Get unread messages count from localStorage
-        let unreadCount = 0;
-        const savedMessages = localStorage.getItem('servicehub_messages');
-        if (savedMessages) {
-            try {
-                const messages = JSON.parse(savedMessages);
-                for (const convId in messages) {
-                    const convMessages = messages[convId] || [];
-                    unreadCount += convMessages.filter(m => !m.read && m.receiver === currentUser?.email).length;
-                }
-            } catch(e) { console.error(e); }
-        }
-        
-        const messageBadge = document.getElementById('messageCount');
-        if (messageBadge) {
-            messageBadge.innerText = unreadCount;
-            messageBadge.style.display = unreadCount > 0 ? 'flex' : 'none';
-        }
+    async function updateMessageCount() {
+        await ServiceHubMessaging.renderUnreadBadge('messageCount');
     }
 
     async function loadCurrentUser() {
@@ -772,7 +756,7 @@
         updateUserUI();
         
         await updateCartCount();
-        updateMessageCount();
+        await updateMessageCount();
     }
 
     function updateUserUI() {

@@ -35,6 +35,13 @@
     getProviderProfile: () => request("provider-profile"),
     updateProviderProfile: (payload) =>
       request("provider-profile", { method: "PATCH", body: JSON.stringify(payload) }),
+    listConversations: () => request("messages-conversations-list"),
+    getConversationThread: (conversationId) =>
+      request(`messages-thread?conversationId=${encodeURIComponent(conversationId)}`),
+    startConversation: (payload) =>
+      request("messages-start", { method: "POST", body: JSON.stringify(payload) }),
+    sendMessage: (payload) =>
+      request("messages-send", { method: "POST", body: JSON.stringify(payload) }),
     createRequest: (payload) => request("requests-create", { method: "POST", body: JSON.stringify(payload) }),
     listRequests: () => request("requests-list"),
     updateRequestStatus: (payload) =>

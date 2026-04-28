@@ -536,6 +536,7 @@
 
 <script src="database.js"></script>
 <script src="api.js"></script>
+<script src="messaging-client.js"></script>
 <script>
     let currentRequest = null;
     const toUiStatus = (status) => {
@@ -617,21 +618,8 @@
         });
     }
 
-    function updateMessageCount() {
-        let unread = 0;
-        const saved = localStorage.getItem('servicehub_messages');
-        if (saved) {
-            try {
-                const messages = JSON.parse(saved);
-                const user = JSON.parse(localStorage.getItem('servicehub_user') || '{}');
-                const userEmail = user.email || 'provider@servicehub.com';
-                for (const convId in messages) {
-                    unread += messages[convId].filter(m => !m.read && m.receiver === userEmail).length;
-                }
-            } catch(e) {}
-        }
-        const badge = document.getElementById('messageCount');
-        if (badge) badge.innerText = unread;
+    async function updateMessageCount() {
+        await ServiceHubMessaging.renderUnreadBadge('messageCount');
     }
 
     const user = JSON.parse(localStorage.getItem('servicehub_user') || '{}');
@@ -684,6 +672,10 @@
             return;
         }
         currentRequest = mapApiRequest(found);
+        const headerMessageLink = document.getElementById('messageIcon');
+        if (headerMessageLink) {
+            headerMessageLink.href = `provider_messages.html?requestId=${encodeURIComponent(currentRequest.requestId)}`;
+        }
         renderRequestDetails();
     }
     
@@ -1233,6 +1225,9 @@
     `;
     
     document.getElementById('detailsBody').innerHTML = html;
+    document.querySelectorAll('#detailsBody .btn-message[href="provider_messages.html"]').forEach((link) => {
+        link.href = `provider_messages.html?requestId=${encodeURIComponent(currentRequest.requestId)}`;
+    });
 }
     function escapeHtml(str) {
         if (!str) return '';

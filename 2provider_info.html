@@ -365,9 +365,12 @@
                         ${reviewsHtml}
                     </div>
                     
-                    <div class="connect-section">
+                    <div class="connect-section" style="display:flex; gap:12px; flex-wrap:wrap;">
                         <button class="connect-btn" id="connectWithProviderBtn">
                             <i class="fas fa-handshake"></i> Connect with ${provider.name.split(' ')[0]}
+                        </button>
+                        <button class="connect-btn" id="messageProviderBtn" style="background:#0f766e;">
+                            <i class="fas fa-comments"></i> Message ${provider.name.split(' ')[0]}
                         </button>
                     </div>
                     
@@ -411,6 +414,23 @@
             } else {
                 showToast("Please login to connect with providers");
                 setTimeout(() => { window.location.href = "signin.html"; }, 1500);
+            }
+        });
+
+        document.getElementById('messageProviderBtn')?.addEventListener('click', async () => {
+            if (!currentUser || !window.ServiceHubAPI || !ServiceHubAPI.getToken()) {
+                showToast("Please login to message providers");
+                setTimeout(() => { window.location.href = "signin.html"; }, 1500);
+                return;
+            }
+            try {
+                const conversation = await ServiceHubAPI.startConversation({
+                    kind: 'GENERAL',
+                    otherUserId: provider.id,
+                });
+                window.location.href = `seeker_messages.html?conversationId=${encodeURIComponent(conversation.id)}`;
+            } catch (error) {
+                showToast(error.message || "Unable to open chat right now.");
             }
         });
 
