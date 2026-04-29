@@ -19,6 +19,7 @@ const patchSchema = z.object({
   evidenceImg: z.string().optional(),
   languages: z.union([z.array(z.string()), z.string()]).optional(),
   credentials: z.array(z.string()).optional(),
+  credentialImages: z.array(z.string()).optional(),
   servicesOffered: z
     .array(
       z.object({

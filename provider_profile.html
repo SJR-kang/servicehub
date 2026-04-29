@@ -596,6 +596,61 @@
             border: 1px solid #cbdde6;
         }
 
+        .credential-upload-wrap {
+            margin-top: 16px;
+            padding: 14px;
+            border: 1px dashed #cbdde6;
+            border-radius: 14px;
+            background: #f8fafc;
+        }
+
+        .credential-upload-wrap small {
+            display: block;
+            margin-top: 8px;
+            color: #5f7f90;
+        }
+
+        .credential-image-grid {
+            margin-top: 16px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+        }
+
+        .credential-image-item {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #dbe6ef;
+            background: #fff;
+        }
+
+        .credential-image-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .credential-image-remove-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 24px;
+            height: 24px;
+            border: none;
+            border-radius: 999px;
+            background: rgba(199, 54, 43, 0.95);
+            color: #fff;
+            cursor: pointer;
+            font-size: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         .verification-badge {
             display: inline-flex;
             align-items: center;
@@ -951,6 +1006,12 @@
                         <button class="edit-toggle-btn" id="editCredentialsBtn">✎ Edit Credentials</button>
                     </div>
                     <div id="credentialsList" class="credentials-container"></div>
+                    <div id="credentialImageUploadWrap" class="credential-upload-wrap" style="display:none;">
+                        <label for="credentialImageInput"><i class="fas fa-image"></i> Upload diploma/certificate photos</label>
+                        <input type="file" id="credentialImageInput" accept="image/*" multiple>
+                        <small>Upload up to 5 images, each up to 8MB.</small>
+                    </div>
+                    <div id="credentialImagesList" class="credential-image-grid"></div>
                     <button id="addCredentialBtn" class="add-btn" style="display:none;"><i class="fas fa-plus"></i> + Add Credential</button>
                 </div>
             </main>
@@ -1109,6 +1170,33 @@
                 ${isEditingCredentials ? `<button type="button" class="remove-btn" onclick="removeCredential(${idx})"><i class="fas fa-trash"></i> Remove</button>` : ''}
             </div>
         `).join('');
+        renderCredentialImages();
+    }
+
+    function renderCredentialImages() {
+        const container = document.getElementById('credentialImagesList');
+        if (!container || !currentProvider) return;
+        const images = Array.isArray(currentProvider.credentialImages) ? currentProvider.credentialImages : [];
+        if (!images.length) {
+            container.innerHTML = '';
+            return;
+        }
+        container.innerHTML = images.map((url, idx) => `
+            <div class="credential-image-item">
+                <a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">
+                    <img src="${escapeHtml(url)}" alt="Credential image ${idx + 1}">
+                </a>
+                ${isEditingCredentials ? `<button type="button" class="credential-image-remove-btn" data-cred-image-idx="${idx}"><i class="fas fa-times"></i></button>` : ''}
+            </div>
+        `).join('');
+        container.querySelectorAll('.credential-image-remove-btn').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const idx = Number(btn.getAttribute('data-cred-image-idx'));
+                if (Number.isNaN(idx)) return;
+                currentProvider.credentialImages = (currentProvider.credentialImages || []).filter((_, imageIdx) => imageIdx !== idx);
+                renderCredentialImages();
+            });
+        });
     }
     
     async function saveProfileInfo() {
@@ -1181,7 +1269,10 @@
         });
         
         try {
-            currentProvider = await ServiceHubAPI.updateProviderProfile({ credentials: credentials });
+            currentProvider = await ServiceHubAPI.updateProviderProfile({
+                credentials: credentials,
+                credentialImages: currentProvider.credentialImages || []
+            });
             showToast('Credentials updated successfully!');
             toggleCredentialsEdit(false);
             renderCredentialsList();
@@ -1234,16 +1325,19 @@
         isEditingCredentials = editing;
         const editBtn = document.getElementById('editCredentialsBtn');
         const addBtn = document.getElementById('addCredentialBtn');
+        const uploadWrap = document.getElementById('credentialImageUploadWrap');
         
         if (editing) {
             editBtn.innerText = 'Cancel Editing';
             editBtn.classList.add('edit-mode');
             addBtn.style.display = 'block';
+            if (uploadWrap) uploadWrap.style.display = 'block';
             renderCredentialsList();
         } else {
             editBtn.innerText = '✎ Edit Credentials';
             editBtn.classList.remove('edit-mode');
             addBtn.style.display = 'none';
+            if (uploadWrap) uploadWrap.style.display = 'none';
             renderCredentialsList();
         }
     }
@@ -1338,6 +1432,34 @@
             document.getElementById('credentialsList').innerHTML = '<div class="empty-state"><i class="fas fa-certificate" style="font-size: 3rem; margin-bottom: 10px;"></i><p>No credentials added yet.</p></div>';
         }
     };
+
+    async function uploadCredentialImages(files) {
+        if (!files || !files.length) return;
+        const existing = Array.isArray(currentProvider.credentialImages) ? currentProvider.credentialImages : [];
+        for (const file of files) {
+            if (!file.type.startsWith('image/')) {
+                showToast(`Skipped non-image file: ${file.name}`, false);
+                continue;
+            }
+            if (file.size > 8 * 1024 * 1024) {
+                showToast(`Skipped ${file.name}: larger than 8MB.`, false);
+                continue;
+            }
+            if (existing.length >= 5) {
+                showToast('Maximum of 5 credential images reached.', false);
+                break;
+            }
+            const dataUrl = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject(new Error('Failed to read selected image.'));
+                reader.readAsDataURL(file);
+            });
+            if (typeof dataUrl === 'string') existing.push(dataUrl);
+        }
+        currentProvider.credentialImages = existing;
+        renderCredentialImages();
+    }
     
     function handleAvatarUpload(event) {
         const file = event.target.files[0];
@@ -1475,6 +1597,12 @@
     
     document.getElementById('addServiceBtn')?.addEventListener('click', addServiceField);
     document.getElementById('addCredentialBtn')?.addEventListener('click', addCredentialField);
+    document.getElementById('credentialImageInput')?.addEventListener('change', async (e) => {
+        const files = Array.from(e.target.files || []);
+        if (!files.length) return;
+        await uploadCredentialImages(files);
+        e.target.value = '';
+    });
     document.getElementById('avatarUploadBtn')?.addEventListener('click', () => {
         document.getElementById('avatarFileInput').click();
     });

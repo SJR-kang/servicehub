@@ -28,6 +28,9 @@ const normalizeLanguages = (value) =>
 const normalizeCredentials = (value) =>
   Array.isArray(value) ? value.map((item) => sanitizeString(item)).filter(Boolean) : [];
 
+const normalizeCredentialImages = (value) =>
+  Array.isArray(value) ? value.map((item) => sanitizeString(item)).filter(Boolean) : [];
+
 const normalizeServiceItem = (service, fallbackProvider) => {
   const amount = parseAmount(service?.priceAmount ?? service?.price, parseAmount(fallbackProvider.priceLabel, 0));
   const category = sanitizeString(service?.category, fallbackProvider.category || "General");
@@ -93,6 +96,7 @@ const normalizeProviderProfileRecord = (profile) => {
     contactPhone: sanitizeString(profile.contactPhone, profile.user?.phone || ""),
     contactEmail: sanitizeString(profile.user?.email),
     credentials: normalizeCredentials(profile.credentials),
+    credentialImages: normalizeCredentialImages(profile.credentialImages),
     servicesOffered: services,
     verificationStatus: {
       idVerified: true,
@@ -107,6 +111,9 @@ const normalizeProviderProfileRecord = (profile) => {
 const buildProfileUpdateData = (payload, existingProfile, user) => {
   const nextLanguages = payload.languages !== undefined ? normalizeLanguages(payload.languages) : normalizeLanguages(existingProfile.languages);
   const nextCredentials = payload.credentials !== undefined ? normalizeCredentials(payload.credentials) : normalizeCredentials(existingProfile.credentials);
+  const nextCredentialImages = payload.credentialImages !== undefined
+    ? normalizeCredentialImages(payload.credentialImages)
+    : normalizeCredentialImages(existingProfile.credentialImages);
 
   const nextServices = payload.servicesOffered !== undefined
     ? (Array.isArray(payload.servicesOffered) ? payload.servicesOffered : []).map((service) =>
@@ -143,6 +150,7 @@ const buildProfileUpdateData = (payload, existingProfile, user) => {
       yearsExperience: Number(payload.yearsExperience ?? existingProfile.yearsExperience ?? 0) || 0,
       languages: nextLanguages,
       credentials: nextCredentials,
+      credentialImages: nextCredentialImages,
       services: nextServices,
     },
     user: {

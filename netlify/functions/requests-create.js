@@ -13,6 +13,7 @@ const bodySchema = z.object({
   location: z.string().optional(),
   budget: z.string().optional(),
   serviceDetails: z.string().optional(),
+  photoUrls: z.array(z.string()).optional(),
 });
 
 exports.handler = async (event) => {
@@ -54,6 +55,7 @@ exports.handler = async (event) => {
       location: parsed.data.location || null,
       budget: parsed.data.budget || null,
       serviceDetails: parsed.data.serviceDetails || null,
+      photoUrls: parsed.data.photoUrls || [],
       status: "PENDING",
       amountPaid: 0,
       remainingBalance: parsed.data.priceAmount ?? null,

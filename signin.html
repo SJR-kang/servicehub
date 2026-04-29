@@ -322,11 +322,18 @@
     function redirectToDashboard(user) {
       console.log('🔄 Redirecting user:', user);
       
-      // Store user in localStorage
+      const previous = (() => {
+        try { return JSON.parse(localStorage.getItem('servicehub_user') || '{}'); } catch (_) { return {}; }
+      })();
       localStorage.setItem('servicehub_user', JSON.stringify({
+        ...previous,
         id: user.id,
         name: user.name,
         email: user.email,
+        phone: user.phone || previous.phone || '',
+        location: user.location || previous.location || '',
+        occupation: user.occupation || previous.occupation || '',
+        bio: user.bio || previous.bio || '',
         userType: user.userType || user.type,
         type: user.type || user.userType
       }));
@@ -367,6 +374,10 @@
           id: result.user.id,
           name: result.user.name,
           email: result.user.email,
+          phone: result.user.phone || '',
+          location: result.user.location || '',
+          occupation: result.user.occupation || '',
+          bio: result.user.bio || '',
           userType: result.user.role === 'PROVIDER' ? 'provider' : 'seeker',
           type: result.user.role === 'PROVIDER' ? 'provider' : 'seeker'
         };

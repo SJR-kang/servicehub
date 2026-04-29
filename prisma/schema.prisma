@@ -31,6 +31,9 @@ model User {
   passwordHash String
   name         String
   phone        String?
+  location     String?
+  occupation   String?
+  bio          String?
   role         UserRole
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
@@ -60,6 +63,7 @@ model ProviderProfile {
   yearsExperience Int?
   languages      String[]
   credentials    String[] @default([])
+  credentialImages String[] @default([])
   services       Json?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -79,6 +83,7 @@ model ServiceRequest {
   location           String?
   budget             String?
   serviceDetails     String?
+  photoUrls          String[]      @default([])
   status             RequestStatus @default(PENDING)
   paymentRequestedAt DateTime?
   paymentAmount      Float? // requested amount (AWAITING_PAYMENT) OR paid amount (PAID) for legacy clients

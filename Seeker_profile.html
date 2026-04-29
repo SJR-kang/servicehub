@@ -751,27 +751,27 @@
                     <form id="profileForm" class="profile-form">
                         <div class="form-row">
                             <label><i class="fas fa-user"></i> Full Name</label>
-                            <input type="text" id="fullName" disabled value="">
+                            <input type="text" id="fullName" name="fullName" disabled value="">
                         </div>
                         <div class="form-row">
                             <label><i class="fas fa-envelope"></i> Email Address</label>
-                            <input type="email" id="email" disabled value="">
+                            <input type="email" id="email" name="email" disabled value="">
                         </div>
                         <div class="form-row">
                             <label><i class="fas fa-phone"></i> Phone Number</label>
-                            <input type="tel" id="phone" disabled value="">
+                            <input type="tel" id="phone" name="phone" disabled value="">
                         </div>
                         <div class="form-row">
                             <label><i class="fas fa-map-marker-alt"></i> Location</label>
-                            <input type="text" id="location" disabled value="">
+                            <input type="text" id="location" name="location" disabled value="">
                         </div>
                         <div class="form-row">
                             <label><i class="fas fa-briefcase"></i> Occupation</label>
-                            <input type="text" id="occupation" disabled value="">
+                            <input type="text" id="occupation" name="occupation" disabled value="">
                         </div>
                         <div class="form-row">
                             <label><i class="fas fa-info-circle"></i> Bio</label>
-                            <textarea id="bio" rows="3" disabled placeholder="Tell us a little about yourself..."></textarea>
+                            <textarea id="bio" name="bio" rows="3" disabled placeholder="Tell us a little about yourself..."></textarea>
                         </div>
                         <div class="form-actions" id="formActions" style="display: none;">
                             <button type="button" class="cancel-btn" id="cancelEditBtn">Cancel</button>
@@ -911,7 +911,7 @@
         await ServiceHubMessaging.renderUnreadBadge('messageCount');
     }
 
-    function loadCurrentUser() {
+    async function loadCurrentUser() {
         const storedUser = localStorage.getItem('servicehub_user');
         if (storedUser) {
             try {
@@ -923,18 +923,30 @@
             }
         }
         
-        if (!currentUser) {
-            // Demo user fallback
+        if (!window.ServiceHubAPI || !ServiceHubAPI.getToken()) {
+            showToast('Please sign in to access your profile.', 'error');
+            setTimeout(() => { window.location.href = 'signin.html'; }, 900);
+            return;
+        }
+
+        try {
+            const seekerProfile = await ServiceHubAPI.getSeekerProfile();
             currentUser = {
-                name: "Demo Seeker",
-                email: "seeker@example.com",
-                phone: "+1 (555) 123-4567",
-                location: "San Francisco, CA",
-                occupation: "Student",
-                bio: "Looking for quality services!",
-                userType: "seeker"
+                ...(currentUser || {}),
+                id: seekerProfile.id,
+                name: seekerProfile.name,
+                email: seekerProfile.email,
+                phone: seekerProfile.phone || '',
+                location: seekerProfile.location || '',
+                occupation: seekerProfile.occupation || '',
+                bio: seekerProfile.bio || '',
+                userType: 'seeker',
+                type: 'seeker'
             };
             localStorage.setItem('servicehub_user', JSON.stringify(currentUser));
+        } catch (error) {
+            showToast(error.message || 'Unable to load seeker profile.', 'error');
+            return;
         }
         
         updateUserUI();
@@ -982,20 +994,42 @@
         document.getElementById('avgRating').innerText = '0.0';
     }
 
-    function saveProfile(formData) {
+    async function saveProfile(formData) {
         if (!currentUser) return;
-        
-        currentUser.name = formData.get('fullName');
-        currentUser.phone = formData.get('phone');
-        currentUser.location = formData.get('location');
-        currentUser.occupation = formData.get('occupation');
-        currentUser.bio = formData.get('bio');
-        
-        localStorage.setItem('servicehub_user', JSON.stringify(currentUser));
-        
-        showToast("Profile updated successfully!", "success");
-        updateUserUI();
-        toggleEditMode(false);
+
+        const payload = {
+            name: String(formData.get('fullName') || '').trim(),
+            phone: String(formData.get('phone') || '').trim(),
+            location: String(formData.get('location') || '').trim(),
+            occupation: String(formData.get('occupation') || '').trim(),
+            bio: String(formData.get('bio') || '').trim()
+        };
+        if (!payload.name) {
+            showToast("Full name is required.", "error");
+            return;
+        }
+
+        try {
+            const saved = await ServiceHubAPI.updateSeekerProfile(payload);
+            currentUser = {
+                ...(currentUser || {}),
+                id: saved.id,
+                name: saved.name,
+                email: saved.email,
+                phone: saved.phone || '',
+                location: saved.location || '',
+                occupation: saved.occupation || '',
+                bio: saved.bio || '',
+                userType: 'seeker',
+                type: 'seeker'
+            };
+            localStorage.setItem('servicehub_user', JSON.stringify(currentUser));
+            showToast("Profile updated successfully!", "success");
+            updateUserUI();
+            toggleEditMode(false);
+        } catch (error) {
+            showToast(error.message || "Unable to save profile.", "error");
+        }
     }
 
     function toggleEditMode(isEditing) {
@@ -1134,8 +1168,8 @@
         }
     }, 5000);
 
-    document.addEventListener('DOMContentLoaded', () => {
-        loadCurrentUser();
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadCurrentUser();
         
         document.getElementById('editToggleBtn')?.addEventListener('click', () => {
             const isCurrentlyEditing = !document.getElementById('fullName').disabled;
@@ -1147,10 +1181,10 @@
             toggleEditMode(false);
         });
         
-        document.getElementById('profileForm')?.addEventListener('submit', (e) => {
+        document.getElementById('profileForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
-            saveProfile(formData);
+            await saveProfile(formData);
         });
         
         document.getElementById('switchToProviderBtn')?.addEventListener('click', switchToProvider);

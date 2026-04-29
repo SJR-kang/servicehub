@@ -271,6 +271,29 @@
             grid-column: 1 / -1;
         }
 
+        .request-photo-grid {
+            margin-top: 10px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+            gap: 10px;
+        }
+
+        .request-photo-item {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #dbe6ef;
+            background: #fff;
+        }
+
+        .request-photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
         .status-section {
             margin: 24px 0;
             padding: 20px;
@@ -573,6 +596,7 @@
         budget: r.budget || '',
         priceAmount: r.priceAmount || null,
         serviceDetails: r.serviceDetails || '',
+        photoUrls: Array.isArray(r.photoUrls) ? r.photoUrls : [],
         status: toUiStatus(r.status),
         paymentConfirmed: ['PAID', 'COMPLETED'].includes(String(r.status || '').toUpperCase()),
         paymentType: r.paymentType || null,
@@ -1198,6 +1222,18 @@
                 <div class="info-item full-width">
                     <div class="info-label">Service Details</div>
                     <div class="info-value">${escapeHtml(currentRequest.serviceDetails || 'No additional details provided.')}</div>
+                </div>
+                <div class="info-item full-width">
+                    <div class="info-label">Reference Photos</div>
+                    ${Array.isArray(currentRequest.photoUrls) && currentRequest.photoUrls.length ? `
+                        <div class="request-photo-grid">
+                            ${currentRequest.photoUrls.map((url) => `
+                                <a class="request-photo-item" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">
+                                    <img src="${escapeHtml(url)}" alt="Request reference photo">
+                                </a>
+                            `).join('')}
+                        </div>
+                    ` : `<div class="info-value">No reference photos uploaded.</div>`}
                 </div>
             </div>
         </div>

@@ -35,6 +35,9 @@
     getProviderProfile: () => request("provider-profile"),
     updateProviderProfile: (payload) =>
       request("provider-profile", { method: "PATCH", body: JSON.stringify(payload) }),
+    getSeekerProfile: () => request("seeker-profile"),
+    updateSeekerProfile: (payload) =>
+      request("seeker-profile", { method: "PATCH", body: JSON.stringify(payload) }),
     listConversations: () => request("messages-conversations-list"),
     getConversationThread: (conversationId) =>
       request(`messages-thread?conversationId=${encodeURIComponent(conversationId)}`),

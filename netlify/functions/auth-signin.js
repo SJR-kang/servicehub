@@ -29,7 +29,16 @@ exports.handler = async (event) => {
   const token = signToken(user);
   return json(200, {
     token,
-    user: { id: user.id, email: user.email, name: user.name, role: user.role },
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      phone: user.phone,
+      location: user.location,
+      occupation: user.occupation,
+      bio: user.bio,
+    },
   });
 };
 

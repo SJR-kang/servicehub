@@ -326,6 +326,53 @@
             min-height: 110px;
         }
 
+        .upload-help {
+            font-size: 0.85rem;
+            color: #5f7f90;
+            margin-top: 8px;
+        }
+
+        .photo-preview-grid {
+            margin-top: 14px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+            gap: 10px;
+        }
+
+        .photo-preview-item {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #dbe6ef;
+            background: #f8fafc;
+        }
+
+        .photo-preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .photo-remove-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 24px;
+            height: 24px;
+            border: none;
+            border-radius: 999px;
+            background: rgba(199, 54, 43, 0.95);
+            color: #fff;
+            cursor: pointer;
+            font-size: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         .submit-btn {
             background: linear-gradient(135deg, #1a2c3e, #2c4a6e);
             color: white;
@@ -596,6 +643,12 @@
                         <div class="form-group">
                             <label><i class="fas fa-comment-dots"></i> Service Details / Special Requests</label>
                             <textarea id="serviceDetails" rows="5" placeholder="Describe what you need, any specific requirements, timeline, etc." required></textarea>
+                            <div style="margin-top: 12px;">
+                                <label for="requestPhotos"><i class="fas fa-camera"></i> Upload Reference Photos (optional)</label>
+                                <input type="file" id="requestPhotos" accept="image/*" multiple>
+                                <div class="upload-help">You can upload up to 5 photos. Each photo must be less than 8MB.</div>
+                                <div id="requestPhotoPreview" class="photo-preview-grid"></div>
+                            </div>
                         </div>
 
                         <div class="form-group">
@@ -654,6 +707,7 @@
     let currentUser = null;
     let selectedProvider = null;
     let selectedService = null;
+    let selectedRequestPhotos = [];
 
     function showToast(msg) {
         let toast = document.createElement('div');
@@ -779,6 +833,76 @@
             dateInput.min = today;
         }
     }
+
+    function renderSelectedRequestPhotos() {
+        const preview = document.getElementById('requestPhotoPreview');
+        if (!preview) return;
+        if (!selectedRequestPhotos.length) {
+            preview.innerHTML = '';
+            return;
+        }
+        preview.innerHTML = selectedRequestPhotos.map((photo, idx) => `
+            <div class="photo-preview-item">
+                <img src="${photo.previewUrl}" alt="Uploaded photo ${idx + 1}">
+                <button type="button" class="photo-remove-btn" data-photo-idx="${idx}" title="Remove photo"><i class="fas fa-times"></i></button>
+            </div>
+        `).join('');
+        preview.querySelectorAll('.photo-remove-btn').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const idx = Number(btn.getAttribute('data-photo-idx'));
+                if (!Number.isNaN(idx)) {
+                    selectedRequestPhotos.splice(idx, 1);
+                    renderSelectedRequestPhotos();
+                }
+            });
+        });
+    }
+
+    function setupRequestPhotoPicker() {
+        const fileInput = document.getElementById('requestPhotos');
+        if (!fileInput) return;
+        fileInput.addEventListener('change', (e) => {
+            const picked = Array.from(e.target.files || []);
+            if (!picked.length) return;
+            for (const file of picked) {
+                if (!file.type.startsWith('image/')) {
+                    showToast(`Skipped non-image file: ${file.name}`);
+                    continue;
+                }
+                if (file.size > 8 * 1024 * 1024) {
+                    showToast(`Skipped ${file.name}: file is larger than 8MB.`);
+                    continue;
+                }
+                if (selectedRequestPhotos.length >= 5) {
+                    showToast('Maximum of 5 photos allowed.');
+                    break;
+                }
+                const previewUrl = URL.createObjectURL(file);
+                selectedRequestPhotos.push({ file, previewUrl });
+            }
+            fileInput.value = '';
+            renderSelectedRequestPhotos();
+        });
+    }
+
+    function readFileAsDataUrl(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => reject(new Error('Failed to read image file.'));
+            reader.readAsDataURL(file);
+        });
+    }
+
+    async function uploadRequestPhotos() {
+        if (!selectedRequestPhotos.length) return [];
+        const uploadedUrls = [];
+        for (const item of selectedRequestPhotos) {
+            const dataUrl = await readFileAsDataUrl(item.file);
+            if (typeof dataUrl === 'string') uploadedUrls.push(dataUrl);
+        }
+        return uploadedUrls;
+    }
     
     // FIXED: Form submission with correct data structure
     const requestForm = document.getElementById('requestForm');
@@ -826,6 +950,7 @@
             // API-only mode: serviceId is optional (providers are stored by profile/user, not per-service).
             
             try {
+                const uploadedPhotoUrls = await uploadRequestPhotos();
                 const createdRequest = await ServiceHubAPI.createRequest({
                     providerId: String(requestData.providerId || ''),
                     serviceId: requestData.serviceId || undefined,
@@ -835,7 +960,8 @@
                     preferredTime: requestData.preferredTime,
                     location: requestData.location,
                     budget: requestData.budget,
-                    serviceDetails: requestData.serviceDetails
+                    serviceDetails: requestData.serviceDetails,
+                    photoUrls: uploadedPhotoUrls
                 });
                 if (createdRequest?.id) {
                     sessionStorage.setItem('last_submitted_request_id', String(createdRequest.id));
@@ -900,6 +1026,7 @@
         await loadProviderData();
         autoFillUserData();
         setMinDate();
+        setupRequestPhotoPicker();
         setupUserMenu();
         
         if (window.ServiceHubDB) {
