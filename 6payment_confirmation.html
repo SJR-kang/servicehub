@@ -300,6 +300,55 @@
             color: #1e7b48;
         }
 
+        footer {
+            background: #0f212e;
+            color: #cbdde6;
+            padding: 60px 0 30px;
+            margin-top: 60px;
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        .footer-col h4 {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+        .footer-col h4::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 2px;
+            background: #2c6e9e;
+        }
+        .footer-col ul { list-style: none; padding: 0; }
+        .footer-col ul li { margin-bottom: 12px; }
+        .footer-col ul li a { color: #cbdde6; text-decoration: none; transition: color 0.2s; }
+        .footer-col ul li a:hover { color: #2c6e9e; }
+        .footer-col ul li i { width: 25px; margin-right: 8px; color: #2c6e9e; }
+        .footer-logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .footer-logo i { color: #2c6e9e; font-size: 1.8rem; }
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
         @media (max-width: 550px) {
             .confirmation-body {
                 padding: 24px 20px;
@@ -334,7 +383,7 @@
                 <div class="summary-title"><i class="fas fa-receipt"></i> PAYMENT SUMMARY</div>
                 <div class="amount-row">
                     <span class="amount-label" id="paymentTypeLabel">Amount Paid</span>
-                    <span class="amount-value" id="paidAmount">$0</span>
+                    <span class="amount-value" id="paidAmount">₱0</span>
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Payment ID</span>
@@ -406,6 +455,21 @@
         </div>
     </div>
 </div>
+
+<footer>
+    <div class="confirmation-container" style="max-width: 1280px;">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <div class="footer-logo"><i class="fas fa-handshake"></i> ServiceHub</div>
+                <p>Connecting seekers with trusted pros since 2026.</p>
+            </div>
+            <div class="footer-col"><h4>Contact</h4><ul><li><i class="fas fa-phone"></i> 0993-123-4567</li><li><i class="fas fa-envelope"></i>support@servicehub.com</li></ul></div>
+            <div class="footer-col"><h4>Company</h4><ul><li><a href="#">About</a></li><li><a href="#">Become a Provider</a></li></ul></div>
+            <div class="footer-col"><h4>Legal</h4><ul><li><a href="#">Terms</a></li><li><a href="#">Privacy</a></li></ul></div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2026 ServiceHub — Trusted marketplace.</p></div>
+    </div>
+</footer>
 
 <script src="database.js"></script>
 <script>

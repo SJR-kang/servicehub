@@ -11,14 +11,15 @@
       min-height: 100vh;
       background: linear-gradient(135deg, #f5f7fb 0%, #e4e8f0 100%);
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
       font-family: 'Inter', sans-serif;
     }
     .auth-container {
       width: 100%;
       max-width: 480px;
       padding: 20px;
+      margin: 40px auto;
     }
     .auth-card {
       background: white;
@@ -146,17 +147,54 @@
     .demo-btn:hover {
       background: #e2edf2;
     }
-    .auth-footer {
-      text-align: center;
-      margin-top: 24px;
-      padding-top: 20px;
-      border-top: 1px solid #eef2f6;
-      color: #5f7f90;
+    footer {
+      width: 100%;
+      background: #0f212e;
+      color: #cbdde6;
+      padding: 60px 0 30px;
+      margin-top: auto;
     }
-    .auth-footer a {
-      color: #1a2c3e;
-      text-decoration: none;
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 40px;
+      margin-bottom: 40px;
+    }
+    .footer-col h4 {
+      color: white;
+      font-size: 1.1rem;
       font-weight: 600;
+      margin-bottom: 20px;
+      position: relative;
+      padding-bottom: 10px;
+    }
+    .footer-col h4::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 40px;
+      height: 2px;
+      background: #2c6e9e;
+    }
+    .footer-col ul { list-style: none; padding: 0; }
+    .footer-col ul li { margin-bottom: 12px; }
+    .footer-col ul li a { color: #cbdde6; text-decoration: none; transition: color 0.2s; }
+    .footer-col ul li a:hover { color: #2c6e9e; }
+    .footer-col ul li i { width: 25px; margin-right: 8px; color: #2c6e9e; }
+    .footer-logo {
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .footer-logo i { color: #2c6e9e; font-size: 1.8rem; }
+    .footer-bottom {
+      text-align: center;
+      padding-top: 30px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
     .toast-message {
       position: fixed;
@@ -232,11 +270,24 @@
         </div>
       </form>
       
-      <div class="auth-footer">
-        Don't have an account? <a href="signup.html">Create one now</a>
-      </div>
+      <p style="text-align:center; margin-top:24px; color:#5f7f90;">Don't have an account? <a href="signup.html" style="color:#1a2c3e; font-weight:600; text-decoration:none;">Create one now</a></p>
     </div>
   </div>
+
+  <footer>
+    <div class="auth-container" style="max-width: 1280px;">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div class="footer-logo"><i class="fas fa-handshake"></i> ServiceHub</div>
+          <p>Connecting seekers with trusted pros since 2026.</p>
+        </div>
+        <div class="footer-col"><h4>Contact</h4><ul><li><i class="fas fa-phone"></i> 0993-123-4567</li><li><i class="fas fa-envelope"></i>support@servicehub.com</li></ul></div>
+        <div class="footer-col"><h4>Company</h4><ul><li><a href="#">About</a></li><li><a href="#">Become a Provider</a></li></ul></div>
+        <div class="footer-col"><h4>Legal</h4><ul><li><a href="#">Terms</a></li><li><a href="#">Privacy</a></li></ul></div>
+      </div>
+      <div class="footer-bottom"><p>&copy; 2026 ServiceHub — Trusted marketplace.</p></div>
+    </div>
+  </footer>
   
   <div id="toastMsg" class="toast-message"></div>
 

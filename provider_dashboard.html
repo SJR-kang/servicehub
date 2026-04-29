@@ -745,10 +745,15 @@
 <footer>
     <div class="container">
         <div class="footer-grid">
-            <div class="footer-col"><div class="footer-logo"><i class="fas fa-handshake"></i> ServiceHub</div><p>Connecting seekers with trusted pros since 2026.</p></div>
-            <div class="footer-col"><h4>Contact</h4><ul><li><i class="fas fa-phone"></i> 0993-123-4567</li></ul></div>
+            <div class="footer-col">
+                <div class="footer-logo"><i class="fas fa-handshake"></i> ServiceHub</div>
+                <p>Connecting seekers with trusted pros since 2026.</p>
+            </div>
+            <div class="footer-col"><h4>Contact</h4><ul><li><i class="fas fa-phone"></i> 0993-123-4567</li><li><i class="fas fa-envelope"></i> support@servicehub.com</li></ul></div>
+            <div class="footer-col"><h4>Company</h4><ul><li><a href="#">About</a></li><li><a href="#">Become a Provider</a></li></ul></div>
+            <div class="footer-col"><h4>Legal</h4><ul><li><a href="#">Terms</a></li><li><a href="#">Privacy</a></li></ul></div>
         </div>
-        <div class="footer-bottom"><p>&copy; 2026 ServiceHub</p></div>
+        <div class="footer-bottom"><p>&copy; 2026 ServiceHub — Trusted marketplace.</p></div>
     </div>
 </footer>
 
@@ -1037,7 +1042,7 @@
         const stored = localStorage.getItem('sold_products');
         if (stored) { try { soldProducts = JSON.parse(stored); } catch(e) {} }
         if (soldProducts.length === 0) {
-            soldProducts = [{ orderId:"ORD-001", productName:"Calculus Notes", buyerName:"John Smith", quantity:1, totalPrice:"$45", purchaseDate:"2025-04-15", status:"delivered" }];
+            soldProducts = [{ orderId:"ORD-001", productName:"Calculus Notes", buyerName:"John Smith", quantity:1, totalPrice:"₱45", purchaseDate:"2025-04-15", status:"delivered" }];
             saveSoldProducts();
         }
     }

@@ -685,16 +685,16 @@
         const section = document.getElementById('revenueSection');
         section.innerHTML = `
             <h3><i class="fas fa-dollar-sign"></i> Revenue Overview</h3>
-            <div class="revenue-amount">$${stats.totalRevenue.toLocaleString()}</div>
+            <div class="revenue-amount">₱${stats.totalRevenue.toLocaleString()}</div>
             <p>Total revenue from sold products</p>
             <div class="revenue-details">
                 <div class="revenue-item">
                     <small>Total Requests Value</small>
-                    <strong>$${stats.totalRequestsValue.toLocaleString()}</strong>
+                    <strong>₱${stats.totalRequestsValue.toLocaleString()}</strong>
                 </div>
                 <div class="revenue-item">
                     <small>Average Order Value</small>
-                    <strong>$${stats.averageOrderValue}</strong>
+                    <strong>₱${stats.averageOrderValue}</strong>
                 </div>
                 <div class="revenue-item">
                     <small>Completed Services</small>
@@ -727,7 +727,7 @@
                 labels: months,
                 datasets: [
                     {
-                        label: 'Revenue ($)',
+                        label: 'Revenue (₱)',
                         data: monthlyRevenue,
                         borderColor: '#2c6e9e',
                         backgroundColor: 'rgba(44, 110, 158, 0.1)',
@@ -772,8 +772,8 @@
                             label: function(context) {
                                 let label = context.dataset.label || '';
                                 let value = context.raw;
-                                if (context.dataset.label === 'Revenue ($)') {
-                                    return `${label}: $${value.toLocaleString()}`;
+                                if (context.dataset.label === 'Revenue (₱)') {
+                                    return `${label}: ₱${value.toLocaleString()}`;
                                 }
                                 return `${label}: ${value}`;
                             }
@@ -785,12 +785,12 @@
                         beginAtZero: true,
                         title: {
                             display: true,
-                            text: 'Revenue ($)',
+                            text: 'Revenue (₱)',
                             color: '#2c6e9e'
                         },
                         ticks: {
                             callback: function(value) {
-                                return '$' + value.toLocaleString();
+                                return '₱' + value.toLocaleString();
                             }
                         }
                     },
@@ -891,7 +891,7 @@
                     <small style="color:#5f7f90;">${escapeHtml(p.buyerEmail || '')}</small>
                 </td>
                 <td>${p.quantity || 1}</td>
-                <td><strong style="color:#1e7b48;">${escapeHtml(p.totalPrice || '$0')}</strong></td>
+                <td><strong style="color:#1e7b48;">${escapeHtml(p.totalPrice || '₱0')}</strong></td>
                 <td>${escapeHtml(p.purchaseDate || 'Unknown')}</td>
             </tr>
         `).join('');
