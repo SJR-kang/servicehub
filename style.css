@@ -1097,9 +1097,9 @@ body {
 
 /* Footer */
 .main-footer {
-    background: linear-gradient(135deg, black, rgb(88, 76, 76));
+    background: #0f212e;
     color: #cbdde6;
-    padding: 48px 0 24px;
+    padding: 60px 0 30px;
     margin-top: 60px;
 }
 
@@ -1125,6 +1125,18 @@ body {
 .footer-col h4 {
     color: white;
     margin-bottom: 20px;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+.footer-col h4::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 40px;
+    height: 2px;
+    background: #2c6e9e;
 }
 
 .footer-col p,
@@ -1160,7 +1172,7 @@ body {
 }
 
 .social-links a {
-    background: black;
+    background: rgba(255, 255, 255, 0.12);
     width: 36px;
     height: 36px;
     display: flex;
@@ -1171,10 +1183,14 @@ body {
     transition: 0.2s;
 }
 
+.social-links a:hover {
+    background: #2c6e9e;
+}
+
 .footer-bottom {
     text-align: center;
-    padding-top: 24px;
-    border-top: 1px solid #1e4a6e;
+    padding-top: 30px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Toast */
