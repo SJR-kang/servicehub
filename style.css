@@ -1127,6 +1127,11 @@ body {
     margin-bottom: 20px;
 }
 
+.footer-col p,
+.footer-col ul li {
+    color: #cbdde6;
+}
+
 .footer-col ul {
     list-style: none;
 }
@@ -1141,6 +1146,11 @@ body {
 .footer-col ul li a {
     color: #cbdde6;
     text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.footer-col ul li a:hover {
+    color: #ffffff;
 }
 
 .social-links {
