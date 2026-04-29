@@ -87,26 +87,33 @@
         .header-actions {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 12px;
+            flex-wrap: nowrap;
         }
 
-        /* Message Icon */
-        .message-icon {
+        .home-icon,
+        .message-icon,
+        .cart-icon {
             position: relative;
             color: #1a2c3e;
             font-size: 1.3rem;
             text-decoration: none;
             background: #f1f5f9;
-            padding: 8px 14px;
+            width: 44px;
+            height: 44px;
+            padding: 0;
             border-radius: 40px;
             transition: 0.2s;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
+            line-height: 1;
         }
 
-        .message-icon:hover {
+        .home-icon:hover,
+        .message-icon:hover,
+        .cart-icon:hover {
             background: #e2edf2;
         }
 
@@ -125,23 +132,9 @@
             justify-content: center;
             font-weight: 600;
         }
-          .home-icon { position: relative; color: #f1f5f9; font-size: 1.3rem; text-decoration: none; background: #1a2c3e; padding: 8px 14px; border-radius: 40px; transition: 0.2s; }
-        .home-icon:hover { background: #e2edf2; }
-        
-
-        .cart-icon {
-            position: relative;
-            color: #1a2c3e;
-            font-size: 1.3rem;
-            text-decoration: none;
-            background: #f1f5f9;
-            padding: 8px 14px;
-            border-radius: 40px;
-            transition: 0.2s;
-        }
-
-        .cart-icon:hover {
-            background: #e2edf2;
+        .home-icon {
+            background: #1a2c3e;
+            color: #f1f5f9;
         }
 
         .cart-count {
@@ -759,10 +752,18 @@
         await updateMessageCount();
     }
 
+    function getUserDisplayName(user) {
+        if (!user) return 'Account';
+        const preferredName = (user.name || '').trim();
+        if (preferredName) return preferredName;
+        const emailName = String(user.email || '').split('@')[0].trim();
+        return emailName || 'Account';
+    }
+
     function updateUserUI() {
         const greetingSpan = document.getElementById('greetingName');
         if (greetingSpan && currentUser) {
-            let displayName = currentUser.name;
+            let displayName = getUserDisplayName(currentUser);
             if (displayName && displayName.length > 15) displayName = displayName.substring(0, 12) + '...';
             greetingSpan.innerText = displayName || 'Account';
         }

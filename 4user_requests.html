@@ -18,23 +18,30 @@
         .search-bar form { display: flex; gap: 8px; }
         .search-bar input { flex: 1; padding: 10px 16px; border: 2px solid #e2edf2; border-radius: 40px; font-family: 'Inter', sans-serif; }
         .search-bar button { background: #1a2c3e; border: none; padding: 0 20px; border-radius: 40px; color: white; cursor: pointer; }
-        .header-actions { display: flex; align-items: center; gap: 20px; }
+        .header-actions { display: flex; align-items: center; gap: 12px; flex-wrap: nowrap; }
         
-        .message-icon {
+        .home-icon,
+        .message-icon,
+        .cart-icon {
             position: relative;
             color: #1a2c3e;
             font-size: 1.3rem;
             text-decoration: none;
             background: #f1f5f9;
-            padding: 8px 14px;
+            width: 44px;
+            height: 44px;
+            padding: 0;
             border-radius: 40px;
             transition: 0.2s;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
+            line-height: 1;
         }
-        .message-icon:hover { background: #e2edf2; }
+        .home-icon:hover,
+        .message-icon:hover,
+        .cart-icon:hover { background: #e2edf2; }
         .message-badge {
             position: absolute;
             top: -6px;
@@ -50,22 +57,7 @@
             justify-content: center;
             font-weight: 600;
         }
-        .home-icon { position: relative;
-            color: #1a2c3e;
-            font-size: 1.3rem;
-            text-decoration: none;
-            background: #f1f5f9;
-            padding: 8px 14px;
-            border-radius: 40px;
-            transition: 0.2s;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;}
-        .home-icon:hover { background: #e2edf2; }
-        
-        .cart-icon { position: relative; color: #f1f5f9; font-size: 1.3rem; text-decoration: none; background: #1a2c3e; padding: 8px 14px; border-radius: 40px; transition: 0.2s; }
-        .cart-icon:hover { background: #e2edf2; }
+        .cart-icon { background: #1a2c3e; color: #f1f5f9; }
         .cart-count { position: absolute; top: -6px; right: -6px; background: #e74c3c; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; font-weight: 600; }
         .user-menu-container { position: relative; }
         .user-menu-trigger { display: flex; align-items: center; gap: 10px; background: #f1f5f9; padding: 8px 16px; border-radius: 40px; cursor: pointer; transition: 0.2s; }
@@ -306,7 +298,9 @@
     function normalizeStatus(status) {
         const value = String(status || '').toUpperCase();
         if (value === 'PENDING') return 'pending';
+        if (value === 'ACCEPTED') return 'inprogress';
         if (value === 'IN_PROGRESS') return 'inprogress';
+        if (value === 'INPROGRESS') return 'inprogress';
         if (value === 'AWAITING_PAYMENT') return 'awaiting_payment';
         if (value === 'PAID') return 'inprogress';
         if (value === 'COMPLETED') return 'completed';
@@ -359,12 +353,9 @@
                 currentUser = JSON.parse(storedUser);
             } catch(e) { console.error(e); }
         }
-        if (!currentUser) {
-            currentUser = { name: "Test User", email: "test@example.com", type: "seeker" };
-        }
         updateUserUI();
         updateCartCount();
-        await updateMessageCount();
+        updateMessageCount();
         
         if (window.ServiceHubDB) {
             const stats = ServiceHubDB.getStats();
@@ -372,12 +363,22 @@
         }
     }
 
+    function getUserDisplayName(user) {
+        if (!user) return 'Account';
+        const preferredName = (user.name || '').trim();
+        if (preferredName) return preferredName;
+        const emailName = String(user.email || '').split('@')[0].trim();
+        return emailName || 'Account';
+    }
+
     function updateUserUI() {
         const greetingSpan = document.getElementById('greetingName');
         if (greetingSpan && currentUser) {
-            let displayName = currentUser.name;
+            let displayName = getUserDisplayName(currentUser);
             if (displayName && displayName.length > 15) displayName = displayName.substring(0, 12) + '...';
-            greetingSpan.innerText = displayName;
+            greetingSpan.innerText = displayName || 'Account';
+        } else if (greetingSpan) {
+            greetingSpan.innerText = 'Account';
         }
     }
 
@@ -652,6 +653,16 @@
         
         container.innerHTML = html;
         
+        // Request card click event listeners
+        document.querySelectorAll('.request-card-item').forEach(card => {
+            card.addEventListener('click', () => {
+                const requestId = card.getAttribute('data-request-id');
+                if (requestId) {
+                    window.location.href = `request_details.html?requestId=${encodeURIComponent(requestId)}`;
+                }
+            });
+        });
+
         // Pay button event listeners
         document.querySelectorAll('.pay-btn, .pay-remaining-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -770,7 +781,7 @@
         window.location.href = '4user_requests.html';
     });
     
-    document.getElementById('homeLink')?.addEventListener('click', (e) => {
+    document.getElementById('homeIcon')?.addEventListener('click', (e) => {
         e.preventDefault();
         window.location.href = '1seeker_dashboard.html';
     });

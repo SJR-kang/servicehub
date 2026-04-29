@@ -62,7 +62,8 @@
         .header-actions {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 12px;
+            flex-wrap: nowrap;
         }
 
         .cart-icon {
@@ -71,9 +72,15 @@
             font-size: 1.3rem;
             text-decoration: none;
             background: #f1f5f9;
-            padding: 8px 14px;
+            width: 44px;
+            height: 44px;
+            padding: 0;
             border-radius: 40px;
             transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
         }
 
         .cart-icon:hover {
@@ -667,10 +674,18 @@
         updateCartCount();
     }
 
+    function getUserDisplayName(user) {
+        if (!user) return 'Account';
+        const preferredName = (user.name || '').trim();
+        if (preferredName) return preferredName;
+        const emailName = String(user.email || '').split('@')[0].trim();
+        return emailName || 'Account';
+    }
+
     function updateUserUI() {
         const greetingSpan = document.getElementById('greetingName');
         if (greetingSpan && currentUser) {
-            let displayName = currentUser.name;
+            let displayName = getUserDisplayName(currentUser);
             if (displayName && displayName.length > 15) displayName = displayName.substring(0, 12) + '...';
             greetingSpan.innerText = displayName || 'Account';
         } else if (greetingSpan) {
@@ -811,7 +826,7 @@
             // API-only mode: serviceId is optional (providers are stored by profile/user, not per-service).
             
             try {
-                await ServiceHubAPI.createRequest({
+                const createdRequest = await ServiceHubAPI.createRequest({
                     providerId: String(requestData.providerId || ''),
                     serviceId: requestData.serviceId || undefined,
                     serviceName: requestData.serviceName,
@@ -822,9 +837,12 @@
                     budget: requestData.budget,
                     serviceDetails: requestData.serviceDetails
                 });
+                if (createdRequest?.id) {
+                    sessionStorage.setItem('last_submitted_request_id', String(createdRequest.id));
+                }
                 showToast('✓ Request sent successfully!');
                 setTimeout(() => {
-                    window.location.href = '4user_requests.html';
+                    window.location.replace('4user_requests.html');
                 }, 1500);
             } catch(error) {
                 console.error('Error saving request:', error);

@@ -62,7 +62,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
         }
 
         .home-icon, .message-icon, .analytics-icon {
@@ -71,13 +71,16 @@
             font-size: 1.3rem;
             text-decoration: none;
             background: #f1f5f9;
-            padding: 8px 14px;
+            width: 44px;
+            height: 44px;
+            padding: 0;
             border-radius: 40px;
             transition: 0.2s;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
+            line-height: 1;
         }
 
         .home-icon:hover, .message-icon:hover, .analytics-icon:hover {
